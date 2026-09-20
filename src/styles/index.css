@@ -1,0 +1,27 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+.company-map-marker {
+	background: transparent;
+	border: 0;
+}
+
+.company-map-marker > span {
+	display: flex;
+	width: 34px;
+	height: 34px;
+	align-items: center;
+	justify-content: center;
+	border: 3px solid #fff;
+	border-radius: 9999px;
+	box-shadow: 0 2px 7px rgb(28 25 23 / 35%);
+}
+
+.company-map-marker-dot {
+	display: block;
+	width: 9px;
+	height: 9px;
+	border: 2px solid #fff;
+	border-radius: 9999px;
+}

@@ -1,0 +1,30 @@
+# Environnement
+.env
+.env.local
+.env.*.local
+
+# Dépendances
+node_modules
+.npm-cache
+.pnpm-store
+
+# Build
+dist
+dist-ssr
+
+# Supabase (CLI locale)
+supabase/.branches
+supabase/.temp
+
+# Éditeurs / OS
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*

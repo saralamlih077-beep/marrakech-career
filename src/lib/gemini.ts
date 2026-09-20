@@ -5,7 +5,6 @@ import type { ProfileData } from '../types/profile';
 export interface ChatTurn { role: 'user' | 'ai'; text: string; }
 interface CareerAssistantResponse { text?: string; }
 
-const localGeminiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 const localGroqKey = import.meta.env.VITE_GROQ_API_KEY as string | undefined;
 
 function createRequest(message: string, history: ChatTurn[], companies: Entreprise[], profile?: ProfileData) {
@@ -16,21 +15,6 @@ function createRequest(message: string, history: ChatTurn[], companies: Entrepri
     contents: [...history.slice(-6), { role: 'user' as const, text: message }].map(turn => ({ role: turn.role === 'ai' ? 'model' : 'user', parts: [{ text: turn.text }] })),
     generationConfig: { temperature: 0.7, maxOutputTokens: 1200 },
   };
-}
-
-async function callGeminiDirectly(message: string, history: ChatTurn[], companies: Entreprise[], profile?: ProfileData) {
-  if (!localGeminiKey) throw new Error('La clé Gemini est absente. Ajoutez VITE_GEMINI_API_KEY au fichier .env pour le développement local.');
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${localGeminiKey}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(createRequest(message, history, companies, profile)),
-  });
-  if (!response.ok) {
-    const detail = await response.json().catch(() => null) as { error?: { message?: string } } | null;
-    throw new Error(detail?.error?.message || 'Gemini a renvoyé une erreur.');
-  }
-  const payload = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-  const text = payload.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
-  if (!text) throw new Error("Gemini n'a retourné aucune réponse.");
-  return text;
 }
 
 async function callGroqDirectly(message: string, history: ChatTurn[], companies: Entreprise[], profile?: ProfileData) {
@@ -67,10 +51,12 @@ export async function askGeminiCareerAssistantStream({ message, history = [], co
     if (error || !data?.text?.trim()) throw new Error('Fonction Supabase indisponible');
     text = data.text.trim();
   } catch {
-    // Groq is the preferred local provider; Gemini remains an optional fallback.
-    text = localGroqKey
-      ? await callGroqDirectly(message, history, companies, profile)
-      : await callGeminiDirectly(message, history, companies, profile);
+    // Production requests stay on the protected Supabase Edge Function. A local
+    // Groq key is accepted only for development when the function is unavailable.
+    if (!localGroqKey) {
+      throw new Error("L’assistant IA est momentanément indisponible. Réessayez dans quelques instants.");
+    }
+    text = await callGroqDirectly(message, history, companies, profile);
   }
   onChunk?.(text);
   return text;

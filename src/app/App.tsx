@@ -71,9 +71,9 @@ export default function App() {
     <div className="h-screen flex items-center justify-center bg-[#FBF9F7] p-6" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <div className="max-w-xl bg-white border border-[#EAE5E0] rounded-2xl shadow-sm p-7 text-center">
         <h1 className="text-xl font-bold text-[#1C1917]">Configuration requise</h1>
-        <p className="mt-3 text-sm leading-relaxed text-[#57534E]">Le fichier <code>.env</code> est absent. Créez-le à la racine du projet puis redémarrez <code>npm run dev</code>.</p>
-        <pre className="mt-5 whitespace-pre-wrap text-left rounded-xl bg-[#FBF9F7] border border-[#EAE5E0] p-4 text-xs text-[#621E3E]">VITE_SUPABASE_URL=...{`\n`}VITE_SUPABASE_ANON_KEY=...{`\n`}VITE_GEMINI_API_KEY=...</pre>
-        <p className="mt-4 text-xs text-[#78716C]">L’URL et la clé anonyme sont dans Supabase → Settings → API. La clé Gemini est disponible dans Google AI Studio. Ne partagez aucune de ces valeurs dans le chat.</p>
+        <p className="mt-3 text-sm leading-relaxed text-[#57534E]">Les variables Supabase requises ne sont pas configurées pour cette version de l’application.</p>
+        <pre className="mt-5 whitespace-pre-wrap text-left rounded-xl bg-[#FBF9F7] border border-[#EAE5E0] p-4 text-xs text-[#621E3E]">VITE_SUPABASE_URL=...{`\n`}VITE_SUPABASE_ANON_KEY=...</pre>
+        <p className="mt-4 text-xs text-[#78716C]">L’URL et la clé anonyme sont dans Supabase → Settings → API. Les clés IA restent protégées dans les secrets des Edge Functions et ne doivent jamais être placées dans Vercel.</p>
       </div>
     </div>
   );

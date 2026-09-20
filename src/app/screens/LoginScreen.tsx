@@ -47,7 +47,7 @@ export default function LoginScreen() {
     if (resetError) setError(`Impossible d’envoyer le code : ${resetError.message}`);
     else {
       setResetStep('code');
-      setMessage('Un code à 6 chiffres a été envoyé à votre adresse e-mail.');
+      setMessage('Un code à 8 chiffres a été envoyé à votre adresse e-mail.');
     }
     setLoading(false);
   };
@@ -72,8 +72,8 @@ export default function LoginScreen() {
 
   const verifyResetCode = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!/^\d{6}$/.test(resetCode.trim())) {
-      setError('Saisissez le code à 6 chiffres reçu par e-mail.');
+    if (!/^\d{8}$/.test(resetCode.trim())) {
+      setError('Saisissez le code à 8 chiffres reçu par e-mail.');
       return;
     }
     setLoading(true);
@@ -221,7 +221,7 @@ export default function LoginScreen() {
                 <p className="text-sm font-bold text-[#1C1917]">Vérifier votre e-mail</p>
                 <p className="mt-1 text-xs text-[#57534E]">Saisissez le code reçu sur {email.trim()}.</p>
               </div>
-              <input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="w-full rounded-xl border border-[#D6D3D1] bg-white px-4 py-3 text-center text-lg font-bold tracking-[0.45em] text-[#1C1917] outline-none focus:border-[#621E3E]" placeholder="000000" />
+              <input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="w-full rounded-xl border border-[#D6D3D1] bg-white px-4 py-3 text-center text-lg font-bold tracking-[0.35em] text-[#1C1917] outline-none focus:border-[#621E3E]" placeholder="00000000" />
               <button disabled={loading} type="submit" className="w-full rounded-xl bg-[#621E3E] py-3 text-sm font-bold text-white hover:bg-[#4e1830] disabled:opacity-60">{loading ? t('wait') : 'Vérifier le code'}</button>
             </form>
           )}

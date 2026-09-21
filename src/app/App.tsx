@@ -106,7 +106,7 @@ export default function App() {
   })();
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <div className="flex h-dvh overflow-hidden max-md:flex-col" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <Sidebar active={page} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} />
       {screen}
     </div>

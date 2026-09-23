@@ -37,9 +37,9 @@ export function SkillTag({ label, missing = false }: { label: string; missing?: 
   );
 }
 
-export function CompanyCard({ company, isFav, onFav, onView }: {
+export function CompanyCard({ company, isFav, onFav, onView, onApply }: {
   company: Company; isFav: boolean;
-  onFav: (id: number) => void; onView: (c: Company) => void;
+  onFav: (id: number) => void; onView: (c: Company) => void; onApply?: (c: Company) => void;
 }) {
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
@@ -75,7 +75,7 @@ export function CompanyCard({ company, isFav, onFav, onView }: {
         <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
           <Eye size={11} /> View
         </button>
-        <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
+        <button onClick={() => onApply?.(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
           <Send size={11} /> Apply
         </button>
       </div>

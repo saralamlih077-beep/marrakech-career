@@ -84,7 +84,7 @@ export default function App() {
   const screen = (() => {
     switch (page) {
       case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} />;
-      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
+      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onApply={(company) => { setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'company-detail': return selectedCompany
         ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;

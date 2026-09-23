@@ -26,6 +26,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
   const [targetStatut, setTargetStatut] = useState('applied');
   const [notes, setNotes] = useState('');
   const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState('');
   const [appliedSuccess, setAppliedSuccess] = useState(false);
   const [about, setAbout] = useState(company.about_summary || '');
   const [aboutSource, setAboutSource] = useState(company.about_source_url || '');
@@ -165,6 +166,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
               </button>
             </div>
 
+            {applyError && <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{applyError}</div>}
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#57534E] mb-1">Poste cibl\u00e9</label>
@@ -226,6 +228,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                   type="button"
                   disabled={applying}
                   onClick={async () => {
+                    setApplyError('');
                     setApplying(true);
                     const res = await createCandidature({
                       entreprise_id: company.id,
@@ -239,6 +242,8 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                       setShowApplyModal(false);
                       setAppliedSuccess(true);
                       setTimeout(() => setAppliedSuccess(false), 5000);
+                    } else {
+                      setApplyError('Impossible d’enregistrer la candidature. Vérifiez votre connexion et les droits Supabase.');
                     }
                   }}
                   className="flex-1 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors disabled:opacity-50"

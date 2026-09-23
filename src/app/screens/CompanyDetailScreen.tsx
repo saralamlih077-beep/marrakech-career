@@ -119,7 +119,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                 <CheckCircle size={14} /> Applied ({existingCandidature.statut})
               </button>
             ) : (
-              <button onClick={() => setShowApplyModal(true)} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
+              <button onClick={() => { if (!isFav) onFav(company.id); onNavigate?.('campaign'); }} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
                 <Send size={14} /> Apply
               </button>
             )}

@@ -13,7 +13,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 
 export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onNavigate }: {
-  company: Company; isFav: boolean; onFav: (id: number) => void; onBack: () => void; onNavigate?: (page: NavPage) => void;
+  company: Company; isFav: boolean; onFav: (id: number) => void; onBack: () => void; onNavigate?: (page: NavPage) => void; onCampaign?: (companyId: number) => void;
 }) {
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
@@ -119,7 +119,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                 <CheckCircle size={14} /> Applied ({existingCandidature.statut})
               </button>
             ) : (
-              <button onClick={() => { if (!isFav) onFav(company.id); onNavigate?.('campaign'); }} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
+              <button onClick={() => onCampaign?.(company.id)} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
                 <Send size={14} /> Apply
               </button>
             )}

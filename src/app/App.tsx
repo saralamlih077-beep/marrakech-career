@@ -30,6 +30,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [page, setPage] = useState<NavPage>('dashboard');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [campaignCompanyId, setCampaignCompanyId] = useState<number | null>(null);
   const { favorites: favs, toggleFavorite: toggleFav } = useFavorites();
   const { data: companies, loading, error } = useEntreprises();
   const { profile, email: userEmail } = useProfile();
@@ -85,7 +86,7 @@ export default function App() {
       case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} />;
       case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
       case 'company-detail': return selectedCompany
-        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} />
+        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;
       case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
       case 'matching': return <AIMatchingScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
@@ -94,7 +95,7 @@ export default function App() {
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} />;
       case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
       case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} onAutomation={() => setPage('automation')} />;
-      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} loading={loading} error={error} onBack={() => setPage('applications')} />;
+      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} loading={loading} error={error} onBack={() => setPage('applications')} />;
       case 'automation': return <AutomationScreen onBack={() => setPage('applications')} />;
       case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
       case 'analytics': return <AnalyticsScreen companies={companies} />;

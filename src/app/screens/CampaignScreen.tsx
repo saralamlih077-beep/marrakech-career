@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Check, FileText, Mail, Send, Upload, X } from 'lucide-react';
 import { useCandidatures } from '../../hooks/useCandidatures';
 import { useProfile } from '../../hooks/useProfile';
@@ -12,8 +12,8 @@ const acceptedCvTypes = [
   'application/msword',
 ];
 
-export default function CampaignScreen({ companies, favorites, loading, error, onBack }: { companies: Company[]; favorites: Set<number>; loading: boolean; error: string | null; onBack: () => void }) {
-  const favoriteCompanies = useMemo(() => companies.filter((company) => favorites.has(company.id)), [companies, favorites]);
+export default function CampaignScreen({ companies, favorites, initialCompanyId, loading, error, onBack }: { companies: Company[]; favorites: Set<number>; initialCompanyId?: number | null; loading: boolean; error: string | null; onBack: () => void }) {
+  const favoriteCompanies = useMemo(() => companies.filter((company) => favorites.has(company.id) || company.id === initialCompanyId), [companies, favorites, initialCompanyId]);
   const [selected, setSelected] = useState<number[]>([]);
   const [message, setMessage] = useState('');
   const [cv, setCv] = useState<File | null>(null);
@@ -21,6 +21,10 @@ export default function CampaignScreen({ companies, favorites, loading, error, o
   const [sending, setSending] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { profile, email } = useProfile();
+
+  useEffect(() => {
+    if (initialCompanyId && favoriteCompanies.some((company) => company.id === initialCompanyId)) setSelected([initialCompanyId]);
+  }, [initialCompanyId, favoriteCompanies]);
   const { createCandidature } = useCandidatures();
 
   const recipients = favoriteCompanies.filter((company) => selected.includes(company.id) && company.email);

@@ -41,12 +41,12 @@ function InteractiveCompanyMap({ companies, onSelect }: { companies: Company[]; 
       const color = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
       const icon = L.divIcon({
         className: 'company-map-marker',
-        html: `<span style="background:${color}"><span class="company-map-marker-dot"></span></span>`,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        html: `<svg width="22" height="28" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 29C12 29 22 18.3 22 11A10 10 0 1 0 2 11C2 18.3 12 29 12 29Z" fill="${color}" stroke="white" stroke-width="1.5"/><circle cx="12" cy="11" r="3.2" fill="white"/></svg>`,
+        iconSize: [22, 28],
+        iconAnchor: [11, 28],
       });
       const marker = L.marker([company.latitude, company.longitude], { icon });
-      marker.bindTooltip(company.nom, { direction: 'top', offset: [0, -18] });
+      marker.bindTooltip(company.nom, { direction: 'top', offset: [0, -28] });
       marker.on('click', () => onSelect(company.id));
       marker.addTo(markers);
     });
@@ -127,17 +127,6 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
             </div>
           </div>
         )}
-
-        {/* Map legend */}
-        <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl border border-[#EAE5E0] shadow-sm p-3">
-          <p className="text-[10px] font-bold text-[#57534E] mb-2">Legend</p>
-          {Object.entries(DOMAIN_COLORS).slice(0, 4).map(([domaine, color]) => (
-            <div key={domaine} className="flex items-center gap-1.5 mb-1">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-[10px] text-[#78716C]">{domaine}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

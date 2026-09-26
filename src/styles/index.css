@@ -7,6 +7,11 @@
 	border: 0;
 }
 
+.company-map-marker svg {
+	display: block;
+	filter: drop-shadow(0 2px 3px rgb(28 25 23 / 35%));
+}
+
 .company-map-marker > span {
 	display: flex;
 	width: 34px;

@@ -274,7 +274,6 @@ export default function LoginScreen() {
 
         </div>
       </div>
-      <p className="login-discover absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap text-3xl font-extrabold tracking-tight text-white md:block">Discover. Match. Apply.</p>
     </div>
   );
 }

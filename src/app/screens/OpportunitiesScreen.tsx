@@ -1,9 +1,8 @@
-import { Bell, BriefcaseBusiness, CalendarClock, Copy, ExternalLink, FilePenLine, Heart, Mail, Map, MapPin, Sparkles, X } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CalendarClock, Copy, ExternalLink, FilePenLine, Heart, Mail, Map, MapPin, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useJobOffers, type JobOffer } from '../../hooks/useJobOffers';
 import { useProfile } from '../../hooks/useProfile';
-import { useFavorites } from '../../hooks/useFavorites';
-import { matchColor } from '../utils';
+import { useOfferFavorites } from '../../hooks/useOfferFavorites';
 import { SkillTag } from '../components/shared';
 import type { NavPage } from '../types';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
@@ -45,10 +44,10 @@ function expiryLabel(expiresAt: string | null) {
   return `Expire le ${new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(expiresAt))}`;
 }
 
-export default function OpportunitiesScreen({ onNavigate, focusOfferId }: { onNavigate: (page: NavPage) => void; focusOfferId?: string | null }) {
+export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOnMap }: { onNavigate: (page: NavPage) => void; focusOfferId?: string | null; onViewOnMap: (offer: JobOffer) => void }) {
   const { offers, loading, error } = useJobOffers();
   const { profile } = useProfile();
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favoriteOffers, toggleOfferFavorite } = useOfferFavorites();
   const [letterOffer, setLetterOffer] = useState<JobOffer | null>(null);
   const [letter, setLetter] = useState('');
   const [letterLoading, setLetterLoading] = useState(false);
@@ -144,16 +143,16 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId }: { onNa
     {!loading && !error && ranked.length === 0 && <div className="max-w-2xl rounded-2xl border border-[#EAE5E0] bg-white p-7 shadow-sm"><h2 className="font-bold text-[#1C1917]">Aucune offre vérifiée pour le moment</h2><p className="mt-2 text-sm leading-relaxed text-[#78716C]">Les compétences s’affichent uniquement lorsqu’elles sont liées à une offre réelle et validée. Cela évite d’inventer des exigences pour une entreprise.</p></div>}
     {!loading && !error && ranked.length > 0 && <><div className="mb-5 flex max-w-5xl flex-wrap gap-2 rounded-2xl border border-[#EAE5E0] bg-white p-2 shadow-sm">{(Object.keys(sourceDetails) as OfferSource[]).map(source => <button key={source} type="button" onClick={() => setSelectedSource(source)} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition ${selectedSource === source ? 'bg-[#621E3E] text-white shadow-sm' : 'text-[#57534E] hover:bg-[#FBF9F7]'}`}>{sourceDetails[source].title} <span className={`ml-1.5 rounded-full px-2 py-0.5 text-[11px] ${selectedSource === source ? 'bg-white/20 text-white' : 'bg-[#F1ECE7] text-[#78716C]'}`}>{sourceCounts[source]}</span></button>)}</div>
     <div className="mb-3 flex max-w-5xl items-end justify-between gap-3"><div><h2 className="text-sm font-extrabold text-[#1C1917]">{sourceDetails[selectedSource].title}</h2><p className="mt-0.5 text-xs text-[#78716C]">{sourceDetails[selectedSource].description}</p></div><span className="text-xs font-semibold text-[#78716C]">{sourceOffers.length} offre{sourceOffers.length > 1 ? 's' : ''}</span></div>
-    {sourceOffers.length === 0 ? <div className="max-w-5xl rounded-2xl border border-dashed border-[#D6CEC6] bg-white p-6 text-sm text-[#78716C]">Aucune offre disponible pour cette source pour le moment.</div> : <div className="grid max-w-5xl gap-4">{sourceOffers.map(({ offer, score }) => <article id={`offer-${offer.id}`} key={offer.id} className={`rounded-2xl border bg-white p-5 shadow-sm ${focusOfferId === offer.id ? 'border-[#C6C954] ring-2 ring-[#C6C954]/35' : 'border-[#EAE5E0]'}`}>
+    {sourceOffers.length === 0 ? <div className="max-w-5xl rounded-2xl border border-dashed border-[#D6CEC6] bg-white p-6 text-sm text-[#78716C]">Aucune offre disponible pour cette source pour le moment.</div> : <div className="grid max-w-5xl gap-4">{sourceOffers.map(({ offer }) => <article id={`offer-${offer.id}`} key={offer.id} className={`rounded-2xl border bg-white p-5 shadow-sm ${focusOfferId === offer.id ? 'border-[#C6C954] ring-2 ring-[#C6C954]/35' : 'border-[#EAE5E0]'}`}>
       <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="mb-1 flex flex-wrap items-center gap-2"><h2 className="text-base font-bold text-[#1C1917]">{offer.title}</h2><span className="rounded-full bg-[#621E3E]/10 px-2.5 py-1 text-[11px] font-bold text-[#621E3E]">{labels[offer.contract_type]}</span></div><p className="text-sm font-semibold text-[#57534E]">{offer.entreprise?.nom || 'Entreprise non renseignée'}</p><p className="mt-1 flex items-center gap-1 text-xs text-[#78716C]"><MapPin size={12} /> {offer.location}</p></div>
-        <div className="rounded-xl bg-[#F5F1ED] px-4 py-2 text-center"><div className="flex items-center justify-center gap-1 text-[11px] font-bold text-[#78716C]"><Sparkles size={11} /> Match profil</div><p className="text-2xl font-extrabold" style={{ color: matchColor(score) }}>{hasProfileData ? `${score}%` : '—'}</p></div></div>
+      </div>
       <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[#57534E]">{offer.description}</p>
       {offer.requirements && <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-[#78716C]"><b>Exigences :</b> {offer.requirements}</p>}
       <div className="mt-4 flex flex-wrap gap-2">{offer.skills.length ? offer.skills.map(skill => <SkillTag key={skill} label={skill} />) : <span className="text-xs text-[#A8A29E]">Compétences non précisées par la source.</span>}</div>
       <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-[#78716C]"><CalendarClock size={13} /> {expiryLabel(offer.expires_at)}</div>
       <div className="mt-5 flex flex-wrap gap-2 border-t border-[#F1ECE7] pt-4 text-xs font-semibold">
-        {offer.entreprise_id && <button onClick={() => void toggleFavorite(offer.entreprise_id!)} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 ${favorites.has(offer.entreprise_id) ? 'bg-[#D9828D]/15 text-[#A12E44]' : 'bg-[#621E3E] text-white hover:bg-[#4e1830]'}`}><Heart size={12} className={favorites.has(offer.entreprise_id) ? 'fill-current' : ''} /> {favorites.has(offer.entreprise_id) ? 'Dans mes favoris' : 'Ajouter aux favoris'}</button>}
-        <button onClick={() => onNavigate('map')} className="flex items-center gap-1.5 rounded-lg border border-[#EAE5E0] px-3 py-2 text-[#621E3E] hover:bg-[#FBF9F7]"><Map size={12} /> Voir sur la carte</button>
+        <button onClick={() => void toggleOfferFavorite(offer.id)} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 ${favoriteOffers.has(offer.id) ? 'bg-[#D9828D]/15 text-[#A12E44]' : 'bg-[#621E3E] text-white hover:bg-[#4e1830]'}`}><Heart size={12} className={favoriteOffers.has(offer.id) ? 'fill-current' : ''} /> {favoriteOffers.has(offer.id) ? 'Offre favorite' : 'Ajouter aux favoris'}</button>
+        <button onClick={() => onViewOnMap(offer)} className="flex items-center gap-1.5 rounded-lg border border-[#EAE5E0] px-3 py-2 text-[#621E3E] hover:bg-[#FBF9F7]"><Map size={12} /> Voir sur la carte</button>
         <button onClick={() => void generateLetter(offer)} className="flex items-center gap-1.5 rounded-lg border border-[#C6C954]/50 bg-[#C6C954]/10 px-3 py-2 text-[#4a4d1a] hover:bg-[#C6C954]/20"><FilePenLine size={12} /> Lettre IA</button>
         {offer.entreprise?.email && <a className="flex items-center gap-1 rounded-lg px-2 py-2 text-[#621E3E] hover:bg-[#FBF9F7] hover:underline" href={`mailto:${offer.entreprise.email}`}><Mail size={12} /> Contacter l’entreprise</a>}
         {offer.source_url && <a className="flex items-center gap-1 rounded-lg px-2 py-2 text-[#621E3E] hover:bg-[#FBF9F7] hover:underline" href={offer.source_url} target="_blank" rel="noreferrer"><ExternalLink size={12} /> Ouvrir l’annonce</a>}

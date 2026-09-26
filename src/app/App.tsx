@@ -22,6 +22,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import type { Company, NavPage } from './types';
+import type { JobOffer } from '../hooks/useJobOffers';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,6 +30,7 @@ export default function App() {
   const [page, setPage] = useState<NavPage>('dashboard');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [campaignCompanyId, setCampaignCompanyId] = useState<number | null>(null);
+  const [mapOffer, setMapOffer] = useState<JobOffer | null>(null);
   const { favorites: favs, toggleFavorite: toggleFav } = useFavorites();
   const { data: companies, loading, error } = useEntreprises();
   const { profile, email: userEmail } = useProfile();
@@ -91,8 +93,8 @@ export default function App() {
       case 'company-detail': return selectedCompany
         ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;
-      case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
-      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} />;
+      case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} focusedOffer={mapOffer} onClearFocusedOffer={() => setMapOffer(null)} />;
+      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} onViewOnMap={(offer) => { setMapOffer(offer); setPage('map'); }} />;
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} />;
       case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
       case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;

@@ -7,8 +7,9 @@ import { companyAddress, recommendationScore } from '../utils';
 import { SectorPill, MatchBadge, CompanyStatus } from '../components/shared';
 import type { Company } from '../types';
 import { useProfile } from '../../hooks/useProfile';
+import type { JobOffer } from '../../hooks/useJobOffers';
 
-function InteractiveCompanyMap({ companies, onSelect }: { companies: Company[]; onSelect: (id: number) => void }) {
+function InteractiveCompanyMap({ companies, onSelect, focusCompanyId, focusedOfferTitle }: { companies: Company[]; onSelect: (id: number) => void; focusCompanyId?: number | null; focusedOfferTitle?: string | null }) {
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
@@ -46,16 +47,24 @@ function InteractiveCompanyMap({ companies, onSelect }: { companies: Company[]; 
         iconAnchor: [11, 28],
       });
       const marker = L.marker([company.latitude, company.longitude], { icon });
-      marker.bindTooltip(company.nom, { direction: 'top', offset: [0, -28] });
+      marker.bindTooltip(focusedOfferTitle || company.nom, { direction: 'top', offset: [0, -28] });
       marker.on('click', () => onSelect(company.id));
       marker.addTo(markers);
     });
-  }, [companies, onSelect]);
+  }, [companies, focusedOfferTitle, onSelect]);
+
+  useEffect(() => {
+    if (!focusCompanyId || !mapRef.current) return;
+    const company = companies.find((item) => item.id === focusCompanyId);
+    if (company && company.latitude !== null && company.longitude !== null) {
+      mapRef.current.flyTo([company.latitude, company.longitude], 15, { duration: 0.6 });
+    }
+  }, [companies, focusCompanyId]);
 
   return <div ref={mapElementRef} className="absolute inset-0 z-0" />;
 }
 
-export default function MapScreen({ companies, loading, error, favs, onFav, onView }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void }) {
+export default function MapScreen({ companies, loading, error, favs, onFav, onView, focusedOffer, onClearFocusedOffer }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void; focusedOffer?: JobOffer | null; onClearFocusedOffer?: () => void }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [filterDomaine, setFilterDomaine] = useState('All');
   const [minimumMatch, setMinimumMatch] = useState(0);
@@ -64,10 +73,17 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
   const domaines = ['All', ...Array.from(new Set(companies.map(c => c.domaine).filter((value): value is string => Boolean(value))))];
   const selected = companies.find(c => c.id === selectedId);
 
+  useEffect(() => {
+    setSelectedId(focusedOffer?.entreprise_id ?? null);
+  }, [focusedOffer]);
+
   const visible = companies.filter(company =>
     (filterDomaine === 'All' || company.domaine === filterDomaine) &&
     (!hasProfileForMatching || recommendationScore(company, profile) >= minimumMatch),
   );
+  const mapCompanies = focusedOffer
+    ? companies.filter((company) => company.id === focusedOffer.entreprise_id)
+    : visible;
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -96,12 +112,12 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
       {/* Map area */}
       <div className="flex-1 relative overflow-hidden bg-[#E8E4DC]">
         <CompanyStatus loading={loading} error={error} />
-        <InteractiveCompanyMap companies={visible} onSelect={setSelectedId} />
+        <InteractiveCompanyMap companies={mapCompanies} onSelect={setSelectedId} focusCompanyId={focusedOffer?.entreprise_id} focusedOfferTitle={focusedOffer?.title} />
 
         {/* Selected company popup */}
-        {selected && (
+        {selected && !focusedOffer && (
           <div className="absolute bottom-4 left-4 bg-white rounded-xl border border-[#EAE5E0] shadow-lg p-4 w-64 z-[1000]">
-            <button onClick={() => setSelectedId(null)} className="absolute top-2.5 right-2.5 text-[#A8A29E] hover:text-[#1C1917]">
+            <button onClick={() => { setSelectedId(null); onClearFocusedOffer?.(); }} className="absolute top-2.5 right-2.5 text-[#A8A29E] hover:text-[#1C1917]">
               <X size={14} />
             </button>
             <div className="flex items-center gap-2 mb-2">
@@ -113,9 +129,10 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
                 <SectorPill domaine={selected.domaine || 'Domaine non renseign\u00e9'} sousDomaine={selected.sous_domaine} />
               </div>
             </div>
+            {focusedOffer && <div className="mb-3 rounded-lg bg-[#621E3E]/7 px-3 py-2"><p className="text-[10px] font-bold uppercase tracking-wide text-[#621E3E]">Offre sélectionnée</p><p className="mt-0.5 text-xs font-bold text-[#1C1917]">{focusedOffer.title}</p></div>}
             <div className="flex items-center gap-1 text-xs text-[#78716C] mb-3"><MapPin size={10} />{companyAddress(selected)}</div>
             <div className="flex items-center justify-between">
-              {hasProfileForMatching ? <MatchBadge pct={recommendationScore(selected, profile)} /> : <span className="text-[10px] text-[#A8A29E]">Matching non calculé</span>}
+              {hasProfileForMatching && <MatchBadge pct={recommendationScore(selected, profile)} />}
               <div className="flex gap-1.5">
                 <button onClick={() => onFav(selected.id)} className="p-1.5 rounded-lg bg-[#FBF9F7] hover:bg-[#EAE5E0]">
                   <Heart size={12} className={favs.has(selected.id) ? 'fill-[#D9828D] text-[#D9828D]' : 'text-[#A8A29E]'} />
@@ -125,6 +142,15 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
                 </button>
               </div>
             </div>
+          </div>
+        )}
+        {focusedOffer && (
+          <div className="absolute bottom-4 left-4 z-[1000] w-72 rounded-xl border border-[#EAE5E0] bg-white p-4 shadow-lg">
+            <button onClick={() => { setSelectedId(null); onClearFocusedOffer?.(); }} className="absolute right-2.5 top-2.5 text-[#A8A29E] hover:text-[#1C1917]"><X size={14} /></button>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[#621E3E]">Offre sélectionnée</p>
+            <p className="mt-1 pr-4 text-sm font-bold text-[#1C1917]">{focusedOffer.title}</p>
+            <p className="mt-2 flex items-center gap-1 text-xs text-[#78716C]"><MapPin size={11} /> {focusedOffer.location}</p>
+            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-[#57534E]">{focusedOffer.description}</p>
           </div>
         )}
       </div>

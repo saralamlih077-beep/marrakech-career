@@ -3,7 +3,6 @@ import { Bot, Send } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 import { useFavorites } from '../../hooks/useFavorites';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
-import { matchColor, companyMatch } from '../utils';
 import { INITIAL_MESSAGES } from '../constants';
 import type { Company, ChatMessage } from '../types';
 
@@ -171,7 +170,7 @@ export default function AIAssistantScreen({ companies, loading, error, onView }:
                       <div key={c.id} className="bg-[#FBF9F7] rounded-xl p-3 flex items-center justify-between border border-[#EAE5E0] hover:border-[#621E3E]/40 transition-colors">
                         <div>
                           <p className="text-xs font-bold text-[#1C1917]">{c.nom}</p>
-                          <p className="text-[10px] text-[#78716C]">{c.domaine || 'Domaine non renseigné'} · <span style={{ color: matchColor(companyMatch(c)) }} className="font-semibold">{companyMatch(c)}% match</span></p>
+                          <p className="text-[10px] text-[#78716C]">{c.domaine || 'Domaine non renseigné'}</p>
                         </div>
                         <div className="flex gap-1.5">
                           <button onClick={() => onView(c)} className="text-[10px] px-2.5 py-1 bg-[#621E3E] text-white rounded-lg font-semibold hover:bg-[#4e1830] transition-colors">Voir</button>

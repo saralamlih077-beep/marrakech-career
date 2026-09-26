@@ -60,12 +60,13 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
   const [filterDomaine, setFilterDomaine] = useState('All');
   const [minimumMatch, setMinimumMatch] = useState(0);
   const { profile } = useProfile();
+  const hasProfileForMatching = Boolean(profile.job_title.trim() || profile.skills.trim() || profile.education.trim() || profile.experience.trim() || profile.projects.trim() || profile.languages.trim());
   const domaines = ['All', ...Array.from(new Set(companies.map(c => c.domaine).filter((value): value is string => Boolean(value))))];
   const selected = companies.find(c => c.id === selectedId);
 
   const visible = companies.filter(company =>
     (filterDomaine === 'All' || company.domaine === filterDomaine) &&
-    recommendationScore(company, profile) >= minimumMatch,
+    (!hasProfileForMatching || recommendationScore(company, profile) >= minimumMatch),
   );
 
   return (
@@ -84,19 +85,11 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
               ))}
             </div>
           </div>
-          <div>
+          {hasProfileForMatching && <div>
             <div className="flex items-center justify-between mb-2"><label className="text-xs font-semibold text-[#57534E]">Match Score</label><span className="text-xs font-bold text-[#621E3E]">{minimumMatch}%+</span></div>
             <input type="range" min={0} max={100} value={minimumMatch} onChange={(event) => setMinimumMatch(Number(event.target.value))} className="w-full accent-[#621E3E]" />
             <div className="flex justify-between text-[10px] text-[#A8A29E] mt-1"><span>0%</span><span>{visible.length} entreprise{visible.length > 1 ? 's' : ''}</span><span>100%</span></div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-[#57534E] mb-2 block">Opportunity</label>
-            {['Internship', 'CDI', 'CDD', 'Freelance'].map(t => (
-              <label key={t} className="flex items-center gap-2 text-xs text-[#78716C] py-1 cursor-pointer">
-                <input type="checkbox" defaultChecked className="accent-[#621E3E]" /> {t}
-              </label>
-            ))}
-          </div>
+          </div>}
         </div>
       </div>
 
@@ -122,7 +115,7 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
             </div>
             <div className="flex items-center gap-1 text-xs text-[#78716C] mb-3"><MapPin size={10} />{companyAddress(selected)}</div>
             <div className="flex items-center justify-between">
-              <MatchBadge pct={recommendationScore(selected, profile)} />
+              {hasProfileForMatching ? <MatchBadge pct={recommendationScore(selected, profile)} /> : <span className="text-[10px] text-[#A8A29E]">Matching non calculé</span>}
               <div className="flex gap-1.5">
                 <button onClick={() => onFav(selected.id)} className="p-1.5 rounded-lg bg-[#FBF9F7] hover:bg-[#EAE5E0]">
                   <Heart size={12} className={favs.has(selected.id) ? 'fill-[#D9828D] text-[#D9828D]' : 'text-[#A8A29E]'} />

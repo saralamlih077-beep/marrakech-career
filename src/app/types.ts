@@ -2,8 +2,8 @@ import type { Entreprise } from '../types/entreprise';
 
 export type NavPage =
   | 'dashboard' | 'companies' | 'company-detail' | 'map'
-  | 'matching' | 'opportunities' | 'assistant' | 'cv-studio' | 'cv-analyzer'
-  | 'applications' | 'campaign' | 'automation'
+  | 'opportunities' | 'cv-studio' | 'cv-analyzer'
+  | 'applications' | 'campaign'
   | 'favorites' | 'analytics' | 'admin' | 'profile' | 'settings';
 
 export type Company = Entreprise;

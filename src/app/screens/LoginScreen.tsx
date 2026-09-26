@@ -119,9 +119,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-dvh flex-col overflow-y-auto md:h-screen md:flex-row md:overflow-hidden">
       {/* Left brand panel */}
-      <div className="w-2/5 bg-[#621E3E] flex flex-col relative overflow-hidden">
+      <div className="relative hidden w-2/5 flex-col overflow-hidden bg-[#621E3E] md:flex">
         {/* Geometric Moroccan decoration */}
         <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -160,7 +160,7 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 bg-[#FBF9F7] flex items-center justify-center p-12">
+      <div className="flex min-h-dvh w-full items-center justify-center bg-[#FBF9F7] p-5 sm:p-8 md:min-h-0 md:flex-1 md:p-12">
         <div className="w-full max-w-md">
           <div className="flex gap-1 bg-[#EAE5E0] rounded-xl p-1 mb-8 w-fit">
             {(['login', 'register'] as const).map(mode => (

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
   Heart, MapPin, Globe, Mail, Send, X,
-  Sparkles, CheckCircle, Eye, FilePenLine, Copy
+  CheckCircle, Eye, FilePenLine, Copy
 } from 'lucide-react';
 import { useCandidatures } from '../../hooks/useCandidatures';
 import { useProfile } from '../../hooks/useProfile';
 import { DOMAIN_COLORS } from '../constants';
-import { matchColor, companyMatch, companyAddress } from '../utils';
+import { companyAddress } from '../utils';
 import { SectorPill, SkillTag, PageHeader } from '../components/shared';
 import type { Company, NavPage } from '../types';
 import { supabase } from '../../lib/supabaseClient';
@@ -17,7 +17,6 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
 }) {
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
-  const match = companyMatch(company);
 
   const { data: candidatures, createCandidature } = useCandidatures();
   const { profile } = useProfile();
@@ -295,33 +294,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
           </div>
         </div>
 
-        {/* AI Match panel */}
         <div className="space-y-5">
-          <div className="bg-white rounded-xl border border-[#C6C954]/40 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles size={15} className="text-[#667436]" />
-              <h3 className="text-sm font-bold text-[#1C1917]">AI Profile Match</h3>
-            </div>
-            <div className="text-center mb-4">
-              <div className="text-4xl font-extrabold mb-1" style={{ color: matchColor(match) }}>{match}%</div>
-              <p className="text-xs text-[#78716C]">Profile compatibility</p>
-            </div>
-            <div className="w-full h-2 bg-[#F5F1ED] rounded-full mb-4 overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${match}%`, backgroundColor: matchColor(match) }} />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold text-[#57534E] mb-2">Matching skills</p>
-              <span className="text-xs text-[#A8A29E]">Sélectionnez une offre vérifiée pour voir ses compétences.</span>
-            </div>
-            <div className="mt-3 space-y-1.5">
-              <p className="text-xs font-semibold text-[#57534E] mb-2">Skills to develop</p>
-              <span className="text-xs text-[#A8A29E]">Disponible après comparaison avec une offre.</span>
-            </div>
-            <p className="text-xs text-[#78716C] mt-3 leading-relaxed">
-              Ce score est indicatif pour le secteur. Les scores réellement liés aux compétences sont disponibles dans « Offres réelles ».
-            </p>
-          </div>
-
           <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
             <h3 className="text-sm font-bold text-[#1C1917] mb-3">Contact</h3>
             <div className="space-y-2 text-sm text-[#78716C]">

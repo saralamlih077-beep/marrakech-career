@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Building2, Map, Sparkles, MessageSquare,
+  LayoutDashboard, Building2, Map,
   FileText, ClipboardList, Heart, BarChart3, User,
   Settings as Gear, MapPin, ShieldCheck, BriefcaseBusiness,
 } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
 }) {
   const { t } = useLanguage();
   const primaryNav: Array<{ id: NavPage; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
-    { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard }, { id: 'companies', label: t('companies'), icon: Building2 }, { id: 'map', label: t('map'), icon: Map }, { id: 'matching', label: t('matching'), icon: Sparkles }, { id: 'opportunities', label: 'Offres', icon: BriefcaseBusiness }, { id: 'assistant', label: t('assistant'), icon: MessageSquare }, { id: 'cv-studio', label: t('cvStudio'), icon: FileText }, { id: 'applications', label: t('applications'), icon: ClipboardList }, { id: 'favorites', label: t('favorites'), icon: Heart }, { id: 'analytics', label: t('analytics'), icon: BarChart3 },
+    { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard }, { id: 'companies', label: t('companies'), icon: Building2 }, { id: 'opportunities', label: 'Offres', icon: BriefcaseBusiness }, { id: 'map', label: t('map'), icon: Map }, { id: 'cv-studio', label: t('cvStudio'), icon: FileText }, { id: 'applications', label: t('applications'), icon: ClipboardList }, { id: 'favorites', label: t('favorites'), icon: Heart }, { id: 'analytics', label: t('analytics'), icon: BarChart3 },
   ];
   const bottomNav: Array<{ id: NavPage; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
     ...(isAdmin ? [{ id: 'admin' as NavPage, label: t('admin'), icon: ShieldCheck }] : []), { id: 'profile', label: t('profile'), icon: User }, { id: 'settings', label: t('settings'), icon: Gear },
@@ -22,7 +22,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
     id === active ||
     (id === 'companies' && active === 'company-detail') ||
     (id === 'cv-studio' && active === 'cv-analyzer') ||
-    (id === 'applications' && (active === 'campaign' || active === 'automation'));
+    (id === 'applications' && active === 'campaign');
 
   return (
     <div className="w-52 shrink-0 bg-[#621E3E] flex flex-col h-full max-md:h-auto max-md:w-full">

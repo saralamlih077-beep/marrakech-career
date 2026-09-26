@@ -216,7 +216,7 @@ export default function LoginScreen() {
           </button>
           <div className="mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
 
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-3 md:space-y-4">
             {tab === 'register' && (
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('fullName')}</label>
@@ -229,7 +229,7 @@ export default function LoginScreen() {
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('password')}</label>
-              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre mot de passe" />
+              <input required minLength={6} type="password" name="marrakech-career-password" autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre mot de passe" />
             </div>
             {tab === 'login' && (
               <div className="flex justify-end gap-3 text-xs md:gap-4">

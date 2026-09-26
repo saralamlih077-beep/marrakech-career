@@ -1,0 +1,75 @@
+/* Compacte automatiquement la page de connexion sur les laptops peu hauts. */
+@media (min-width: 651px) and (max-height: 800px) {
+  .login-desktop-brand {
+    top: 15px !important;
+  }
+
+  .login-desktop-brand > div:first-child {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .login-desktop-brand p:first-child {
+    font-size: 24px !important;
+  }
+
+  .login-desktop-brand p:last-child {
+    font-size: 14px !important;
+  }
+
+  .login-card {
+    margin-top: 84px !important;
+    padding-top: 22px !important;
+    padding-bottom: 25px !important;
+  }
+
+  .login-tabs {
+    height: 52px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .login-title {
+    margin-bottom: 6px !important;
+    font-size: 30px !important;
+  }
+
+  .login-intro {
+    margin-bottom: 18px !important;
+    font-size: 16px !important;
+  }
+
+  .login-google {
+    height: 47px !important;
+  }
+
+  .login-divider {
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .login-form {
+    row-gap: 13px !important;
+  }
+
+  .login-form > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 13px !important;
+  }
+
+  .login-field input {
+    height: 46px !important;
+  }
+
+  .login-links {
+    margin-top: 5px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .login-submit {
+    height: 48px !important;
+  }
+
+  .login-discover {
+    bottom: 10px !important;
+    font-size: 34px !important;
+  }
+}

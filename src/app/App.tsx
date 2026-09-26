@@ -30,6 +30,7 @@ export default function App() {
   const [page, setPage] = useState<NavPage>('dashboard');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [campaignCompanyId, setCampaignCompanyId] = useState<number | null>(null);
+  const [campaignOffer, setCampaignOffer] = useState<JobOffer | null>(null);
   const [mapOffer, setMapOffer] = useState<JobOffer | null>(null);
   const { favorites: favs, toggleFavorite: toggleFav } = useFavorites();
   const { data: companies, loading, error } = useEntreprises();
@@ -88,20 +89,20 @@ export default function App() {
 
   const screen = (() => {
     switch (page) {
-      case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} />;
-      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onApply={(company) => { setCampaignCompanyId(company.id); setPage('campaign'); }} />;
+      case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
+      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'company-detail': return selectedCompany
-        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignCompanyId(id); setPage('campaign'); }} />
+        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignOffer(null); setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;
       case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} focusedOffer={mapOffer} onClearFocusedOffer={() => setMapOffer(null)} />;
-      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} onViewOnMap={(offer) => { setMapOffer(offer); setPage('map'); }} />;
+      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} onViewOnMap={(offer) => { setMapOffer(offer); setPage('map'); }} onApply={(offer) => { setCampaignOffer(offer); setCampaignCompanyId(offer.entreprise_id); setPage('campaign'); }} />;
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} />;
       case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
       case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;
-      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} loading={loading} error={error} onBack={() => setPage('applications')} />;
+      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} initialOffer={campaignOffer} loading={loading} error={error} onBack={() => setPage('applications')} />;
       case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
       case 'analytics': return <AnalyticsScreen companies={companies} />;
-      case 'admin': return isAdmin ? <AdminScreen /> : <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} />;
+      case 'admin': return isAdmin ? <AdminScreen /> : <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'profile': return <ProfileScreen />;
       case 'settings': return <SettingsScreen />;
       default: return null;

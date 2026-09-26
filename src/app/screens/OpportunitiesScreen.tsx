@@ -1,4 +1,4 @@
-import { Bell, BriefcaseBusiness, CalendarClock, Copy, ExternalLink, FilePenLine, Heart, Mail, Map, MapPin, X } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CalendarClock, Copy, ExternalLink, FilePenLine, Heart, Mail, Map, MapPin, Send, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useJobOffers, type JobOffer } from '../../hooks/useJobOffers';
 import { useProfile } from '../../hooks/useProfile';
@@ -44,7 +44,7 @@ function expiryLabel(expiresAt: string | null) {
   return `Expire le ${new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(expiresAt))}`;
 }
 
-export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOnMap }: { onNavigate: (page: NavPage) => void; focusOfferId?: string | null; onViewOnMap: (offer: JobOffer) => void }) {
+export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOnMap, onApply }: { onNavigate: (page: NavPage) => void; focusOfferId?: string | null; onViewOnMap: (offer: JobOffer) => void; onApply: (offer: JobOffer) => void }) {
   const { offers, loading, error } = useJobOffers();
   const { profile } = useProfile();
   const { favoriteOffers, toggleOfferFavorite } = useOfferFavorites();
@@ -153,6 +153,7 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOn
       <div className="mt-5 flex flex-wrap gap-2 border-t border-[#F1ECE7] pt-4 text-xs font-semibold">
         <button onClick={() => void toggleOfferFavorite(offer.id)} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 ${favoriteOffers.has(offer.id) ? 'bg-[#D9828D]/15 text-[#A12E44]' : 'bg-[#621E3E] text-white hover:bg-[#4e1830]'}`}><Heart size={12} className={favoriteOffers.has(offer.id) ? 'fill-current' : ''} /> {favoriteOffers.has(offer.id) ? 'Offre favorite' : 'Ajouter aux favoris'}</button>
         <button onClick={() => onViewOnMap(offer)} className="flex items-center gap-1.5 rounded-lg border border-[#EAE5E0] px-3 py-2 text-[#621E3E] hover:bg-[#FBF9F7]"><Map size={12} /> Voir sur la carte</button>
+        <button onClick={() => onApply(offer)} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-2 text-white hover:bg-[#4e1830]"><Send size={12} /> Apply</button>
         <button onClick={() => void generateLetter(offer)} className="flex items-center gap-1.5 rounded-lg border border-[#C6C954]/50 bg-[#C6C954]/10 px-3 py-2 text-[#4a4d1a] hover:bg-[#C6C954]/20"><FilePenLine size={12} /> Lettre IA</button>
         {offer.entreprise?.email && <a className="flex items-center gap-1 rounded-lg px-2 py-2 text-[#621E3E] hover:bg-[#FBF9F7] hover:underline" href={`mailto:${offer.entreprise.email}`}><Mail size={12} /> Contacter l’entreprise</a>}
         {offer.source_url && <a className="flex items-center gap-1 rounded-lg px-2 py-2 text-[#621E3E] hover:bg-[#FBF9F7] hover:underline" href={offer.source_url} target="_blank" rel="noreferrer"><ExternalLink size={12} /> Ouvrir l’annonce</a>}

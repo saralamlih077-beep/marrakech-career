@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Chrome, MapPin } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useLanguage } from '../i18n';
-import './LoginScreen.css';
 
 export default function LoginScreen() {
   const { t } = useLanguage();
@@ -139,35 +138,24 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="login-screen relative flex h-dvh flex-col overflow-hidden bg-[#621E3E]">
-      {/* Marrakech Career background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#621E3E] md:flex-row md:bg-transparent">
+      {/* Mobile brand background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden md:hidden">
         <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-[#D9828D]/20" />
         <div className="absolute -right-20 top-24 h-44 w-44 rounded-full bg-[#C6C954]/15" />
         <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(30deg,transparent_48%,white_49%,transparent_51%),linear-gradient(-30deg,transparent_48%,white_49%,transparent_51%)] [background-size:48px_84px]" />
-        <div className="absolute -bottom-24 -left-16 hidden h-64 w-64 rounded-full bg-[#D9828D]/20 md:block" />
-        <div className="absolute -right-20 bottom-10 hidden h-72 w-72 rounded-full bg-[#D9828D]/20 md:block" />
       </div>
-      <div className="absolute left-6 top-4 z-10 flex items-center gap-2.5 md:hidden">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-          <MapPin size={17} className="text-[#C6C954]" />
+      <div className="absolute left-7 top-6 z-10 flex items-center gap-3 md:hidden">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+          <MapPin size={19} className="text-[#C6C954]" />
         </div>
         <div>
-          <p className="text-sm font-extrabold leading-tight text-white">Marrakech</p>
-          <p className="text-[9px] font-extrabold tracking-[0.16em] text-[#E5E78F]">CAREER</p>
-        </div>
-      </div>
-      <div className="login-desktop-brand absolute left-1/2 top-7 z-10 hidden -translate-x-1/2 items-center gap-4 md:flex">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
-          <MapPin size={27} className="text-[#C6C954]" />
-        </div>
-        <div>
-          <p className="text-2xl font-extrabold leading-tight text-white">Marrakech</p>
-          <p className="text-sm font-extrabold tracking-[0.2em] text-[#E5E78F]">CAREER</p>
+          <p className="text-base font-extrabold leading-tight text-white">Marrakech</p>
+          <p className="text-[10px] font-extrabold tracking-[0.18em] text-[#E5E78F]">CAREER</p>
         </div>
       </div>
       {/* Left brand panel */}
-      <div className="hidden">
+      <div className="relative hidden w-2/5 flex-col overflow-hidden bg-[#621E3E] md:flex">
         {/* Geometric Moroccan decoration */}
         <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -206,45 +194,45 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="login-card relative z-10 mt-20 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[42px] bg-[#FBF9F7] px-6 py-4 md:mx-auto md:mt-[140px] md:w-[735px] md:max-w-[calc(100%-40px)] md:flex-none md:rounded-[34px] md:px-[110px] md:py-8">
-        <div className="login-card-content w-full max-w-md md:max-w-[515px]">
-          <div className="login-tabs mb-3 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-[25px] md:h-[67px] md:w-full md:rounded-[17px] md:p-[5px]">
+      <div className="relative z-10 mt-24 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[48px] bg-[#FBF9F7] px-7 py-5 md:mt-0 md:flex-1 md:justify-center md:rounded-none md:p-12">
+        <div className="w-full max-w-md">
+          <div className="mb-5 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
             {(['login', 'register'] as const).map(mode => (
-              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1 text-sm font-semibold capitalize transition-all md:flex-1 md:rounded-[14px] md:px-4 md:py-1.5 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
+              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-all md:px-5 md:py-2 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
                 {mode === 'login' ? t('signIn') : t('register')}
               </button>
             ))}
           </div>
 
-          <h2 className="login-title mb-0.5 text-[21px] font-bold text-[#1C1917] md:mb-2 md:text-[36px]">
+          <h2 className="mb-1 text-[22px] font-bold text-[#1C1917] md:text-2xl">
             {tab === 'login' ? t('welcomeBack') : t('createAccount')}
           </h2>
-          <p className="login-intro mb-3 text-[13px] text-[#78716C] md:mb-[26px] md:text-[17px] md:leading-[1.45]">
+          <p className="mb-5 text-sm text-[#78716C] md:mb-8">
             {tab === 'login' ? t('existingAccount') : t('newAccount')}
           </p>
 
-          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="login-google mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-0 md:h-[55px] md:rounded-[13px]">
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2.5 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-5 md:py-3">
             <Chrome size={18} className="text-[#4285F4]" /> {t('continueGoogle')}
           </button>
-          <div className="login-divider mb-3 flex items-center gap-3 text-xs text-[#A8A29E] md:my-6 md:gap-[17px] md:text-sm"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
+          <div className="mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
 
-          <form onSubmit={handleSubmit} className="login-form space-y-2 md:space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             {tab === 'register' && (
-              <div className="login-field">
-                <label className="mb-1 block text-xs font-semibold text-[#57534E]">{t('fullName')}</label>
-                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="Votre nom complet" />
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('fullName')}</label>
+                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre nom complet" />
               </div>
             )}
-            <div className="login-field">
-              <label className="mb-1 block text-xs font-semibold text-[#57534E]">Email</label>
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="vous@exemple.com" />
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">Email</label>
+              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="vous@exemple.com" />
             </div>
-            <div className="login-field">
-              <label className="mb-1 block text-xs font-semibold text-[#57534E]">{t('password')}</label>
-              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="Votre mot de passe" />
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('password')}</label>
+              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre mot de passe" />
             </div>
             {tab === 'login' && (
-              <div className="login-links flex justify-between gap-3 pb-0.5 text-xs md:mt-1 md:gap-4 md:text-sm">
+              <div className="flex justify-end gap-3 text-xs md:gap-4">
                 <button type="button" onClick={() => void resendConfirmation()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">Renvoyer confirmation</button>
                 <button type="button" onClick={() => void sendPasswordReset()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">{t('forgotPassword')}</button>
               </div>
@@ -256,7 +244,7 @@ export default function LoginScreen() {
                 Renvoyer l’e-mail de confirmation
               </button>
             )}
-            <button type="submit" disabled={loading} className="login-submit mt-1 w-full rounded-xl bg-[#621E3E] py-2 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-2 md:h-[56px] md:rounded-[13px]">
+            <button type="submit" disabled={loading} className="mt-1.5 w-full rounded-xl bg-[#621E3E] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-2 md:py-3">
               {loading ? t('wait') : tab === 'login' ? t('signIn') : t('create')}
             </button>
           </form>

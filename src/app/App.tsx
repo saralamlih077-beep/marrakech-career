@@ -3,13 +3,11 @@ import { useEntreprises } from '../hooks/useEntreprises';
 import { useFavorites } from '../hooks/useFavorites';
 import { useProfile } from '../hooks/useProfile';
 import { supabase, supabaseConfigError } from '../lib/supabaseClient';
+import { ChatBot } from './components/ChatBot';
 import Sidebar from './components/Sidebar';
-import AIAssistantScreen from './screens/AIAssistantScreen';
-import AIMatchingScreen from './screens/AIMatchingScreen';
 import AdminScreen from './screens/AdminScreen';
 import AnalyticsScreen from './screens/AnalyticsScreen';
 import ApplicationTrackerScreen from './screens/ApplicationTrackerScreen';
-import AutomationScreen from './screens/AutomationScreen';
 import CampaignScreen from './screens/CampaignScreen';
 import CompaniesScreen from './screens/CompaniesScreen';
 import CompanyDetailScreen from './screens/CompanyDetailScreen';
@@ -36,6 +34,11 @@ export default function App() {
   const { profile, email: userEmail } = useProfile();
   const [isAdmin, setIsAdmin] = useState(false);
   const isPasswordRecovery = new URLSearchParams(window.location.search).get('reset-password') === 'true';
+  const offerFromEmail = new URLSearchParams(window.location.search).get('offer');
+
+  useEffect(() => {
+    if (isLoggedIn && offerFromEmail) setPage('opportunities');
+  }, [isLoggedIn, offerFromEmail]);
 
   useEffect(() => {
     if (!isLoggedIn || !userEmail) { setIsAdmin(false); return; }
@@ -89,14 +92,11 @@ export default function App() {
         ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;
       case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
-      case 'matching': return <AIMatchingScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
-      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} />;
-      case 'assistant': return <AIAssistantScreen companies={companies} loading={loading} error={error} onView={viewCompany} />;
+      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} />;
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} />;
       case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
-      case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} onAutomation={() => setPage('automation')} />;
+      case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;
       case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} loading={loading} error={error} onBack={() => setPage('applications')} />;
-      case 'automation': return <AutomationScreen onBack={() => setPage('applications')} />;
       case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
       case 'analytics': return <AnalyticsScreen companies={companies} />;
       case 'admin': return isAdmin ? <AdminScreen /> : <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} />;
@@ -110,6 +110,7 @@ export default function App() {
     <div className="flex h-dvh overflow-hidden max-md:flex-col" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <Sidebar active={page} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} />
       {screen}
+      <ChatBot />
     </div>
   );
 }

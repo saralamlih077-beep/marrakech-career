@@ -2,8 +2,20 @@
   overscroll-behavior-y: none;
 }
 
-/* Compacte automatiquement la page de connexion sur les laptops peu hauts. */
-@media (min-width: 651px) and (max-height: 800px) {
+/* La carte garde toujours le format étroit de la maquette sur ordinateur. */
+@media (min-width: 651px) {
+  .login-card {
+    width: min(735px, calc(100% - 40px)) !important;
+    flex: none !important;
+  }
+
+  .login-card-content {
+    max-width: 515px !important;
+  }
+}
+
+/* Compacte automatiquement connexion et inscription sur les laptops. */
+@media (min-width: 651px) and (max-height: 1000px) {
   .login-desktop-brand {
     top: 15px !important;
   }
@@ -22,7 +34,7 @@
   }
 
   .login-card {
-    margin-top: 84px !important;
+    margin-top: 78px !important;
     padding-top: 22px !important;
     padding-bottom: 25px !important;
   }

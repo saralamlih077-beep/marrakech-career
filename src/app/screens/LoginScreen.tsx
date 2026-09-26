@@ -119,12 +119,14 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#621E3E] md:flex-row md:bg-transparent">
-      {/* Mobile brand background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden md:hidden">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#621E3E]">
+      {/* Marrakech Career background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-[#D9828D]/20" />
         <div className="absolute -right-20 top-24 h-44 w-44 rounded-full bg-[#C6C954]/15" />
         <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(30deg,transparent_48%,white_49%,transparent_51%),linear-gradient(-30deg,transparent_48%,white_49%,transparent_51%)] [background-size:48px_84px]" />
+        <div className="absolute -bottom-24 -left-16 hidden h-64 w-64 rounded-full bg-[#D9828D]/20 md:block" />
+        <div className="absolute -right-20 bottom-10 hidden h-72 w-72 rounded-full bg-[#D9828D]/20 md:block" />
       </div>
       <div className="absolute left-6 top-4 z-10 flex items-center gap-2.5 md:hidden">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
@@ -135,8 +137,17 @@ export default function LoginScreen() {
           <p className="text-[9px] font-extrabold tracking-[0.16em] text-[#E5E78F]">CAREER</p>
         </div>
       </div>
+      <div className="absolute left-1/2 top-7 z-10 hidden -translate-x-1/2 items-center gap-4 md:flex">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
+          <MapPin size={27} className="text-[#C6C954]" />
+        </div>
+        <div>
+          <p className="text-2xl font-extrabold leading-tight text-white">Marrakech</p>
+          <p className="text-sm font-extrabold tracking-[0.2em] text-[#E5E78F]">CAREER</p>
+        </div>
+      </div>
       {/* Left brand panel */}
-      <div className="relative hidden w-2/5 flex-col overflow-hidden bg-[#621E3E] md:flex">
+      <div className="hidden">
         {/* Geometric Moroccan decoration */}
         <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -175,7 +186,7 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="relative z-10 mt-20 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[42px] bg-[#FBF9F7] px-6 py-4 md:mt-0 md:flex-1 md:justify-center md:rounded-none md:p-12">
+      <div className="relative z-10 mt-20 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[42px] bg-[#FBF9F7] px-6 py-4 md:mx-auto md:mt-36 md:min-h-0 md:w-[min(46rem,calc(100%-3rem))] md:flex-none md:rounded-[34px] md:px-16 md:py-8">
         <div className="w-full max-w-md">
           <div className="mb-3 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
             {(['login', 'register'] as const).map(mode => (
@@ -243,6 +254,7 @@ export default function LoginScreen() {
 
         </div>
       </div>
+      <p className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap text-4xl font-extrabold tracking-tight text-white md:block">Discover. Match. Apply.</p>
     </div>
   );
 }

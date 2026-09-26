@@ -5,12 +5,14 @@
 /* La carte garde toujours le format étroit de la maquette sur ordinateur. */
 @media (min-width: 651px) {
   .login-card {
-    width: min(735px, calc(100% - 40px)) !important;
+    width: min(620px, calc(100% - 40px)) !important;
     flex: none !important;
+    padding-left: 90px !important;
+    padding-right: 90px !important;
   }
 
   .login-card-content {
-    max-width: 515px !important;
+    max-width: 440px !important;
   }
 }
 
@@ -34,58 +36,58 @@
   }
 
   .login-card {
-    margin-top: 78px !important;
-    padding-top: 22px !important;
-    padding-bottom: 25px !important;
+    margin-top: 68px !important;
+    padding-top: 18px !important;
+    padding-bottom: 20px !important;
   }
 
   .login-tabs {
-    height: 52px !important;
-    margin-bottom: 18px !important;
+    height: 46px !important;
+    margin-bottom: 14px !important;
   }
 
   .login-title {
-    margin-bottom: 6px !important;
-    font-size: 30px !important;
+    margin-bottom: 4px !important;
+    font-size: 27px !important;
   }
 
   .login-intro {
-    margin-bottom: 18px !important;
-    font-size: 16px !important;
+    margin-bottom: 14px !important;
+    font-size: 15px !important;
   }
 
   .login-google {
-    height: 47px !important;
+    height: 43px !important;
   }
 
   .login-divider {
-    margin-top: 15px !important;
-    margin-bottom: 15px !important;
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
   }
 
   .login-form {
-    row-gap: 13px !important;
+    row-gap: 10px !important;
   }
 
   .login-form > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 13px !important;
+    margin-top: 10px !important;
   }
 
   .login-field input {
-    height: 46px !important;
+    height: 42px !important;
   }
 
   .login-links {
-    margin-top: 5px !important;
-    margin-bottom: 18px !important;
+    margin-top: 3px !important;
+    margin-bottom: 13px !important;
   }
 
   .login-submit {
-    height: 48px !important;
+    height: 44px !important;
   }
 
   .login-discover {
-    bottom: 10px !important;
-    font-size: 34px !important;
+    bottom: 8px !important;
+    font-size: 30px !important;
   }
 }

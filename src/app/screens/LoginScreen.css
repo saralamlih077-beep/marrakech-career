@@ -5,14 +5,14 @@
 /* La carte garde toujours le format étroit de la maquette sur ordinateur. */
 @media (min-width: 651px) {
   .login-card {
-    width: min(540px, calc(100% - 32px)) !important;
+    width: min(400px, calc(100% - 24px)) !important;
     flex: none !important;
-    padding-left: 90px !important;
-    padding-right: 90px !important;
+    padding-left: 100px !important;
+    padding-right: 100px !important;
   }
 
   .login-card-content {
-    max-width: 360px !important;
+    max-width: 200px !important;
   }
 }
 
@@ -46,9 +46,15 @@
     margin-bottom: 11px !important;
   }
 
+  .login-tabs button {
+    font-size: 11px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
   .login-title {
     margin-bottom: 4px !important;
-    font-size: 25px !important;
+    font-size: 22px !important;
   }
 
   .login-intro {
@@ -58,6 +64,13 @@
 
   .login-google {
     height: 40px !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+  }
+
+  .login-google svg {
+    width: 15px !important;
+    height: 15px !important;
   }
 
   .login-divider {
@@ -80,6 +93,10 @@
   .login-links {
     margin-top: 3px !important;
     margin-bottom: 10px !important;
+  }
+
+  .login-links button {
+    font-size: 10px !important;
   }
 
   .login-submit {

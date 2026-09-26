@@ -186,45 +186,45 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="relative z-10 mt-20 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[42px] bg-[#FBF9F7] px-6 py-4 md:mx-auto md:mt-28 md:w-[92%] md:max-w-3xl md:flex-none md:rounded-[34px] md:px-12 md:py-6">
-        <div className="w-full max-w-md">
-          <div className="mb-3 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-5">
+      <div className="relative z-10 mt-20 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[42px] bg-[#FBF9F7] px-6 py-4 md:mx-auto md:mt-[140px] md:w-[735px] md:max-w-[calc(100%-40px)] md:flex-none md:rounded-[34px] md:px-[110px] md:py-8">
+        <div className="w-full max-w-md md:max-w-[515px]">
+          <div className="mb-3 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-[25px] md:h-[67px] md:w-full md:rounded-[17px] md:p-[5px]">
             {(['login', 'register'] as const).map(mode => (
-              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1 text-sm font-semibold capitalize transition-all md:px-4 md:py-1.5 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
+              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1 text-sm font-semibold capitalize transition-all md:flex-1 md:rounded-[14px] md:px-4 md:py-1.5 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
                 {mode === 'login' ? t('signIn') : t('register')}
               </button>
             ))}
           </div>
 
-          <h2 className="mb-0.5 text-[21px] font-bold text-[#1C1917] md:text-[25px]">
+          <h2 className="mb-0.5 text-[21px] font-bold text-[#1C1917] md:mb-2 md:text-[36px]">
             {tab === 'login' ? t('welcomeBack') : t('createAccount')}
           </h2>
-          <p className="mb-3 text-[13px] text-[#78716C] md:mb-4 md:text-sm">
+          <p className="mb-3 text-[13px] text-[#78716C] md:mb-[26px] md:text-[17px] md:leading-[1.45]">
             {tab === 'login' ? t('existingAccount') : t('newAccount')}
           </p>
 
-          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-4 md:py-2.5">
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-0 md:h-[55px] md:rounded-[13px]">
             <Chrome size={18} className="text-[#4285F4]" /> {t('continueGoogle')}
           </button>
-          <div className="mb-3 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-4"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
+          <div className="mb-3 flex items-center gap-3 text-xs text-[#A8A29E] md:my-6 md:gap-[17px] md:text-sm"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
 
-          <form onSubmit={handleSubmit} className="space-y-2 md:space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-2 md:space-y-5">
             {tab === 'register' && (
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#57534E]">{t('fullName')}</label>
-                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-2.5" placeholder="Votre nom complet" />
+                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="Votre nom complet" />
               </div>
             )}
             <div>
               <label className="mb-1 block text-xs font-semibold text-[#57534E]">Email</label>
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-2.5" placeholder="vous@exemple.com" />
+              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="vous@exemple.com" />
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-[#57534E]">{t('password')}</label>
-              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-2.5" placeholder="Votre mot de passe" />
+              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:h-[52px] md:rounded-[13px]" placeholder="Votre mot de passe" />
             </div>
             {tab === 'login' && (
-              <div className="flex justify-end gap-3 pb-0.5 text-xs md:gap-4">
+              <div className="flex justify-between gap-3 pb-0.5 text-xs md:mt-1 md:gap-4 md:text-sm">
                 <button type="button" onClick={() => void resendConfirmation()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">Renvoyer confirmation</button>
                 <button type="button" onClick={() => void sendPasswordReset()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">{t('forgotPassword')}</button>
               </div>
@@ -236,7 +236,7 @@ export default function LoginScreen() {
                 Renvoyer l’e-mail de confirmation
               </button>
             )}
-            <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#621E3E] py-2 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-1.5 md:py-2.5">
+            <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#621E3E] py-2 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-2 md:h-[56px] md:rounded-[13px]">
               {loading ? t('wait') : tab === 'login' ? t('signIn') : t('create')}
             </button>
           </form>

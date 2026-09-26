@@ -21,6 +21,25 @@ export default function LoginScreen() {
     window.localStorage.removeItem('marrakech-career-remembered-email');
   }, []);
 
+  useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    scrollToTop();
+    const frame = window.requestAnimationFrame(scrollToTop);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
+
   const continueWithGoogle = async () => {
     setLoading(true);
     setMessage(null);

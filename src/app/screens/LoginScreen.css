@@ -1,3 +1,7 @@
+.login-screen {
+  overscroll-behavior-y: none;
+}
+
 /* Compacte automatiquement la page de connexion sur les laptops peu hauts. */
 @media (min-width: 651px) and (max-height: 800px) {
   .login-desktop-brand {

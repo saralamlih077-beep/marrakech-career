@@ -170,7 +170,7 @@ export default function SettingsScreen() {
         </Section>
 
         <Section title="Préférences">
-          <Row label="Langue de l’application" sub="Choisissez Français, English ou العربية.">
+          <Row label="Langue de l’application" sub="Choisissez Français, English ou Arabic.">
             <LanguageSelect />
           </Row>
         </Section>
@@ -185,9 +185,6 @@ export default function SettingsScreen() {
             <select className="bg-[#FBF9F7] border border-[#EAE5E0] text-[#1C1917] text-sm rounded-xl px-3 py-1.5 focus:outline-none">
               <option>Gemini Pro</option><option>GPT-4</option><option>Claude</option>
             </select>
-          </Row>
-          <Row label="Match threshold" sub="Minimum match score to display">
-            <input type="range" min={40} max={95} defaultValue={60} className="w-28 accent-[#621E3E]" />
           </Row>
         </Section>
 

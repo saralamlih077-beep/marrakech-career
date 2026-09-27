@@ -67,7 +67,7 @@ export default function SettingsScreen() {
         body: {
           email: googleEmail,
           refreshToken: session.provider_refresh_token,
-          scopes: ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/gmail.readonly'],
+          scopes: ['https://www.googleapis.com/auth/gmail.send'],
         },
       });
       if (!active) return;
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/?gmail=connected`,
-        scopes: 'openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly',
+        scopes: 'openid email profile https://www.googleapis.com/auth/gmail.send',
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });

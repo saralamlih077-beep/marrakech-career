@@ -52,6 +52,14 @@ Deno.serve(async (request) => {
       updated_at: new Date().toISOString(),
     });
     if (saveError) throw saveError;
+    const { error: metadataError } = await service.auth.admin.updateUserById(user.id, {
+      user_metadata: {
+        ...user.user_metadata,
+        gmail_connected_at: new Date().toISOString(),
+        gmail_sender_email: email,
+      },
+    });
+    if (metadataError) throw metadataError;
     return Response.json({ ok: true }, { headers: corsHeaders });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : 'Impossible de connecter Gmail.' }, { status: 500, headers: corsHeaders });

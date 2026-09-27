@@ -30,16 +30,19 @@ export default function SettingsScreen() {
   useEffect(() => {
     let active = true;
     const refreshGmailStatus = async () => {
-      const { data, error: identityError } = await supabase.auth.getUserIdentities();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!active) return;
-      if (identityError) {
+      if (userError) {
         setGmailStatus('error');
-        setGmailMessage(identityError.message);
+        setGmailMessage(userError.message);
         return;
       }
-      const hasGoogle = data?.identities?.some((identity) => identity.provider === 'google');
-      setGmailStatus(hasGoogle ? 'connected' : 'disconnected');
-      if (hasGoogle) setGmailMessage('Google est lié. Le serveur doit aussi être déployé pour envoyer vos candidatures.');
+      const gmailSender = user?.user_metadata?.gmail_sender_email;
+      const isGmailReady = typeof user?.user_metadata?.gmail_connected_at === 'string' && typeof gmailSender === 'string';
+      setGmailStatus(isGmailReady ? 'connected' : 'disconnected');
+      setGmailMessage(isGmailReady
+        ? `Connecté : les candidatures partiront de ${gmailSender}.`
+        : 'Gmail doit être connecté avec l’autorisation d’envoi avant de pouvoir envoyer une candidature.');
     };
     void refreshGmailStatus();
     return () => { active = false; };

@@ -192,8 +192,8 @@ export default function SettingsScreen() {
           <Row label="Email account" sub={email || 'Email non renseigné'}>
             <span className="text-xs font-semibold text-[#667436] bg-[#667436]/10 px-2 py-1 rounded-lg">Supabase ✓</span>
           </Row>
-          <Row label="Gmail personnel" sub={gmailStatus === 'connected' ? gmailMessage || 'Connecté : les candidatures partiront de ce compte.' : 'Connectez le Gmail qui doit envoyer vos candidatures et recevoir les réponses.'}>
-            {gmailStatus === 'connected' ? <span className="text-xs font-semibold text-[#667436] bg-[#667436]/10 px-2 py-1 rounded-lg">Connecté</span> : <button onClick={() => void connectGmail()} disabled={gmailStatus === 'checking'} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"><Link2 size={13} />{gmailStatus === 'checking' ? 'Vérification…' : 'Connecter Gmail'}</button>}
+          <Row label="Gmail officiel Marrakech Career" sub="Seul l’administrateur connecte une fois marrakechcareer@gmail.com. Les candidats n’ont rien à connecter.">
+            <button onClick={() => void connectGmail()} disabled={gmailStatus === 'checking'} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"><Link2 size={13} />{gmailStatus === 'checking' ? 'Vérification…' : 'Connecter Gmail officiel'}</button>
           </Row>
           {gmailStatus === 'error' && <p className="text-xs text-red-700">{gmailMessage}</p>}
         </Section>

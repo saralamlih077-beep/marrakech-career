@@ -84,6 +84,16 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
     setConfirming(true);
   };
 
+  const openPersonalEmail = () => {
+    if (recipients.length === 0) return setNotice('Sélectionnez une entreprise avec une adresse e-mail.');
+    if (recipients.length > 1) return setNotice('Pour protéger les destinataires, ouvrez une candidature à la fois.');
+    const recipientEmail = recipients[0]?.email;
+    if (!recipientEmail) return setNotice('Cette entreprise ne possède pas d’adresse e-mail.');
+    const params = new URLSearchParams({ subject, body: emailBody });
+    window.location.href = `mailto:${encodeURIComponent(recipientEmail)}?${params.toString()}`;
+    setNotice('Votre application e-mail est ouverte avec la lettre remplie. Ajoutez votre CV, puis envoyez depuis votre propre adresse e-mail.');
+  };
+
   const sendCampaign = async () => {
     if (!cv) return;
     setConfirming(false);
@@ -135,6 +145,10 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
       >
         {applicationTypes.map((type) => <option key={type} value={type}>{type}</option>)}
       </select>
+    </div>
+    <div className="mb-4 flex max-w-2xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#EAE5E0] bg-white p-4">
+      <p className="max-w-lg text-sm text-[#57534E]">Envoyez depuis votre propre e-mail : la lettre sera remplie automatiquement. Ajoutez votre CV dans votre application e-mail avant l’envoi.</p>
+      <button type="button" onClick={openPersonalEmail} disabled={recipients.length !== 1} className="flex items-center gap-2 rounded-xl bg-[#621E3E] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"><Mail size={16} />Ouvrir mon e-mail</button>
     </div>
     <CompanyStatus loading={loading} error={error} />
     {notice && <p className="mb-4 rounded-xl border border-[#667436]/40 bg-[#667436]/10 px-4 py-3 text-sm text-[#3d4520]">{notice}</p>}

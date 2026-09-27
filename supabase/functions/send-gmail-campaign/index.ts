@@ -100,7 +100,7 @@ Deno.serve(async (request) => {
     const refreshPayload = await refreshResponse.json();
     if (!refreshResponse.ok || !refreshPayload.access_token) return Response.json({ error: 'Votre connexion Gmail a expiré. Reconnectez Gmail dans les paramètres.' }, { status: 401, headers: corsHeaders });
 
-    const results = [] as { email: string; ok: boolean }[];
+    const results = [] as { email: string; ok: boolean; error?: string }[];
     for (const recipient of validRecipients) {
       const mime = await createMimeMessage(recipient.email!, subject, message, cv);
       const gmailResponse = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
@@ -108,9 +108,20 @@ Deno.serve(async (request) => {
         headers: { Authorization: `Bearer ${refreshPayload.access_token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw: urlSafeBase64(new TextEncoder().encode(mime)) }),
       });
-      results.push({ email: recipient.email!, ok: gmailResponse.ok });
+      const error = gmailResponse.ok
+        ? undefined
+        : (await gmailResponse.text()).slice(0, 500) || `Gmail a répondu avec le statut ${gmailResponse.status}.`;
+      results.push({ email: recipient.email!, ok: gmailResponse.ok, error });
     }
     const sent = results.filter((result) => result.ok).length;
+    if (sent === 0) {
+      return Response.json({
+        error: 'Gmail n’a accepté aucun envoi. Reconnectez Gmail dans Paramètres puis réessayez.',
+        sent,
+        failed: results.length,
+        results,
+      }, { status: 502, headers: corsHeaders });
+    }
     return Response.json({ sent, failed: results.length - sent, results }, { headers: corsHeaders });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : 'Impossible d’envoyer la campagne.' }, { status: 500, headers: corsHeaders });

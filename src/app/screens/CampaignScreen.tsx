@@ -106,8 +106,13 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
       });
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.error || `Le service Gmail a répondu avec le statut ${response.status}.`);
-      await Promise.all(recipients.map((company) => createCandidature({ entreprise_id: company.id, poste: targetTitle, statut: 'applied', contact_email: company.email || '', notes: `Candidature envoyée — CV : ${cv.name}` })));
-      setNotice(`${result?.sent ?? recipients.length} e-mail${(result?.sent ?? recipients.length) > 1 ? 's ont' : ' a'} été envoyé${(result?.sent ?? recipients.length) > 1 ? 's' : ''} depuis votre Gmail.`);
+      const deliveredRecipients = recipients.filter((company) => result?.results?.some((delivery: { email?: string; ok?: boolean }) => delivery.email === company.email && delivery.ok));
+      await Promise.all(deliveredRecipients.map((company) => createCandidature({ entreprise_id: company.id, poste: targetTitle, statut: 'applied', contact_email: company.email || '', notes: `Candidature envoyée — CV : ${cv.name}` })));
+      const sent = typeof result?.sent === 'number' ? result.sent : deliveredRecipients.length;
+      const failed = typeof result?.failed === 'number' ? result.failed : 0;
+      setNotice(failed > 0
+        ? `${sent} e-mail${sent > 1 ? 's ont' : ' a'} été envoyé${sent > 1 ? 's' : ''}. ${failed} envoi${failed > 1 ? 's ont' : ' a'} échoué${failed > 1 ? 's' : ''}.`
+        : `${sent} e-mail${sent > 1 ? 's ont' : ' a'} été envoyé${sent > 1 ? 's' : ''} depuis votre Gmail.`);
       setSelected([]);
       setCv(null);
     } catch (sendError) {

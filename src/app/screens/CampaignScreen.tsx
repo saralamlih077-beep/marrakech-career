@@ -14,10 +14,21 @@ const acceptedCvTypes = [
   'application/msword',
 ];
 
+const applicationTypes = ['Stage', 'CDI', 'CDD', 'Freelance', 'Candidature spontanée'] as const;
+
+function initialApplicationType(offer?: JobOffer | null) {
+  if (offer?.contract_type === 'internship') return 'Stage';
+  if (offer?.contract_type === 'cdi') return 'CDI';
+  if (offer?.contract_type === 'cdd') return 'CDD';
+  if (offer?.contract_type === 'freelance') return 'Freelance';
+  return 'Candidature spontanée';
+}
+
 export default function CampaignScreen({ companies, favorites, initialCompanyId, initialOffer, loading, error, onBack }: { companies: Company[]; favorites: Set<number>; initialCompanyId?: number | null; initialOffer?: JobOffer | null; loading: boolean; error: string | null; onBack: () => void }) {
   const favoriteCompanies = useMemo(() => initialCompanyId ? companies.filter((company) => company.id === initialCompanyId) : companies.filter((company) => favorites.has(company.id)), [companies, favorites, initialCompanyId]);
   const [selected, setSelected] = useState<number[]>([]);
   const [message, setMessage] = useState('');
+  const [applicationType, setApplicationType] = useState<(typeof applicationTypes)[number]>(() => initialApplicationType(initialOffer));
   const [cv, setCv] = useState<File | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -37,8 +48,8 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
   const withoutEmail = favoriteCompanies.filter((company) => selected.includes(company.id) && !company.email);
   const hasApplicationTarget = favoriteCompanies.length > 0 || Boolean(initialOffer);
   const targetTitle = initialOffer?.title || profile.job_title || 'une opportunité';
-  const subject = `Candidature — ${targetTitle} — ${profile.full_name || email || 'Candidat'}`;
-  const emailBody = message.trim() || `Bonjour,\n\nJe vous contacte afin de vous proposer ma candidature pour ${targetTitle}.\n\nCordialement,\n${profile.full_name || email || ''}`;
+  const subject = `Candidature ${applicationType} — ${targetTitle} — ${profile.full_name || email || 'Candidat'}`;
+  const emailBody = message.trim() || `Bonjour,\n\nJe vous contacte afin de vous proposer ma candidature de ${applicationType.toLowerCase()} pour ${targetTitle}.\n\nCordialement,\n${profile.full_name || email || ''}`;
 
   const toggleCompany = (id: number) => setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   const selectAll = () => setSelected(favoriteCompanies.filter((company) => Boolean(company.email)).map((company) => company.id));
@@ -58,7 +69,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
     setNotice(null);
     try {
       const company = favoriteCompanies[0];
-      const prompt = `Rédige une lettre de motivation professionnelle en français, sans Markdown, prête à envoyer par e-mail. Candidat : ${profile.full_name || email || 'Candidat'}. Profil : ${profile.job_title} ${profile.education} ${profile.experience} ${profile.skills}. Cible : ${initialOffer?.title || 'candidature spontanée'} chez ${company?.nom || initialOffer?.entreprise?.nom || 'l’entreprise ciblée'}. Ne mens pas. Maximum 250 mots.`;
+      const prompt = `Rédige une lettre de motivation professionnelle en français, sans Markdown, prête à envoyer par e-mail. Type de candidature demandé : ${applicationType}. Candidat : ${profile.full_name || email || 'Candidat'}. Profil : ${profile.job_title} ${profile.education} ${profile.experience} ${profile.skills}. Cible : ${initialOffer?.title || 'candidature spontanée'} chez ${company?.nom || initialOffer?.entreprise?.nom || 'l’entreprise ciblée'}. Ne mens pas. Maximum 250 mots.`;
       setMessage(await askGeminiCareerAssistant({ message: prompt, companies: [] }));
     } catch (generationError) {
       setNotice(generationError instanceof Error ? `Lettre impossible : ${generationError.message}` : 'Lettre impossible à générer.');
@@ -108,6 +119,18 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
 
   return <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7]">
     <PageHeader title="Candidature" sub={initialCompanyId || initialOffer ? 'Postulez uniquement à l’entreprise ou à l’offre sélectionnée.' : 'Sélectionnez vos favoris, ajoutez votre CV et envoyez une campagne groupée depuis votre Gmail.'} back onBack={onBack} />
+    <div className="mb-4 max-w-sm rounded-2xl border border-[#EAE5E0] bg-white p-4">
+      <label htmlFor="application-type" className="mb-1.5 block text-sm font-bold text-[#1C1917]">Type de candidature</label>
+      <p className="mb-3 text-xs text-[#78716C]">Ce choix sera utilisé pour générer votre lettre de motivation.</p>
+      <select
+        id="application-type"
+        value={applicationType}
+        onChange={(event) => { setApplicationType(event.target.value as (typeof applicationTypes)[number]); setMessage(''); }}
+        className="w-full rounded-xl border border-[#EAE5E0] bg-[#FBF9F7] px-3 py-2.5 text-sm text-[#57534E] focus:border-[#621E3E] focus:outline-none"
+      >
+        {applicationTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+      </select>
+    </div>
     <CompanyStatus loading={loading} error={error} />
     {notice && <p className="mb-4 rounded-xl border border-[#667436]/40 bg-[#667436]/10 px-4 py-3 text-sm text-[#3d4520]">{notice}</p>}
     {!hasApplicationTarget ? <div className="rounded-2xl border border-dashed border-[#D6D3D1] bg-white p-10 text-center"><Mail size={28} className="mx-auto mb-3 text-[#A8A29E]" /><p className="font-semibold text-[#1C1917]">Aucune adresse e-mail disponible</p><p className="mt-1 text-sm text-[#78716C]">Cette offre ou entreprise ne peut pas recevoir une candidature par e-mail pour le moment.</p></div> : <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">

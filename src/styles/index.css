@@ -192,3 +192,67 @@
     text-align: center;
   }
 }
+
+
+/* Règles communes : interface claire et compacte sur téléphone. */
+@media (max-width: 767px) {
+  #root h1,
+  #root .text-xl {
+    font-size: 1.15rem !important;
+    line-height: 1.45rem !important;
+  }
+
+  #root h2,
+  #root .text-lg {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
+  }
+
+  #root h3,
+  #root .text-base {
+    font-size: 0.9rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  #root .text-sm {
+    font-size: 0.78rem !important;
+    line-height: 1.15rem !important;
+  }
+
+  #root .text-xs {
+    font-size: 0.68rem !important;
+    line-height: 1rem !important;
+  }
+
+  #root button:not([class*="p-1"]),
+  #root a[class*="rounded"] {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  #root .rounded-2xl,
+  #root .rounded-xl {
+    max-width: 100%;
+  }
+
+  #root .p-6,
+  #root .p-7 {
+    padding: 1rem !important;
+  }
+
+  #root .p-5 {
+    padding: 0.9rem !important;
+  }
+
+  #root .gap-5,
+  #root .gap-6 {
+    gap: 0.9rem !important;
+  }
+
+  #root p,
+  #root span,
+  #root a,
+  #root button {
+    overflow-wrap: anywhere;
+  }
+}

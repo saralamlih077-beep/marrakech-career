@@ -86,14 +86,14 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
     : visible;
 
   return (
-    <div className="flex-1 flex overflow-hidden">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
       {/* Filter sidebar */}
-      <div className="w-56 bg-white border-r border-[#EAE5E0] p-5 overflow-y-auto">
+      <div className="max-h-[42vh] w-full shrink-0 overflow-y-auto border-b border-[#EAE5E0] bg-white p-4 md:max-h-none md:w-56 md:border-b-0 md:border-r md:p-5">
         <h3 className="text-sm font-bold text-[#1C1917] mb-4">Filters</h3>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-[#57534E] mb-2 block">Domaine</label>
-            <div className="space-y-1">
+            <div className="grid grid-cols-2 gap-1 md:block md:space-y-1">
               {domaines.map(s => (
                 <button key={s} onClick={() => setFilterDomaine(s)} className={`w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors ${filterDomaine === s ? 'bg-[#621E3E]/10 text-[#621E3E] font-semibold' : 'text-[#78716C] hover:bg-[#FBF9F7]'}`}>
                   {s}
@@ -110,7 +110,7 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
       </div>
 
       {/* Map area */}
-      <div className="flex-1 relative overflow-hidden bg-[#E8E4DC]">
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-[#E8E4DC]">
         <CompanyStatus loading={loading} error={error} />
         <InteractiveCompanyMap companies={mapCompanies} onSelect={setSelectedId} focusCompanyId={focusedOffer?.entreprise_id} focusedOfferTitle={focusedOffer?.title} />
 

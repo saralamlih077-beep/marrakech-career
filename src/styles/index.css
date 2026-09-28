@@ -256,3 +256,20 @@
     overflow-wrap: anywhere;
   }
 }
+
+
+/* Cadre de la carte : rappel visuel de la couleur principale Marrakech Career. */
+.map-canvas-frame {
+	margin: 0.75rem;
+	border: 3px solid #621E3E;
+	border-radius: 1rem;
+	box-shadow: 0 5px 16px rgb(98 30 62 / 20%);
+}
+
+@media (max-width: 767px) {
+	.map-canvas-frame {
+		margin: 0.5rem;
+		border-width: 2px;
+		border-radius: 0.85rem;
+	}
+}

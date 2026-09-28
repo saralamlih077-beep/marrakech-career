@@ -88,23 +88,18 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
       {/* Filter sidebar */}
-      <div className="max-h-[42vh] w-full shrink-0 overflow-y-auto border-b border-[#EAE5E0] bg-white p-4 md:max-h-none md:w-56 md:border-b-0 md:border-r md:p-5">
-        <h3 className="text-sm font-bold text-[#1C1917] mb-4">Filters</h3>
-        <div className="space-y-4">
+      <div className="w-full shrink-0 border-b border-[#EAE5E0] bg-white p-4 md:w-56 md:border-b-0 md:border-r md:p-5">
+        <div className="space-y-3 md:space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[#57534E] mb-2 block">Domaine</label>
-            <div className="grid grid-cols-2 gap-1 md:block md:space-y-1">
-              {domaines.map(s => (
-                <button key={s} onClick={() => setFilterDomaine(s)} className={`w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors ${filterDomaine === s ? 'bg-[#621E3E]/10 text-[#621E3E] font-semibold' : 'text-[#78716C] hover:bg-[#FBF9F7]'}`}>
-                  {s}
-                </button>
-              ))}
-            </div>
+            <label className="mb-1.5 block text-xs font-semibold text-[#57534E]">Domaine</label>
+            <select value={filterDomaine} onChange={(event) => setFilterDomaine(event.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-3 py-2.5 text-sm text-[#1C1917] outline-none focus:border-[#621E3E]">
+              {domaines.map((domaine) => <option key={domaine} value={domaine}>{domaine === 'All' ? 'Tous les domaines' : domaine}</option>)}
+            </select>
           </div>
           {hasProfileForMatching && <div>
-            <div className="flex items-center justify-between mb-2"><label className="text-xs font-semibold text-[#57534E]">Match Score</label><span className="text-xs font-bold text-[#621E3E]">{minimumMatch}%+</span></div>
+            <div className="mb-2 flex items-center justify-between"><label className="text-xs font-semibold text-[#57534E]">Match Score</label><span className="text-xs font-bold text-[#621E3E]">{minimumMatch}%+</span></div>
             <input type="range" min={0} max={100} value={minimumMatch} onChange={(event) => setMinimumMatch(Number(event.target.value))} className="w-full accent-[#621E3E]" />
-            <div className="flex justify-between text-[10px] text-[#A8A29E] mt-1"><span>0%</span><span>{visible.length} entreprise{visible.length > 1 ? 's' : ''}</span><span>100%</span></div>
+            <div className="mt-1 flex justify-between text-[10px] text-[#A8A29E]"><span>0%</span><span>{visible.length} entreprise{visible.length > 1 ? 's' : ''}</span><span>100%</span></div>
           </div>}
         </div>
       </div>

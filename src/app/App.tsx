@@ -140,9 +140,11 @@ export default function App() {
   })();
 
   return (
-    <div className="flex h-dvh overflow-hidden max-md:flex-col" style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <div className="flex h-dvh overflow-hidden" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <Sidebar active={page} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} />
-      {screen}
+      <main className="flex min-h-0 min-w-0 flex-1 pt-[68px] md:pt-0">
+        {screen}
+      </main>
       <ChatBot />
     </div>
   );

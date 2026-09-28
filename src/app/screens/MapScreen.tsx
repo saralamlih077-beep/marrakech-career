@@ -105,7 +105,7 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
       </div>
 
       {/* Map area */}
-      <div className="relative min-h-0 flex-1 overflow-hidden bg-[#E8E4DC]">
+      <div className="map-canvas-frame relative min-h-0 flex-1 overflow-hidden bg-[#E8E4DC]">
         <CompanyStatus loading={loading} error={error} />
         <InteractiveCompanyMap companies={mapCompanies} onSelect={setSelectedId} focusCompanyId={focusedOffer?.entreprise_id} focusedOfferTitle={focusedOffer?.title} />
 

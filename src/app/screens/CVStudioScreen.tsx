@@ -179,8 +179,8 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden">
-      <div className="w-72 bg-white border-r border-[#EAE5E0] flex flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
+      <div className="max-h-[44dvh] w-full shrink-0 border-b border-[#EAE5E0] bg-white flex flex-col md:max-h-none md:w-72 md:border-b-0 md:border-r">
         <div className="px-5 py-4 border-b border-[#EAE5E0]">
           <button onClick={() => setShowEditor(false)} className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-[#621E3E] hover:underline"><ArrowLeft size={13} /> Accueil du Studio</button>
           <h2 className="text-sm font-bold text-[#1C1917]">Créer mon CV</h2>
@@ -213,7 +213,7 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
         </div>
       </div>
 
-      <div className="w-80 border-r border-[#EAE5E0] bg-[#FBF9F7] p-5 overflow-y-auto">
+      <div className="w-full shrink-0 border-b border-[#EAE5E0] bg-[#FBF9F7] p-5 overflow-y-auto md:w-80 md:border-b-0 md:border-r">
         <div className="space-y-4">
           {activeSection === 'personal' && (
             <>
@@ -280,8 +280,8 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
             ))}
           </div>
         </div>
-        <div className="flex-1 p-6 flex items-start justify-center overflow-auto">
-          <div className="bg-white shadow-xl rounded-xl w-[520px] min-h-[720px] overflow-hidden">
+        <div className="flex-1 p-4 sm:p-6 flex items-start justify-center overflow-auto">
+          <div className="w-full max-w-[520px] min-h-[720px] overflow-hidden rounded-xl bg-white shadow-xl">
             <div className="px-8 py-6 text-white" style={{ backgroundColor: theme.primary }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">

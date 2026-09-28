@@ -1,7 +1,7 @@
 import { BarChart3, Bookmark, Building2, MessageCircle, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useProfile } from '../../hooks/useProfile';
 import { CompanyCard, CompanyStatus, StatKpi } from '../components/shared';
 import type { Company, NavPage } from '../types';
@@ -31,6 +31,12 @@ export default function DashboardScreen({ companies, loading, error, favs, onFav
       .map(([s, n]) => ({ s, n }))
       .sort((a, b) => b.n - a.n || a.s.localeCompare(b.s, 'fr'));
   }, [companies]);
+  const mobileSectorChartData = useMemo(() => {
+    const topDomains = sectorChartData.slice(0, 5);
+    const otherCount = sectorChartData.slice(5).reduce((total, item) => total + item.n, 0);
+    return otherCount ? [...topDomains, { s: 'Autres', n: otherCount }] : topDomains;
+  }, [sectorChartData]);
+  const mobileChartColors = ['#621E3E', '#8C4565', '#B06B88', '#C6C954', '#667436', '#D6D3D1'];
   const submitFeedback = async () => {
     if (!rating) return setFeedbackState('Choisissez une note entre 1 et 5 étoiles.');
     const { data: { user } } = await supabase.auth.getUser();
@@ -57,17 +63,32 @@ export default function DashboardScreen({ companies, loading, error, favs, onFav
       <div className="mb-7">
         <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
           <h3 className="text-sm font-bold text-[#1C1917] mb-4">{t('companiesByDomain')}</h3>
-          <ResponsiveContainer width="100%" height={Math.max(220, sectorChartData.length * 34)}>
-            <BarChart layout="vertical" data={sectorChartData} margin={{ top: 0, right: 38, bottom: 0, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F5F1ED" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: '#78716C' }} allowDecimals={false} />
-              <YAxis type="category" dataKey="s" width={175} tick={{ fontSize: 11, fill: '#57534E' }} tickFormatter={(value) => value.length > 26 ? `${value.slice(0, 26)}…` : value} />
-              <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #EAE5E0', fontSize: 12 }} />
-              <Bar dataKey="n" fill="#621E3E" radius={[0, 4, 4, 0]}>
-                <LabelList dataKey="n" position="right" fill="#57534E" fontSize={11} fontWeight={700} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="hidden md:block">
+            <ResponsiveContainer width="100%" height={Math.max(220, sectorChartData.length * 34)}>
+              <BarChart layout="vertical" data={sectorChartData} margin={{ top: 0, right: 38, bottom: 0, left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F5F1ED" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#78716C' }} allowDecimals={false} />
+                <YAxis type="category" dataKey="s" width={175} tick={{ fontSize: 11, fill: '#57534E' }} tickFormatter={(value) => value.length > 26 ? value.slice(0, 26) + '…' : value} />
+                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #EAE5E0', fontSize: 12 }} />
+                <Bar dataKey="n" fill="#621E3E" radius={[0, 4, 4, 0]}>
+                  <LabelList dataKey="n" position="right" fill="#57534E" fontSize={11} fontWeight={700} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="md:hidden">
+            <ResponsiveContainer width="100%" height={210}>
+              <PieChart>
+                <Pie data={mobileSectorChartData} dataKey="n" nameKey="s" cx="50%" cy="50%" innerRadius={54} outerRadius={82} paddingAngle={2}>
+                  {mobileSectorChartData.map((item, index) => <Cell key={item.s} fill={mobileChartColors[index]} />)}
+                </Pie>
+                <Tooltip formatter={(value: number) => value + ' entreprises'} contentStyle={{ borderRadius: 10, border: '1px solid #EAE5E0', fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 text-xs text-[#57534E]">
+              {mobileSectorChartData.map((item, index) => <span key={item.s} className="flex items-center gap-1"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: mobileChartColors[index] }} />{item.s} ({item.n})</span>)}
+            </div>
+          </div>
         </div>
       </div>
 

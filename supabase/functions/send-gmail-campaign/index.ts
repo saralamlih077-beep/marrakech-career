@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 type Recipient = { id?: number; name?: string; email?: string };
+const defaultSenderEmail = 'marrakechcareer@gmail.com';
 
 function base64Encode(bytes: Uint8Array) {
   let text = '';
@@ -33,11 +34,12 @@ function encodedHeader(value: string) {
   return `=?UTF-8?B?${base64Encode(new TextEncoder().encode(value))}?=`;
 }
 
-function createMimeMessage(to: string, subject: string, message: string, cv: File) {
+function createMimeMessage(to: string, subject: string, message: string, cv: File, replyTo?: string) {
   const boundary = `mc_${crypto.randomUUID().replaceAll('-', '')}`;
   return cv.arrayBuffer().then((buffer) => [
     `To: ${to}`,
     `Subject: ${encodedHeader(subject)}`,
+    ...(replyTo ? [`Reply-To: ${replyTo}`] : []),
     'MIME-Version: 1.0',
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     '',
@@ -70,6 +72,7 @@ Deno.serve(async (request) => {
     const subject = form.get('subject');
     const message = form.get('message');
     const rawRecipients = form.get('candidates');
+    const candidateEmail = form.get('candidateEmail');
     if (!(cv instanceof File) || cv.size === 0 || cv.size > 10 * 1024 * 1024) return Response.json({ error: 'Le CV est invalide ou dépasse 10 Mo.' }, { status: 400, headers: corsHeaders });
     if (typeof subject !== 'string' || typeof message !== 'string' || typeof rawRecipients !== 'string') return Response.json({ error: 'Données de campagne invalides.' }, { status: 400, headers: corsHeaders });
     const recipients = JSON.parse(rawRecipients) as Recipient[];
@@ -83,10 +86,13 @@ Deno.serve(async (request) => {
     const { data: { user }, error: userError } = await service.auth.getUser(token);
     if (userError || !user) return Response.json({ error: 'Session invalide.' }, { status: 401, headers: corsHeaders });
 
-    const { data: connection, error: connectionError } = await service.schema('private').from('gmail_connections')
-      .select('email, encrypted_refresh_token').eq('user_id', user.id).maybeSingle();
+    const { data: connection, error: connectionError } = await service
+      .rpc('get_official_gmail_connection', {
+        p_email: Deno.env.get('MARRAKECH_CAREER_SENDER_EMAIL') || defaultSenderEmail,
+      })
+      .maybeSingle();
     if (connectionError) throw connectionError;
-    if (!connection) return Response.json({ error: 'Connectez votre Gmail dans Paramètres avant d’envoyer une campagne.' }, { status: 400, headers: corsHeaders });
+    if (!connection) return Response.json({ error: `Le Gmail officiel ${Deno.env.get('MARRAKECH_CAREER_SENDER_EMAIL') || defaultSenderEmail} doit être connecté une seule fois par l’administrateur.` }, { status: 400, headers: corsHeaders });
 
     const encryptionKey = Deno.env.get('GMAIL_TOKEN_ENCRYPTION_KEY');
     const clientId = Deno.env.get('GOOGLE_OAUTH_CLIENT_ID');
@@ -102,7 +108,8 @@ Deno.serve(async (request) => {
 
     const results = [] as { email: string; ok: boolean; error?: string }[];
     for (const recipient of validRecipients) {
-      const mime = await createMimeMessage(recipient.email!, subject, message, cv);
+      const replyTo = typeof candidateEmail === 'string' && candidateEmail.includes('@') ? candidateEmail : undefined;
+      const mime = await createMimeMessage(recipient.email!, subject, message, cv, replyTo);
       const gmailResponse = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
         method: 'POST',
         headers: { Authorization: `Bearer ${refreshPayload.access_token}`, 'Content-Type': 'application/json' },

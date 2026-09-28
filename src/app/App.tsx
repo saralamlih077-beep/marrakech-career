@@ -16,6 +16,7 @@ import CVStudioScreen from './screens/CVStudioScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import LoginScreen from './screens/LoginScreen';
+import LegalScreen from './screens/LegalScreen';
 import MapScreen from './screens/MapScreen';
 import OpportunitiesScreen from './screens/OpportunitiesScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -25,9 +26,17 @@ import type { Company, NavPage } from './types';
 import type { JobOffer } from '../hooks/useJobOffers';
 
 export default function App() {
+  if (window.location.pathname === '/privacy') return <LegalScreen page="privacy" />;
+  if (window.location.pathname === '/terms') return <LegalScreen page="terms" />;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [page, setPage] = useState<NavPage>('dashboard');
+  // Google returns here after the administrator grants Gmail permission.
+  // Open Settings directly so the callback can store the one-time token.
+  const [page, setPage] = useState<NavPage>(() => (
+    new URLSearchParams(window.location.search).get('gmail') === 'connected'
+      ? 'settings'
+      : 'dashboard'
+  ));
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [campaignCompanyId, setCampaignCompanyId] = useState<number | null>(null);
   const [campaignOffer, setCampaignOffer] = useState<JobOffer | null>(null);
@@ -55,14 +64,35 @@ export default function App() {
       setAuthLoading(false);
       return;
     }
+    const saveOfficialGmail = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+      if (new URLSearchParams(window.location.search).get('gmail') !== 'connected') return;
+      const gmailSession = session as (typeof session & { provider_refresh_token?: string }) | null;
+      const refreshToken = gmailSession?.provider_refresh_token;
+      const googleIdentity = gmailSession?.user.identities?.find((identity) => identity.provider === 'google');
+      const googleEmail = typeof googleIdentity?.identity_data?.email === 'string'
+        ? googleIdentity.identity_data.email
+        : gmailSession?.user.email;
+      if (!refreshToken || !googleEmail) return;
+      // Google only exposes this refresh token during the OAuth callback.
+      window.setTimeout(() => {
+        void supabase.functions.invoke('save-gmail-connection', {
+          body: { email: googleEmail, refreshToken, scopes: ['https://www.googleapis.com/auth/gmail.send'] },
+        }).then(({ error: saveError }) => {
+          if (!saveError) window.history.replaceState({}, '', window.location.pathname);
+        });
+      }, 0);
+    };
+
     void supabase.auth.getSession().then(({ data }) => {
       setIsLoggedIn(Boolean(data.session));
       setAuthLoading(false);
+      saveOfficialGmail(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(Boolean(session));
       setAuthLoading(false);
+      saveOfficialGmail(session);
     });
 
     return () => listener.subscription.unsubscribe();

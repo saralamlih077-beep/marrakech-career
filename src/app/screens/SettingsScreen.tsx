@@ -72,8 +72,13 @@ export default function SettingsScreen() {
       });
       if (!active) return;
       if (saveError) {
+        let serverMessage = saveError.message;
+        if ('context' in saveError && saveError.context instanceof Response) {
+          const payload = await saveError.context.clone().json().catch(() => null) as { error?: unknown } | null;
+          if (typeof payload?.error === 'string') serverMessage = payload.error;
+        }
         setGmailStatus('error');
-        setGmailMessage(`Connexion Google effectuée, mais le serveur Gmail n’est pas prêt : ${saveError.message}`);
+        setGmailMessage(`Connexion Google effectuée, mais le serveur Gmail n’est pas prêt : ${serverMessage}`);
       } else {
         setGmailStatus('connected');
         setGmailMessage(`Connecté : les candidatures partiront de ${googleEmail}.`);
@@ -87,10 +92,18 @@ export default function SettingsScreen() {
   const connectGmail = async () => {
     setGmailStatus('checking');
     setGmailMessage('Redirection vers Google…');
-    const { error: connectError } = await supabase.auth.linkIdentity({
+    // Start a fresh OAuth sign-in. This avoids Supabase reusing a previous
+    // link-identity flow and returning "identity_already_exists".
+    const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
+    if (signOutError) {
+      setGmailStatus('error');
+      setGmailMessage(signOutError.message);
+      return;
+    }
+    const { error: connectError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/?gmail=connected`,
+          redirectTo: `${window.location.origin}/gmail-callback.html`,
         scopes: 'openid email profile https://www.googleapis.com/auth/gmail.send',
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },

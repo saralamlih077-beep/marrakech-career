@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { AlertTriangle, Bot, Building2, CheckCircle, FileSearch, FileText, Search, Sparkles, Upload, X } from 'lucide-react';
+import { AlertTriangle, Bot, CheckCircle, FileSearch, FileText, Sparkles, Upload } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import pdfWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
 import * as mammoth from 'mammoth/mammoth.browser';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 import { PageHeader, SkillTag } from '../components/shared';
-import { useEntreprises } from '../../hooks/useEntreprises';
 import { useProfile } from '../../hooks/useProfile';
 
 type CvAnalysis = {
@@ -22,25 +21,7 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [aiConsent, setAiConsent] = useState(false);
   const [analysis, setAnalysis] = useState<CvAnalysis | null>(null);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
-  const [companyQuery, setCompanyQuery] = useState('');
-  const [companyPickerOpen, setCompanyPickerOpen] = useState(false);
-  const { data: companies, loading: companiesLoading } = useEntreprises();
   const { profile, saveProfile } = useProfile();
-  const selectedCompany = companies.find((company) => company.id === selectedCompanyId);
-  const suggestedCompanies = companies
-    .filter((company) => `${company.nom} ${company.domaine ?? ''} ${company.sous_domaine ?? ''}`.toLocaleLowerCase().includes(companyQuery.trim().toLocaleLowerCase()))
-    .slice(0, 6);
-  const cvMatch = (() => {
-    if (!analysis || !selectedCompany) return null;
-    const normalize = (value: string) => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const companyText = normalize(`${selectedCompany.nom} ${selectedCompany.domaine ?? ''} ${selectedCompany.sous_domaine ?? ''} ${selectedCompany.categorie ?? ''}`);
-    const skills = analysis.skills.map((skill) => normalize(skill.trim())).filter(Boolean);
-    const matchingSkills = skills.filter((skill) => companyText.includes(skill));
-    const skillScore = skills.length ? matchingSkills.length / skills.length : 0;
-    const score = Math.round(Math.min(100, analysis.completeness * 0.15 + skillScore * 85));
-    return { score, matchingSkills };
-  })();
   const extractPdfText = async (file: File) => {
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
     const document = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
@@ -163,59 +144,6 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
 
           {fileError && <p className="text-xs text-[#6B5500] bg-[#FFEC8E]/30 border border-[#C6C954]/40 rounded-xl p-3">{fileError}</p>}
 
-          <div className="bg-white rounded-xl border border-[#C6C954]/40 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={14} className="text-[#667436]" />
-              <h3 className="text-sm font-bold text-[#1C1917]">Match with company</h3>
-            </div>
-            <div className="relative mb-3">
-              <div className="flex items-center gap-2 rounded-xl border border-[#EAE5E0] bg-[#FBF9F7] px-3 py-2 focus-within:border-[#621E3E] focus-within:ring-2 focus-within:ring-[#621E3E]/10">
-                <Search size={14} className="shrink-0 text-[#A8A29E]" />
-                <input
-                  value={companyQuery}
-                  onFocus={() => setCompanyPickerOpen(true)}
-                  onChange={(event) => { setCompanyQuery(event.target.value); setCompanyPickerOpen(true); }}
-                  disabled={companiesLoading}
-                  placeholder={companiesLoading ? 'Chargement…' : 'Rechercher une entreprise'}
-                  className="min-w-0 flex-1 bg-transparent text-xs text-[#1C1917] placeholder:text-[#A8A29E] outline-none"
-                />
-                {selectedCompany && <button type="button" onClick={() => { setSelectedCompanyId(null); setCompanyQuery(''); setCompanyPickerOpen(true); }} className="text-[#A8A29E] hover:text-[#621E3E]" aria-label="Changer d’entreprise"><X size={14} /></button>}
-              </div>
-              {companyPickerOpen && !companiesLoading && (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-[#EAE5E0] bg-white shadow-lg">
-                  <div className="max-h-52 overflow-y-auto p-1.5">
-                    {suggestedCompanies.length > 0 ? suggestedCompanies.map((company) => (
-                      <button key={company.id} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { setSelectedCompanyId(company.id); setCompanyQuery(company.nom); setCompanyPickerOpen(false); }} className="w-full rounded-lg px-2.5 py-2 text-left hover:bg-[#621E3E]/6 transition-colors">
-                        <span className="block truncate text-xs font-semibold text-[#1C1917]">{company.nom}</span>
-                        <span className="block truncate text-[11px] text-[#78716C]">{company.sous_domaine || company.domaine || 'Domaine non renseigné'}</span>
-                      </button>
-                    )) : <p className="px-2.5 py-3 text-xs text-[#78716C]">Aucune entreprise trouvée.</p>}
-                  </div>
-                </div>
-              )}
-            </div>
-            {cvMatch ? (
-              <>
-                <div className="rounded-xl bg-[#667436]/8 border border-[#C6C954]/40 p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#667436] text-white flex items-center justify-center"><Building2 size={15} /></div>
-                    <p className="min-w-0 flex-1 truncate text-xs font-bold text-[#1C1917]">{selectedCompany?.nom}</p>
-                    <span className="text-xl font-extrabold text-[#667436]">{cvMatch.score}%</span>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-[#57534E]">
-                    {cvMatch.matchingSkills.length > 0
-                      ? `Compétences reconnues : ${cvMatch.matchingSkills.join(', ')}.`
-                      : 'Aucune compétence détectée ne correspond directement aux informations publiques de cette entreprise.'}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-[#78716C]">{analysis ? 'Choisissez une entreprise pour calculer le score à partir des compétences de ce CV.' : 'Analysez d’abord le CV, puis choisissez une entreprise.'}</p>
-            )}
-            <div className="w-full h-2 bg-[#F5F1ED] rounded-full mt-2 overflow-hidden">
-              <div className="h-full bg-[#667436] rounded-full transition-all" style={{ width: `${cvMatch?.score ?? 0}%` }} />
-            </div>
-          </div>
         </div>
 
         <div className="col-span-2 space-y-5">

@@ -1,0 +1,343 @@
+# Marrakech Career
+
+Marrakech Career est une application web qui aide les étudiants, stagiaires et candidats à trouver un emploi ou un stage à Marrakech : découvrir des entreprises et des offres, construire et analyser un CV, comparer son profil à une offre, postuler directement depuis son propre Gmail, puis suivre chaque candidature jusqu'à la réponse.
+
+---
+
+## Sommaire
+
+- [Fonctionnalités](#fonctionnalités)
+- [Parcours utilisateur](#parcours-utilisateur)
+- [Stack technique](#stack-technique)
+- [Architecture générale](#architecture-générale)
+- [Structure du projet](#structure-du-projet)
+- [Installation et lancement local](#installation-et-lancement-local)
+- [Variables d'environnement](#variables-denvironnement)
+- [Base de données Supabase](#base-de-données-supabase)
+- [Fonctions serveur (Edge Functions)](#fonctions-serveur-edge-functions)
+- [Intégrations externes](#intégrations-externes)
+- [Nettoyage et maintenance des données](#nettoyage-et-maintenance-des-données)
+- [Déploiement](#déploiement)
+- [Problèmes rencontrés et résolus](#problèmes-rencontrés-et-résolus)
+- [État actuel du projet](#état-actuel-du-projet)
+- [Licence et attributions](#licence-et-attributions)
+
+---
+
+## Fonctionnalités
+
+### Côté candidat
+
+- Créer un compte avec e-mail/mot de passe ou Google, confirmer son e-mail, réinitialiser son mot de passe.
+- Découvrir des entreprises et des offres, les voir positionnées sur une carte interactive (Leaflet).
+- Ajouter des entreprises à ses favoris.
+- Construire, exporter et analyser un CV (détection automatique des compétences).
+- Comparer son profil à une entreprise ou à une offre (score de matching IA).
+- Générer une lettre de motivation et échanger avec un assistant carrière IA.
+- Préparer une candidature (CV + message) et l'envoyer directement via son propre compte Gmail connecté.
+- Envoyer une candidature groupée à plusieurs favoris en une seule campagne.
+- Suivre le statut de chaque candidature : envoyé, entretien, accepté, refusé.
+- Recevoir des alertes lorsqu'une nouvelle offre correspond à son profil.
+- Laisser un avis noté sur cinq étoiles.
+
+### Côté administrateur
+
+- Consulter des statistiques globales : inscriptions, e-mails confirmés, profils complétés, candidatures, offres publiées, avis reçus.
+- Accéder à la liste sécurisée des utilisateurs inscrits.
+
+---
+
+## Parcours utilisateur
+
+1. L'utilisateur s'inscrit avec un e-mail valide.
+2. Supabase envoie un lien ou un code de confirmation.
+3. L'utilisateur se connecte et complète son nom dans **Profil** (les compétences et l'expérience viennent du CV).
+4. Il charge son CV dans **CV Studio** ou **CV Analyzer** ; l'application détecte ses compétences et calcule les correspondances.
+5. Il recherche une entreprise ou une offre et met des entreprises en favoris.
+6. Il rédige un message, choisit son CV et envoie une candidature.
+7. Il suit sa candidature et peut analyser le message reçu de l'entreprise.
+8. Il peut connecter Gmail pour envoyer depuis son propre compte et recevoir les réponses directement.
+9. Il peut modifier son mot de passe dans **Paramètres → Sécurité**.
+
+---
+
+## Stack technique
+
+**Frontend**
+- React 18 + TypeScript, bundlé avec Vite 6
+- Tailwind CSS 4 + composants shadcn/ui (Radix UI en dessous)
+- `react-router` pour la navigation, `react-hook-form` pour les formulaires
+- `recharts` pour les graphiques, `leaflet` pour la carte
+- `lucide-react` et `@mui/icons-material` pour les icônes
+- `jspdf` et `mammoth` pour générer/lire des CV (PDF/Word)
+- `pdfjs-dist` pour la lecture de PDF côté navigateur
+- `motion` pour les animations, `sonner` pour les notifications
+
+**Backend & données**
+- Supabase : authentification, base de données PostgreSQL, stockage, Edge Functions
+- Row Level Security et fonctions serveur pour ne jamais exposer de clé sensible au navigateur
+
+**Services externes**
+- **Groq** : IA (assistant carrière, matching, analyse de CV, lettres de motivation)
+- **Google OAuth / Gmail** : connexion Gmail personnelle et envoi de candidatures
+- **Brevo** : e-mails transactionnels et alertes
+- **n8n** : automatisation (imports, alertes planifiées)
+- **JobSquare** : source externe d'offres d'emploi
+- **Leaflet / OpenStreetMap** : cartographie
+- **Vercel** : hébergement de l'application
+- **GitHub** : dépôt du code source
+
+---
+
+## Architecture générale
+
+```
+Navigateur (React + Vite)
+        │
+        ├── Supabase Auth ──────► Comptes, sessions, confirmation e-mail
+        ├── Supabase Database ──► Profils, entreprises, offres, candidatures, avis
+        ├── Supabase Storage ───► Fichiers (CV, photos)
+        │
+        └── Supabase Edge Functions (clés secrètes côté serveur)
+                ├── career-assistant ──────► Groq (IA)
+                ├── company-about ─────────► Résumés d'entreprise
+                ├── admin-analytics ───────► Statistiques admin
+                ├── save-gmail-connection ─► Google OAuth
+                ├── send-gmail-campaign ───► Gmail API
+                ├── send-job-alert ────────► Brevo
+                ├── notify-matching-users ─► Brevo
+                └── sync-jobsquare-offers ─► JobSquare
+
+n8n (planifié) ──► sync-jobsquare-offers / notify-matching-users
+```
+
+Aucune clé sensible (Groq, Gmail, Brevo, n8n) n'est stockée côté navigateur : tout passe par les secrets des Edge Functions Supabase.
+
+---
+
+## Structure du projet
+
+```
+├── src/
+│   ├── main.tsx                  # Point d'entrée React
+│   ├── app/
+│   │   ├── App.tsx               # Navigation principale, routes protégées
+│   │   ├── constants.ts          # Données fixes / exemples
+│   │   ├── types.ts              # Types généraux de l'interface
+│   │   ├── utils.ts              # Fonctions utilitaires
+│   │   ├── i18n.tsx              # Traductions FR / EN / AR
+│   │   ├── components/
+│   │   │   ├── shared.tsx        # Composants visuels partagés
+│   │   │   ├── Sidebar.tsx       # Menu latéral
+│   │   │   └── ui/               # Composants shadcn/ui réutilisables
+│   │   ├── hooks/
+│   │   │   ├── useProfile.ts
+│   │   │   ├── useEntreprises.ts
+│   │   │   ├── useFavorites.ts
+│   │   │   ├── useCandidatures.ts
+│   │   │   └── useJobOffers.ts
+│   │   └── screens/
+│   │       ├── DashboardScreen.tsx
+│   │       ├── CompaniesScreen.tsx
+│   │       ├── CompanyDetailScreen.tsx
+│   │       ├── MapScreen.tsx
+│   │       ├── AIMatchingScreen.tsx
+│   │       ├── OpportunitiesScreen.tsx
+│   │       ├── AIAssistantScreen.tsx
+│   │       ├── CVStudioScreen.tsx
+│   │       ├── CVAnalyzerScreen.tsx
+│   │       ├── CampaignScreen.tsx
+│   │       ├── ApplicationTrackerScreen.tsx
+│   │       ├── FavoritesScreen.tsx
+│   │       ├── AnalyticsScreen.tsx
+│   │       ├── AdminScreen.tsx
+│   │       ├── ProfileScreen.tsx
+│   │       ├── SettingsScreen.tsx
+│   │       ├── LoginScreen.tsx
+│   │       ├── ResetPasswordScreen.tsx
+│   │       └── AutomationScreen.tsx
+│   ├── lib/
+│   │   ├── supabaseClient.ts     # Connexion frontend à Supabase
+│   │   └── gemini.ts             # Couche d'appel IA côté application
+│   ├── types/
+│   │   ├── entreprise.ts
+│   │   ├── profile.ts
+│   │   └── mammoth-browser.d.ts
+│   └── styles/                   # Polices, Tailwind, thème global
+├── supabase/
+│   ├── config.toml
+│   ├── migrations/                # Migrations SQL (voir plus bas)
+│   └── functions/                 # Edge Functions (voir plus bas)
+├── guidelines/Guidelines.md       # Règles visuelles et techniques du projet
+├── index.html
+├── vite.config.ts
+├── postcss.config.mjs
+├── package.json
+├── .env                           # Non versionné — voir .gitignore
+├── README.md
+├── SUPABASE_AI_SETUP.md
+├── GMAIL_PER_USER_SETUP.md
+├── N8N_SETUP.md
+└── JOBSQUARE_IMPORT_SETUP.md
+```
+
+---
+
+## Installation et lancement local
+
+Prérequis : Node.js et npm (ou pnpm, le projet supporte les deux — voir `pnpm-workspace.yaml`).
+
+```bash
+npm install
+npm run dev
+```
+
+Ouvrez ensuite l'adresse affichée par Vite, généralement `http://localhost:5173`.
+
+Pour construire la version de production :
+
+```bash
+npm run build
+```
+
+---
+
+## Variables d'environnement
+
+Créez un fichier `.env` à la racine (il est ignoré par Git, voir `.gitignore`) :
+
+```env
+VITE_SUPABASE_URL=votre_url_supabase
+VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+VITE_GROQ_API_KEY=votre_cle_groq_de_developpement
+VITE_N8N_WEBHOOK_URL=http://localhost:5678/webhook/marrakech-career
+```
+
+**Règle importante** : seules les clés destinées au navigateur commencent par `VITE_`. Toute clé sensible (Gemini/Groq en production, Google OAuth, chiffrement Gmail, secrets n8n/JobSquare) doit être définie dans **Supabase → Edge Functions → Secrets**, jamais dans `.env` ni dans une variable `VITE_*`.
+
+---
+
+## Base de données Supabase
+
+Migrations appliquées, dans l'ordre :
+
+| Migration | Rôle |
+|---|---|
+| `202609170001_gmail_connections.sql` | Table sécurisée des connexions Gmail et jetons chiffrés |
+| `202609170002_company_about_cache.sql` | Cache des résumés d'entreprises |
+| `202609180001_job_offers_and_alerts.sql` | Offres et alertes |
+| `202609180002_fix_profiles_signup.sql` | Correction de création de profil à l'inscription |
+| `202609180003_resilient_signup_trigger.sql` | Déclencheur d'inscription plus robuste |
+| `202609190001_job_offer_skills.sql` | Compétences demandées par offre |
+| `202609190002_normalize_job_offer_requirements.sql` | Nettoyage des exigences d'offres |
+| `202609190003_job_offer_company_map_locations.sql` | Positions pour la carte |
+| `202609190004_public_company_contacts.sql` | E-mails et sites des entreprises |
+| `202609190005_jobsquare_offer_sync.sql` | Préparation de la synchronisation JobSquare |
+| `202609190006_user_feedback.sql` | Avis, commentaires et étoiles |
+| `202609200001_application_followup_and_alerts.sql` | Suivi de candidature, relances et alertes |
+
+⚠️ **Point d'attention** : `supabase/config.toml` définit encore `otp_length = 6` pour l'environnement local, alors que le projet Supabase en ligne envoie des codes à 8 chiffres (l'interface a été adaptée en conséquence). Il faudra unifier ce réglage pour éviter une différence entre développement et production.
+
+---
+
+## Fonctions serveur (Edge Functions)
+
+| Fonction | Rôle |
+|---|---|
+| `career-assistant` | Appelle le fournisseur IA sans exposer la clé au navigateur |
+| `company-about` | Récupère ou génère un résumé d'entreprise |
+| `admin-analytics` | Fournit les statistiques admin et l'analyse des avis |
+| `save-gmail-connection` | Enregistre de façon chiffrée la connexion Gmail du candidat |
+| `send-gmail-campaign` | Envoie CV et message aux entreprises sélectionnées depuis Gmail |
+| `send-job-alert` | Envoie une alerte lorsqu'une offre correspond |
+| `notify-matching-users` | Cherche les candidats concernés par une nouvelle offre |
+| `sync-jobsquare-offers` | Importe ou met à jour les offres JobSquare |
+
+---
+
+## Intégrations externes
+
+### Gmail personnel (par utilisateur)
+
+Chaque candidat connecte son propre Gmail dans **Paramètres → Gmail personnel** ; les candidatures et campagnes sont alors envoyées depuis sa propre adresse. Configuration en une fois : provider Google activé dans Supabase Auth, migration `gmail_connections` exécutée, fonctions `save-gmail-connection` et `send-gmail-campaign` déployées, secrets `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` et `GMAIL_TOKEN_ENCRYPTION_KEY` définis (clé AES-256 encodée en base64). Voir `GMAIL_PER_USER_SETUP.md` pour le détail. Les scopes `gmail.send` et `gmail.readonly` étant sensibles, une vérification OAuth Google est nécessaire avant une ouverture publique.
+
+### Import des offres JobSquare
+
+Copie uniquement les offres publiques de Marrakech dans `job_offers`, avec le lien JobSquare conservé. Configuration : migration `jobsquare_offer_sync` exécutée, fonction `sync-jobsquare-offers` déployée, secrets `JOBSQUARE_SYNC_SECRET` et `ADMIN_EMAILS` définis. Un workflow n8n planifié (toutes les 6 heures) appelle cette fonction puis `notify-matching-users` pour les alertes. Voir `JOBSQUARE_IMPORT_SETUP.md`.
+
+### Automatisation n8n
+
+L'application ne déclenche aucun webhook n8n tant qu'il n'est pas connecté manuellement, pour éviter tout envoi involontaire. Le workflow recommandé reçoit un objet de candidature validé par l'utilisateur (`approval: true`), vérifie le destinataire, envoie via Gmail/SMTP, puis met à jour le statut dans Supabase. Aucun secret n8n ne doit être placé dans une variable `VITE_*`. Voir `N8N_SETUP.md`.
+
+### Assistant IA (Groq)
+
+En production, la clé IA ne doit jamais être exposée au navigateur : elle est définie comme secret Supabase (`supabase secrets set GEMINI_API_KEY=...` ou clé Groq équivalente) et appelée depuis la fonction `career-assistant`, qui exige une session utilisateur valide. Voir `SUPABASE_AI_SETUP.md`.
+
+---
+
+## Nettoyage et maintenance des données
+
+Plusieurs mécanismes gardent la base de données propre et cohérente dans le temps :
+
+- **Offres expirées ou disparues de la source** : lors de chaque synchronisation JobSquare, les offres absentes de la source ou arrivées à expiration passent au statut `closed`. Elles ne sont plus affichées aux candidats mais restent en base pour l'historique — rien n'est supprimé brutalement.
+- **Déduplication des offres importées** : chaque offre JobSquare est identifiée par son URL d'annonce ; une offre déjà connue n'est jamais réimportée en double (`discovered` / `imported` / `skipped` dans le résultat de synchronisation).
+- **Normalisation des exigences d'offres** : la migration `normalize_job_offer_requirements` nettoie et uniformise le format des compétences/exigences stockées, pour que le matching IA reste fiable.
+- **Alertes sans doublon** : `notify-matching-users` garde la trace des envois pour qu'une même offre ne soit jamais notifiée deux fois au même utilisateur.
+- **Secrets et clés** : aucune donnée sensible (clé API, jeton Gmail) n'est stockée en clair — les jetons Gmail sont chiffrés (`GMAIL_TOKEN_ENCRYPTION_KEY`) et les clés IA/Brevo/n8n restent dans les secrets Supabase, jamais dans le dépôt Git (`.gitignore` exclut `.env` et tout fichier de secrets).
+
+**Recommandations pour un nettoyage manuel ponctuel** (non encore automatisé dans le projet) :
+1. Requêter les lignes `job_offers` au statut `closed` depuis plus de X mois et évaluer si elles doivent être archivées hors de la table principale.
+2. Vérifier régulièrement les comptes dont l'e-mail n'a jamais été confirmé (`profiles` sans confirmation) pour décider d'une politique de relance ou de suppression.
+3. Purger, via le SQL Editor Supabase, les caches devenus obsolètes de la table de `company_about_cache` si les résumés d'entreprise changent souvent.
+
+---
+
+## Déploiement
+
+1. Envoyer le projet vers un dépôt GitHub (privé de préférence).
+2. Importer ce dépôt dans Vercel.
+3. Ajouter `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans les variables d'environnement Vercel.
+4. Ajouter l'URL Vercel dans **Supabase → Authentication → URL Configuration** (sinon les liens de confirmation pointent vers `localhost`).
+
+---
+
+## Problèmes rencontrés et résolus
+
+| Problème | Solution |
+|---|---|
+| Page blanche au chargement | Erreur React identifiée et corrigée après vérification des écrans |
+| Assistant IA « Invalid API Key » | Clé déplacée dans les secrets Supabase, retirée du navigateur |
+| Erreur IA `role has invalid value` | Format des messages envoyés au modèle corrigé |
+| Réponses IA en tableau Markdown non désiré | Prompt et affichage adaptés pour des réponses structurées |
+| `Database error saving new user` | Déclencheur de création de profil corrigé (migrations dédiées) |
+| Lien de confirmation vers `localhost` | URL Vercel configurée dans Supabase Auth |
+| E-mail de confirmation/réinitialisation absent | Configuration SMTP Brevo et sender vérifié |
+| Code de vérification 6 vs 8 chiffres | Écran aligné sur le format à 8 chiffres envoyé par le serveur |
+| Photo de CV qui disparaît | Nécessite le stockage Supabase pour persister entre appareils |
+| Matching IA renvoyant un JSON invalide | Réponse de secours prévue en cas d'échec de parsing |
+| `expires_at does not exist` | Colonne manquante ajoutée via migration sur `job_offers` |
+| Page Administration qui plantait | Écran adapté pour accepter des valeurs vides |
+| Mention « Last changed 30 days ago » figée | Remplacée par un vrai formulaire de changement de mot de passe |
+| Déploiement Git bloqué localement | Fichiers publiés via GitHub puis déployés automatiquement par Vercel |
+
+---
+
+## État actuel du projet
+
+L'application est déployée et Vercel indique **Ready**. Les écrans de connexion, paramètres et changement de mot de passe fonctionnent sans erreur navigateur.
+
+Éléments qui nécessitent encore un test en conditions réelles (compte réel, clés actives) :
+- Réception effective des e-mails Brevo/Supabase
+- Modification réelle du mot de passe
+- Envoi d'une candidature via Gmail connecté
+- Réception et analyse d'une réponse d'entreprise
+- Exécution planifiée du workflow n8n
+- Import réel et régulier de toutes les offres JobSquare
+
+Ce ne sont pas des problèmes de conception : ce sont des tests externes nécessitant de vrais e-mails, des clés actives et l'exécution effective de n8n.
+
+---
+
+## Licence et attributions
+
+Ce projet inclut des composants [shadcn/ui](https://ui.shadcn.com/) sous licence MIT, et des photos [Unsplash](https://unsplash.com) sous [licence Unsplash](https://unsplash.com/license).

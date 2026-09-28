@@ -1,10 +1,9 @@
 import { BarChart3, Bookmark, Building2, MessageCircle, Star } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useProfile } from '../../hooks/useProfile';
 import { CompanyCard, CompanyStatus, StatKpi } from '../components/shared';
-import { sectorChartData } from '../constants';
 import type { Company, NavPage } from '../types';
 import { recommendationScore } from '../utils';
 import { useLanguage } from '../i18n';
@@ -22,6 +21,16 @@ export default function DashboardScreen({ companies, loading, error, favs, onFav
   const [feedbackState, setFeedbackState] = useState('');
   const firstName = profile.full_name.trim().split(/\s+/)[0] || 'User';
   const recommended = [...companies].sort((a, b) => recommendationScore(b, profile) - recommendationScore(a, profile)).slice(0, 4);
+  const sectorChartData = useMemo(() => {
+    const counts = new Map<string, number>();
+    companies.forEach((company) => {
+      const domain = company.domaine?.trim() || 'Non renseigné';
+      counts.set(domain, (counts.get(domain) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .map(([s, n]) => ({ s, n }))
+      .sort((a, b) => b.n - a.n || a.s.localeCompare(b.s, 'fr'));
+  }, [companies]);
   const submitFeedback = async () => {
     if (!rating) return setFeedbackState('Choisissez une note entre 1 et 5 étoiles.');
     const { data: { user } } = await supabase.auth.getUser();
@@ -48,14 +57,14 @@ export default function DashboardScreen({ companies, loading, error, favs, onFav
       <div className="mb-7">
         <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
           <h3 className="text-sm font-bold text-[#1C1917] mb-4">{t('companiesByDomain')}</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={sectorChartData} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F5F1ED" />
-              <XAxis dataKey="s" tick={{ fontSize: 10, fill: '#78716C' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#78716C' }} />
+          <ResponsiveContainer width="100%" height={Math.max(220, sectorChartData.length * 34)}>
+            <BarChart layout="vertical" data={sectorChartData} margin={{ top: 0, right: 38, bottom: 0, left: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F5F1ED" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: '#78716C' }} allowDecimals={false} />
+              <YAxis type="category" dataKey="s" width={175} tick={{ fontSize: 11, fill: '#57534E' }} tickFormatter={(value) => value.length > 26 ? `${value.slice(0, 26)}…` : value} />
               <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #EAE5E0', fontSize: 12 }} />
-              <Bar dataKey="n" fill="#621E3E" radius={[4, 4, 0, 0]}>
-                <LabelList dataKey="n" position="top" fill="#57534E" fontSize={11} fontWeight={700} />
+              <Bar dataKey="n" fill="#621E3E" radius={[0, 4, 4, 0]}>
+                <LabelList dataKey="n" position="right" fill="#57534E" fontSize={11} fontWeight={700} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>

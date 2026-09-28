@@ -6,6 +6,7 @@ export interface ChatTurn { role: 'user' | 'ai'; text: string; }
 interface CareerAssistantResponse { text?: string; }
 
 const localGroqKey = import.meta.env.VITE_GROQ_API_KEY as string | undefined;
+const localGroqModel = (import.meta.env.VITE_GROQ_MODEL as string | undefined) || 'llama-3.3-70b-versatile';
 
 function createRequest(message: string, history: ChatTurn[], companies: Entreprise[], profile?: ProfileData) {
   const companySummary = companies.slice(0, 25).map(company => `- ${company.nom} (${company.domaine || 'Général'}${company.sous_domaine ? ` / ${company.sous_domaine}` : ''})`).join('\n');
@@ -25,7 +26,7 @@ async function callGroqDirectly(message: string, history: ChatTurn[], companies:
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localGroqKey}` },
     body: JSON.stringify({
-      model: 'openai/gpt-oss-20b',
+      model: localGroqModel,
       temperature: 0.7,
       max_tokens: 1200,
       messages: [
@@ -38,7 +39,7 @@ async function callGroqDirectly(message: string, history: ChatTurn[], companies:
     const detail = await response.json().catch(() => null) as { error?: { message?: string } } | null;
     throw new Error(detail?.error?.message || 'Groq a renvoyé une erreur.');
   }
-  const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+  const payload = await response.json() as { choices?: Array<{ message?: { content?: string | null } }> };
   const text = payload.choices?.[0]?.message?.content?.trim();
   if (!text) throw new Error("Groq n'a retourné aucune réponse.");
   return text;

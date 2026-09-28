@@ -75,7 +75,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
   const existingCandidature = candidatures.find(c => c.entreprise_id === company.id);
 
   return (
-    <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7] relative">
+    <div className="company-detail flex-1 overflow-auto p-8 bg-[#FBF9F7] relative">
       <PageHeader title="Company Details" back onBack={onBack} />
 
       {appliedSuccess && (
@@ -93,23 +93,23 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
       )}
 
       {/* Header card */}
-      <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-6 mb-5">
-        <div className="flex items-start gap-5 flex-wrap">
+      <div className="company-header-card bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-6 mb-5">
+        <div className="company-header-layout flex items-start gap-5 flex-wrap">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0" style={{ backgroundColor: sc }}>
             {initials}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1 flex-wrap">
-              <h2 className="text-xl font-bold text-[#1C1917] break-words">{company.nom}</h2>
+              <h2 className="company-title text-xl font-bold text-[#1C1917] break-words">{company.nom}</h2>
               <SectorPill domaine={company.domaine || 'Domaine non renseign\u00e9'} sousDomaine={company.sous_domaine} />
             </div>
-            <div className="flex items-center gap-5 text-sm text-[#78716C] flex-wrap">
+            <div className="company-contact-list flex items-center gap-5 text-sm text-[#78716C] flex-wrap">
               <span className="flex items-center gap-1 min-w-0 max-w-full"><MapPin size={13} className="shrink-0" /><span className="break-words">{companyAddress(company)}</span></span>
               <span className="flex items-center gap-1 min-w-0 max-w-full"><Globe size={13} className="shrink-0" /><span className="break-all">{company.site_web || 'Site non renseign\u00e9'}</span></span>
               <span className="flex items-center gap-1 min-w-0 max-w-full"><Mail size={13} className="shrink-0" /><span className="break-all">{company.email || 'Email non renseign\u00e9'}</span></span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="company-actions flex items-center gap-2 shrink-0">
             <button onClick={() => onFav(company.id)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${isFav ? 'bg-[#D9828D]/10 text-[#D9828D] border-[#D9828D]/30' : 'bg-white text-[#78716C] border-[#EAE5E0] hover:border-[#D9828D]'}`}>
               <Heart size={14} className={isFav ? 'fill-[#D9828D]' : ''} /> {isFav ? 'Saved' : 'Save'}
             </button>

@@ -1,21 +1,39 @@
+import { useState } from 'react';
 import {
   LayoutDashboard, Building2, Map,
   FileText, ClipboardList, Heart, BarChart3, User,
-  Settings as Gear, MapPin, ShieldCheck, BriefcaseBusiness,
+  Settings as Gear, MapPin, ShieldCheck, BriefcaseBusiness, Menu, X,
 } from 'lucide-react';
 import type { NavPage } from '../types';
 import { userInitials } from '../utils';
 import { useLanguage } from '../i18n';
 
+type NavigationItem = {
+  id: NavPage;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+};
+
 export default function Sidebar({ active, onNavigate, userName, userEmail, isAdmin }: {
   active: NavPage; onNavigate: (p: NavPage) => void; userName: string; userEmail: string; isAdmin: boolean;
 }) {
   const { t } = useLanguage();
-  const primaryNav: Array<{ id: NavPage; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
-    { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard }, { id: 'companies', label: t('companies'), icon: Building2 }, { id: 'opportunities', label: 'Offres', icon: BriefcaseBusiness }, { id: 'map', label: t('map'), icon: Map }, { id: 'cv-studio', label: t('cvStudio'), icon: FileText }, { id: 'applications', label: t('applications'), icon: ClipboardList }, { id: 'favorites', label: t('favorites'), icon: Heart }, { id: 'analytics', label: t('analytics'), icon: BarChart3 },
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const primaryNav: NavigationItem[] = [
+    { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { id: 'companies', label: t('companies'), icon: Building2 },
+    { id: 'opportunities', label: 'Offres', icon: BriefcaseBusiness },
+    { id: 'map', label: t('map'), icon: Map },
+    { id: 'cv-studio', label: t('cvStudio'), icon: FileText },
+    { id: 'applications', label: t('applications'), icon: ClipboardList },
+    { id: 'favorites', label: t('favorites'), icon: Heart },
+    { id: 'analytics', label: t('analytics'), icon: BarChart3 },
   ];
-  const bottomNav: Array<{ id: NavPage; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
-    ...(isAdmin ? [{ id: 'admin' as NavPage, label: t('admin'), icon: ShieldCheck }] : []), { id: 'profile', label: t('profile'), icon: User }, { id: 'settings', label: t('settings'), icon: Gear },
+  const bottomNav: NavigationItem[] = [
+    ...(isAdmin ? [{ id: 'admin' as NavPage, label: t('admin'), icon: ShieldCheck }] : []),
+    { id: 'profile', label: t('profile'), icon: User },
+    { id: 'settings', label: t('settings'), icon: Gear },
   ];
 
   const isActive = (id: NavPage) =>
@@ -24,49 +42,92 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
     (id === 'cv-studio' && active === 'cv-analyzer') ||
     (id === 'applications' && active === 'campaign');
 
-  return (
-    <div className="w-52 shrink-0 bg-[#621E3E] flex flex-col h-full max-md:h-auto max-md:w-full">
-      <div className="px-5 py-5 flex items-center gap-3 border-b border-white/10 max-md:px-4 max-md:py-3">
-        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-          <MapPin size={18} className="text-[#C6C954]" />
-        </div>
-        <div>
-          <p className="text-white text-xs font-extrabold leading-tight">Marrakech</p>
-          <p className="text-[#C6C954] text-[9px] font-extrabold tracking-[0.25em]">CAREER</p>
-        </div>
+  const navigate = (id: NavPage) => {
+    onNavigate(id);
+    setMobileMenuOpen(false);
+  };
+
+  const navigationButtons = (items: NavigationItem[]) => items.map(({ id, label, icon: Icon }) => (
+    <button
+      key={id}
+      onClick={() => navigate(id)}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left ${
+        isActive(id)
+          ? 'bg-white/15 text-white border-l-2 border-[#C6C954]'
+          : 'text-white/65 hover:text-white hover:bg-white/10'
+      }`}
+    >
+      <Icon size={16} className={isActive(id) ? 'text-[#C6C954]' : ''} />
+      {label}
+    </button>
+  ));
+
+  const brand = (
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+        <MapPin size={18} className="text-[#C6C954]" />
       </div>
-
-      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto max-md:flex max-md:gap-1 max-md:space-y-0 max-md:overflow-x-auto max-md:py-2">
-        {primaryNav.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onNavigate(id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left max-md:w-auto max-md:shrink-0 max-md:whitespace-nowrap max-md:px-3 max-md:py-2 ${isActive(id) ? 'bg-white/15 text-white border-l-2 border-[#C6C954]' : 'text-white/55 hover:text-white/85 hover:bg-white/8'}`}
-          >
-            <Icon size={15} className={isActive(id) ? 'text-[#C6C954]' : ''} />
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="px-3 pb-3 border-t border-white/10 pt-3 space-y-0.5 max-md:flex max-md:items-center max-md:gap-1 max-md:overflow-x-auto max-md:space-y-0 max-md:py-2">
-        {bottomNav.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onNavigate(id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left max-md:w-auto max-md:shrink-0 max-md:whitespace-nowrap max-md:px-3 max-md:py-2 ${isActive(id) ? 'bg-white/15 text-white' : 'text-white/55 hover:text-white/85 hover:bg-white/8'}`}
-          >
-            <Icon size={15} /> {label}
-          </button>
-        ))}
-        <div className="px-3 py-3 flex items-center gap-2.5 max-md:shrink-0 max-md:px-2 max-md:py-1">
-          <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white text-xs font-bold">{userInitials(userName, userEmail)}</div>
-          <div className="max-md:hidden">
-            <p className="text-white/80 text-xs font-semibold">{userName || userEmail}</p>
-            {userEmail && <p className="text-white/40 text-[10px]">{userEmail}</p>}
-          </div>
-        </div>
+      <div>
+        <p className="text-white text-xs font-extrabold leading-tight">Marrakech</p>
+        <p className="text-[#C6C954] text-[9px] font-extrabold tracking-[0.25em]">CAREER</p>
       </div>
     </div>
+  );
+
+  const userBlock = (
+    <div className="flex items-center gap-2.5 px-3 py-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
+        {userInitials(userName, userEmail)}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-white/90">{userName || userEmail}</p>
+        {userEmail && <p className="truncate text-[10px] text-white/50">{userEmail}</p>}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <header className="fixed inset-x-0 top-0 z-40 flex h-[68px] items-center justify-between border-b border-white/10 bg-[#621E3E] px-4 shadow-md md:hidden">
+        {brand}
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Ouvrir le menu"
+          aria-expanded={mobileMenuOpen}
+          className="rounded-xl p-2 text-white hover:bg-white/10"
+        >
+          <Menu size={25} />
+        </button>
+      </header>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menu de navigation">
+          <button type="button" aria-label="Fermer le menu" className="absolute inset-0 bg-black/45" onClick={() => setMobileMenuOpen(false)} />
+          <aside className="relative flex h-full w-[min(82vw,320px)] flex-col bg-[#621E3E] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+              {brand}
+              <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Fermer le menu" className="rounded-xl p-2 text-white hover:bg-white/10">
+                <X size={22} />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">{navigationButtons(primaryNav)}</nav>
+            <div className="space-y-0.5 border-t border-white/10 px-3 pb-3 pt-3">
+              {navigationButtons(bottomNav)}
+              {userBlock}
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <aside className="hidden h-full w-52 shrink-0 flex-col bg-[#621E3E] md:flex">
+        <div className="border-b border-white/10 px-5 py-5">{brand}</div>
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">{navigationButtons(primaryNav)}</nav>
+        <div className="space-y-0.5 border-t border-white/10 px-3 pb-3 pt-3">
+          {navigationButtons(bottomNav)}
+          {userBlock}
+        </div>
+      </aside>
+    </>
   );
 }

@@ -13,11 +13,11 @@ export default function FavoritesScreen({ companies, loading, error, favs, onFav
   const savedOffers = offers.filter(offer => favoriteOffers.has(offer.id));
 
   return (
-    <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7]">
+    <div className="min-w-0 flex-1 overflow-auto bg-[#FBF9F7] p-4 sm:p-6 lg:p-8">
       <PageHeader title="Favoris" sub={`${saved.length} entreprise${saved.length > 1 ? 's' : ''} et ${savedOffers.length} offre${savedOffers.length > 1 ? 's' : ''} enregistrée${savedOffers.length > 1 ? 's' : ''}`} />
-      <div className="mb-6 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1">
-        <button type="button" onClick={() => setCategory('companies')} className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${category === 'companies' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C]'}`}><Heart size={14} /> Entreprises favorites <span className="rounded-full bg-[#F1ECE7] px-2 py-0.5 text-[11px]">{saved.length}</span></button>
-        <button type="button" onClick={() => setCategory('offers')} className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${category === 'offers' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C]'}`}><BriefcaseBusiness size={14} /> Offres favorites <span className="rounded-full bg-[#F1ECE7] px-2 py-0.5 text-[11px]">{savedOffers.length}</span></button>
+      <div className="mb-6 grid w-full grid-cols-2 gap-1 rounded-xl bg-[#EAE5E0] p-1 sm:flex sm:w-fit">
+        <button type="button" onClick={() => setCategory('companies')} className={`flex min-w-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-center text-xs font-bold transition sm:px-4 sm:text-sm ${category === 'companies' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C]'}`}><Heart size={14} /> Entreprises favorites <span className="rounded-full bg-[#F1ECE7] px-2 py-0.5 text-[11px]">{saved.length}</span></button>
+        <button type="button" onClick={() => setCategory('offers')} className={`flex min-w-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-center text-xs font-bold transition sm:px-4 sm:text-sm ${category === 'offers' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C]'}`}><BriefcaseBusiness size={14} /> Offres favorites <span className="rounded-full bg-[#F1ECE7] px-2 py-0.5 text-[11px]">{savedOffers.length}</span></button>
       </div>
       {category === 'companies' && <>
       <CompanyStatus loading={loading} error={error} />
@@ -27,7 +27,7 @@ export default function FavoritesScreen({ companies, loading, error, favs, onFav
           <p className="text-[#A8A29E]">Aucune entreprise favorite pour le moment.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {saved.map(c => <CompanyCard key={c.id} company={c} isFav={true} onFav={onFav} onView={onView} />)}
         </div>
       )}

@@ -2,15 +2,18 @@
 @import './tailwind.css';
 @import './theme.css';
 
+
 .company-map-marker {
 	background: transparent;
 	border: 0;
 }
 
+
 .company-map-marker svg {
 	display: block;
 	filter: drop-shadow(0 2px 3px rgb(28 25 23 / 35%));
 }
+
 
 .company-map-marker > span {
 	display: flex;
@@ -23,10 +26,45 @@
 	box-shadow: 0 2px 7px rgb(28 25 23 / 35%);
 }
 
+
 .company-map-marker-dot {
 	display: block;
 	width: 9px;
 	height: 9px;
 	border: 2px solid #fff;
 	border-radius: 9999px;
+}
+
+/* Mobile: keep every application screen readable on a phone. */
+@media (max-width: 767px) {
+	.p-8 {
+		padding: 1rem !important;
+	}
+
+	.grid-cols-3,
+	.grid-cols-4,
+	.grid-cols-6 {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+
+	.grid-cols-2:not([class*="sm:flex"]) {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+
+	.w-64,
+	.w-72 {
+		max-width: 100%;
+	}
+
+	.w-\[520px\] {
+		width: 100%;
+		max-width: 520px;
+	}
+
+	.fixed.w-96 {
+		right: 1rem;
+		bottom: 1rem;
+		width: calc(100vw - 2rem);
+		height: min(70dvh, 560px);
+	}
 }

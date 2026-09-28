@@ -68,3 +68,34 @@
 		height: min(70dvh, 560px);
 	}
 }
+
+
+@media (max-width: 767px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .dashboard-stats > div {
+    min-width: 0;
+    padding: 0.75rem !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .dashboard-stats > div > div:first-child {
+    padding: 0.45rem;
+  }
+
+  .dashboard-stats p:first-child {
+    font-size: 0.68rem;
+    line-height: 0.9rem;
+  }
+
+  .dashboard-stats p:last-child {
+    font-size: 1.45rem;
+    line-height: 1.5rem;
+  }
+}

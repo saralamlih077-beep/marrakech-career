@@ -1,4 +1,4 @@
-np;# Environnement
+# Environnement
 .env
 .env.local
 .env.*.local
@@ -7,6 +7,16 @@ np;# Environnement
 node_modules
 .npm-cache
 .pnpm-store
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
 
 # Build
 dist

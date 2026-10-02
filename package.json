@@ -2,6 +2,7 @@
   "name": "marrakech-career",
   "private": true,
   "version": "0.0.1",
+  "packageManager": "pnpm@10.34.6",
   "type": "module",
   "scripts": {
     "build": "vite build",

@@ -2,11 +2,12 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Building2, Map, Sparkles, MessageSquare,
   FileText, ClipboardList, Heart, BarChart3, User,
-  Settings as Gear, MapPin, ShieldCheck, BriefcaseBusiness, Menu, X,
+  Settings as Gear, ShieldCheck, BriefcaseBusiness, Menu, X,
 } from 'lucide-react';
 import type { NavPage } from '../types';
 import { userInitials } from '../utils';
 import { useLanguage } from '../i18n';
+import logo from '../../assets/marrakech-career-logo.svg';
 
 type NavigationItem = {
   id: NavPage;
@@ -60,10 +61,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
   ));
 
   const brand = (
-    <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center"><MapPin size={18} className="text-[#C6C954]" /></div>
-      <div><p className="text-white text-xs font-extrabold leading-tight">Marrakech</p><p className="text-[#C6C954] text-[9px] font-extrabold tracking-[0.25em]">CAREER</p></div>
-    </div>
+    <img src={logo} alt="Marrakech Career" className="h-10 w-auto max-w-[166px] object-contain object-left" />
   );
 
   return (

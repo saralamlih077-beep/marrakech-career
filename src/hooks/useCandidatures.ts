@@ -16,6 +16,15 @@ export interface Candidature {
   company_reply?: string;
   replied_at?: string | null;
   cover_letter?: string;
+  candidate_name?: string;
+  candidate_email?: string;
+  cv_bucket?: string;
+  cv_path?: string;
+  cv_file_name?: string;
+  cv_content_type?: string;
+  delivery_status?: 'draft' | 'queued' | 'sent' | 'failed' | string;
+  delivery_error?: string;
+  sent_at?: string | null;
   created_at: string;
   updated_at?: string;
 }
@@ -46,6 +55,15 @@ function parseCandidatures(rows: unknown): Candidature[] {
       company_reply: typeof record.company_reply === 'string' ? record.company_reply : '',
       replied_at: typeof record.replied_at === 'string' ? record.replied_at : null,
       cover_letter: typeof record.cover_letter === 'string' ? record.cover_letter : '',
+      candidate_name: typeof record.candidate_name === 'string' ? record.candidate_name : '',
+      candidate_email: typeof record.candidate_email === 'string' ? record.candidate_email : '',
+      cv_bucket: typeof record.cv_bucket === 'string' ? record.cv_bucket : '',
+      cv_path: typeof record.cv_path === 'string' ? record.cv_path : '',
+      cv_file_name: typeof record.cv_file_name === 'string' ? record.cv_file_name : '',
+      cv_content_type: typeof record.cv_content_type === 'string' ? record.cv_content_type : '',
+      delivery_status: typeof record.delivery_status === 'string' ? record.delivery_status : 'draft',
+      delivery_error: typeof record.delivery_error === 'string' ? record.delivery_error : '',
+      sent_at: typeof record.sent_at === 'string' ? record.sent_at : null,
       created_at: typeof record.created_at === 'string' ? record.created_at : '',
       updated_at: typeof record.updated_at === 'string' ? record.updated_at : undefined,
     }];

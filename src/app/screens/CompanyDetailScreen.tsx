@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
 import {
   Heart, MapPin, Globe, Mail, Send, X,
-  CheckCircle, Eye, FilePenLine, Copy
+  Sparkles, CheckCircle, Eye, FilePenLine, Copy
 } from 'lucide-react';
 import { useCandidatures } from '../../hooks/useCandidatures';
 import { useProfile } from '../../hooks/useProfile';
 import { DOMAIN_COLORS } from '../constants';
-import { companyAddress } from '../utils';
+import { matchColor, companyMatch, companyAddress } from '../utils';
 import { SectorPill, SkillTag, PageHeader } from '../components/shared';
 import type { Company, NavPage } from '../types';
 import { supabase } from '../../lib/supabaseClient';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 
 export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onNavigate }: {
-  company: Company; isFav: boolean; onFav: (id: number) => void; onBack: () => void; onNavigate?: (page: NavPage) => void; onCampaign?: (companyId: number) => void;
+  company: Company; isFav: boolean; onFav: (id: number) => void; onBack: () => void; onNavigate?: (page: NavPage) => void;
 }) {
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
+  const match = companyMatch(company);
 
   const { data: candidatures, createCandidature } = useCandidatures();
   const { profile } = useProfile();
@@ -25,7 +26,6 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
   const [targetStatut, setTargetStatut] = useState('applied');
   const [notes, setNotes] = useState('');
   const [applying, setApplying] = useState(false);
-  const [applyError, setApplyError] = useState('');
   const [appliedSuccess, setAppliedSuccess] = useState(false);
   const [about, setAbout] = useState(company.about_summary || '');
   const [aboutSource, setAboutSource] = useState(company.about_source_url || '');
@@ -75,7 +75,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
   const existingCandidature = candidatures.find(c => c.entreprise_id === company.id);
 
   return (
-    <div className="company-detail flex-1 overflow-auto p-8 bg-[#FBF9F7] relative">
+    <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7] relative">
       <PageHeader title="Company Details" back onBack={onBack} />
 
       {appliedSuccess && (
@@ -93,23 +93,23 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
       )}
 
       {/* Header card */}
-      <div className="company-header-card bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-6 mb-5">
-        <div className="company-header-layout flex items-start gap-5 flex-wrap">
+      <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-6 mb-5">
+        <div className="flex items-start gap-5 flex-wrap">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0" style={{ backgroundColor: sc }}>
             {initials}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1 flex-wrap">
-              <h2 className="company-title text-xl font-bold text-[#1C1917] break-words">{company.nom}</h2>
+              <h2 className="text-xl font-bold text-[#1C1917] break-words">{company.nom}</h2>
               <SectorPill domaine={company.domaine || 'Domaine non renseign\u00e9'} sousDomaine={company.sous_domaine} />
             </div>
-            <div className="company-contact-list flex items-center gap-5 text-sm text-[#78716C] flex-wrap">
+            <div className="flex items-center gap-5 text-sm text-[#78716C] flex-wrap">
               <span className="flex items-center gap-1 min-w-0 max-w-full"><MapPin size={13} className="shrink-0" /><span className="break-words">{companyAddress(company)}</span></span>
               <span className="flex items-center gap-1 min-w-0 max-w-full"><Globe size={13} className="shrink-0" /><span className="break-all">{company.site_web || 'Site non renseign\u00e9'}</span></span>
               <span className="flex items-center gap-1 min-w-0 max-w-full"><Mail size={13} className="shrink-0" /><span className="break-all">{company.email || 'Email non renseign\u00e9'}</span></span>
             </div>
           </div>
-          <div className="company-actions flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => onFav(company.id)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${isFav ? 'bg-[#D9828D]/10 text-[#D9828D] border-[#D9828D]/30' : 'bg-white text-[#78716C] border-[#EAE5E0] hover:border-[#D9828D]'}`}>
               <Heart size={14} className={isFav ? 'fill-[#D9828D]' : ''} /> {isFav ? 'Saved' : 'Save'}
             </button>
@@ -118,7 +118,7 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                 <CheckCircle size={14} /> Applied ({existingCandidature.statut})
               </button>
             ) : (
-              <button onClick={() => onCampaign?.(company.id)} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
+              <button onClick={() => setShowApplyModal(true)} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors shadow-sm">
                 <Send size={14} /> Apply
               </button>
             )}
@@ -165,7 +165,6 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
               </button>
             </div>
 
-            {applyError && <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{applyError}</div>}
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#57534E] mb-1">Poste cibl\u00e9</label>
@@ -227,7 +226,6 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                   type="button"
                   disabled={applying}
                   onClick={async () => {
-                    setApplyError('');
                     setApplying(true);
                     const res = await createCandidature({
                       entreprise_id: company.id,
@@ -241,8 +239,6 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
                       setShowApplyModal(false);
                       setAppliedSuccess(true);
                       setTimeout(() => setAppliedSuccess(false), 5000);
-                    } else {
-                      setApplyError('Impossible d’enregistrer la candidature. Vérifiez votre connexion et les droits Supabase.');
                     }
                   }}
                   className="flex-1 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors disabled:opacity-50"
@@ -294,7 +290,33 @@ export default function CompanyDetailScreen({ company, isFav, onFav, onBack, onN
           </div>
         </div>
 
+        {/* AI Match panel */}
         <div className="space-y-5">
+          <div className="bg-white rounded-xl border border-[#C6C954]/40 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles size={15} className="text-[#667436]" />
+              <h3 className="text-sm font-bold text-[#1C1917]">AI Profile Match</h3>
+            </div>
+            <div className="text-center mb-4">
+              <div className="text-4xl font-extrabold mb-1" style={{ color: matchColor(match) }}>{match}%</div>
+              <p className="text-xs text-[#78716C]">Profile compatibility</p>
+            </div>
+            <div className="w-full h-2 bg-[#F5F1ED] rounded-full mb-4 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${match}%`, backgroundColor: matchColor(match) }} />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-[#57534E] mb-2">Matching skills</p>
+              <span className="text-xs text-[#A8A29E]">Sélectionnez une offre vérifiée pour voir ses compétences.</span>
+            </div>
+            <div className="mt-3 space-y-1.5">
+              <p className="text-xs font-semibold text-[#57534E] mb-2">Skills to develop</p>
+              <span className="text-xs text-[#A8A29E]">Disponible après comparaison avec une offre.</span>
+            </div>
+            <p className="text-xs text-[#78716C] mt-3 leading-relaxed">
+              Ce score est indicatif pour le secteur. Les scores réellement liés aux compétences sont disponibles dans « Offres réelles ».
+            </p>
+          </div>
+
           <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
             <h3 className="text-sm font-bold text-[#1C1917] mb-3">Contact</h3>
             <div className="space-y-2 text-sm text-[#78716C]">

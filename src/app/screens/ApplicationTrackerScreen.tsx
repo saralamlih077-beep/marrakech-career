@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Bot, CalendarPlus, Clock3, Send, Trash2, X } from 'lucide-react';
+import { Bot, CalendarPlus, Clock3, Send, Trash2, X, Zap } from 'lucide-react';
 import { useCandidatures } from '../../hooks/useCandidatures';
-import { CompanyStatus } from '../components/shared';
+import { CompanyStatus, MatchBadge } from '../components/shared';
 import type { Company } from '../types';
+import { companyMatch } from '../utils';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 
-export default function ApplicationTrackerScreen({ companies, favs, onCampaign }: { companies: Company[]; favs: Set<number>; onCampaign: () => void }) {
+export default function ApplicationTrackerScreen({ companies, favs, onCampaign, onAutomation }: { companies: Company[]; favs: Set<number>; onCampaign: () => void; onAutomation: () => void }) {
   const { data: candidatures, loading, error, updateCandidatureStatus, updateCandidature, deleteCandidature } = useCandidatures();
   const [messageCardId, setMessageCardId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -78,6 +79,9 @@ export default function ApplicationTrackerScreen({ companies, favs, onCampaign }
           <button onClick={onCampaign} className="flex items-center gap-2 px-4 py-2 bg-[#667436] text-white rounded-xl text-sm font-semibold hover:bg-[#52592b] transition-colors">
             <Send size={13} /> Campaign
           </button>
+          <button onClick={onAutomation} className="flex items-center gap-2 px-4 py-2 bg-[#621E3E] text-white rounded-xl text-sm font-semibold hover:bg-[#4e1830] transition-colors">
+            <Zap size={13} /> Automation
+          </button>
         </div>
       </div>
 
@@ -126,7 +130,10 @@ export default function ApplicationTrackerScreen({ companies, favs, onCampaign }
                   <div key={`favorite-${company.id}`} className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-3.5 hover:shadow-md transition-shadow">
                     <p className="text-xs font-bold text-[#1C1917] mb-0.5">{company.nom}</p>
                     <p className="text-[10px] text-[#78716C] mb-2">{company.domaine || 'Domaine non renseigné'}</p>
-                    <span className="text-[10px] text-[#A8A29E]">Favori</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <MatchBadge pct={companyMatch(company)} />
+                      <span className="text-[10px] text-[#A8A29E]">· Favori</span>
+                    </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px]" style={{ backgroundColor: `${col.color}20`, color: col.color, fontWeight: 600 }}>Saved</span>
                   </div>
                 ))}
@@ -154,7 +161,10 @@ export default function ApplicationTrackerScreen({ companies, favs, onCampaign }
                           "{card.notes}"
                         </p>
                       )}
-                      <div className="mb-3 text-[10px] text-[#A8A29E]">{card.created_at ? new Date(card.created_at).toLocaleDateString() : 'Date'}</div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <MatchBadge pct={company ? companyMatch(company) : 0} />
+                        <span className="text-[10px] text-[#A8A29E]">· {card.created_at ? new Date(card.created_at).toLocaleDateString() : 'Date'}</span>
+                      </div>
                       {card.date_postulee && <p className="mb-2 text-[10px] text-[#78716C]">Envoyée le {new Date(card.date_postulee).toLocaleDateString('fr-FR')}</p>}
                       {card.follow_up_at ? <p className="mb-2 flex items-center gap-1 text-[10px] font-semibold text-[#667436]"><Clock3 size={11} /> Relance : {new Date(card.follow_up_at).toLocaleDateString('fr-FR')}</p> : card.statut.toLowerCase() === 'applied' ? <button onClick={() => void updateCandidature(card.id, { follow_up_at: new Date(Date.now() + 7 * 86400000).toISOString() })} className="mb-2 flex items-center gap-1 text-[10px] font-bold text-[#667436] hover:underline"><CalendarPlus size={11} /> Planifier une relance à 7 jours</button> : null}
                       {card.company_reply && <p className="mb-2 rounded-lg bg-[#F5F1ED] p-1.5 text-[10px] text-[#57534E]">Réponse enregistrée</p>}

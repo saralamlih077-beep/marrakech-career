@@ -10,7 +10,6 @@ export interface JobOffer {
   description: string;
   requirements: string;
   skills: string[];
-  source_name: string | null;
   source_url: string | null;
   created_at: string;
   expires_at: string | null;
@@ -28,7 +27,7 @@ export function useJobOffers() {
       setLoading(true);
       const { data, error: queryError } = await supabase
         .from('job_offers')
-        .select('id, entreprise_id, title, contract_type, location, description, requirements, skills, source_name, source_url, created_at, expires_at, entreprises(nom, email)')
+        .select('id, entreprise_id, title, contract_type, location, description, requirements, skills, source_url, created_at, expires_at, entreprises(nom, email)')
         .eq('status', 'verified')
         .order('created_at', { ascending: false });
       if (!active) return;

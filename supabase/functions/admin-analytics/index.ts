@@ -15,10 +15,9 @@ Deno.serve(async (request) => {
     const allowed = (Deno.env.get('ADMIN_EMAILS') || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean);
     if (!user?.email || !allowed.includes(user.email.toLowerCase())) return Response.json({ error: 'Forbidden' }, { status: 403, headers });
 
-    const [{ data: authUsers, error: usersError }, profilesCompleted, profileSummaries, favorites, applications, offers, feedback] = await Promise.all([
+    const [{ data: authUsers, error: usersError }, profilesCompleted, favorites, applications, offers, feedback] = await Promise.all([
       service.auth.admin.listUsers({ page: 1, perPage: 1000 }),
       count(service.from('profiles').select('*', { count: 'exact', head: true }).not('job_title', 'is', null).not('skills', 'is', null)),
-      service.from('profiles').select('id, full_name'),
       count(service.from('favoris').select('*', { count: 'exact', head: true })),
       service.from('candidatures').select('statut'),
       service.from('job_offers').select('status'),
@@ -26,19 +25,7 @@ Deno.serve(async (request) => {
     ]);
     if (usersError) throw usersError;
     const users = authUsers.users || [];
-    const profileNames = new Map((profileSummaries.data || []).map((profile) => [profile.id, typeof profile.full_name === 'string' ? profile.full_name : '']));
-    const registeredUsers = users
-      .map((item) => ({ id: item.id, email: item.email || '', fullName: profileNames.get(item.id) || '', createdAt: item.created_at, emailConfirmedAt: item.email_confirmed_at || null }))
-      .sort((first, second) => Date.parse(second.createdAt) - Date.parse(first.createdAt));
     const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const registrationsByDay = Array.from({ length: 30 }, (_, index) => {
-      const day = new Date(); day.setHours(0, 0, 0, 0); day.setDate(day.getDate() - (29 - index));
-      const nextDay = new Date(day); nextDay.setDate(day.getDate() + 1);
-      return { date: day.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }), value: users.filter((item) => Date.parse(item.created_at) >= day.getTime() && Date.parse(item.created_at) < nextDay.getTime()).length };
-    });
-    const confirmedEmails = users.filter((item) => Boolean(item.email_confirmed_at)).length;
-    const emailConfirmation = [{ name: 'Confirmés', value: confirmedEmails }, { name: 'À confirmer', value: Math.max(0, users.length - confirmedEmails) }];
-    const profileCompletion = [{ name: 'Profils complets', value: profilesCompleted }, { name: 'À compléter', value: Math.max(0, users.length - profilesCompleted) }];
     const applicationsByStatus: Record<string, number> = {};
     for (const item of applications.data || []) { const status = typeof item.statut === 'string' ? item.statut : 'saved'; applicationsByStatus[status] = (applicationsByStatus[status] || 0) + 1; }
     const offerStatus = { total: 0, verified: 0, pending: 0, closed: 0 };
@@ -54,6 +41,6 @@ Deno.serve(async (request) => {
       const text = await response.json().catch(() => null);
       interpretation = text?.choices?.[0]?.message?.content?.trim() || interpretation;
     }
-    return Response.json({ users: { total: users.length, newLast30Days: users.filter((item) => Date.parse(item.created_at) >= since).length, profilesCompleted, registeredUsers, registrationsByDay, emailConfirmation, profileCompletion }, activity: { favorites, applications: (applications.data || []).length, applicationsByStatus }, offers: offerStatus, feedback: { total: totalFeedback, averageRating, ratings, interpretation } }, { headers });
+    return Response.json({ users: { total: users.length, newLast30Days: users.filter((item) => Date.parse(item.created_at) >= since).length, profilesCompleted }, activity: { favorites, applications: (applications.data || []).length, applicationsByStatus }, offers: offerStatus, feedback: { total: totalFeedback, averageRating, ratings, interpretation } }, { headers });
   } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Erreur d’administration.' }, { status: 500, headers }); }
 });

@@ -1,68 +1,91 @@
-# Connexion n8n (à configurer manuellement)
+# Envoi automatique des candidatures avec n8n
 
-L’application ne déclenche volontairement aucun webhook n8n tant que vous ne l’avez pas connecté. Cela évite les e-mails ou changements de suivi involontaires.
+Cette intégration envoie les candidatures depuis **marrakechcareer@gmail.com**. Le candidat ne connecte jamais Gmail.
 
-## Workflow recommandé
+À chaque clic sur « Envoyer » dans la campagne :
 
-1. Créez un workflow avec un nœud **Webhook** en `POST` et protégez-le avec une authentification adaptée.
-2. Après la validation explicite de l’utilisateur, recevez un objet de ce type :
+1. Supabase archive, de façon privée, le nom et l’e-mail du candidat, la lettre et le CV.
+2. Supabase donne à n8n un lien privé valable une heure pour télécharger le CV.
+3. n8n joint le CV et envoie le message à l’entreprise.
+4. La candidature est marquée `sent` dans Supabase uniquement après le succès de n8n.
 
-```json
-{
-  "approval": true,
-  "companyId": 42,
-  "recipient": "recrutement@entreprise.ma",
-  "subject": "Candidature — Data Analyst — Nom",
-  "body": "...",
-  "applicationId": "uuid"
-}
-```
+## Pré-requis indispensables
 
-3. Vérifiez impérativement `approval === true` et que l’adresse e-mail correspond à l’entreprise attendue.
-4. Branchez votre nœud Gmail ou SMTP, puis mettez à jour la candidature dans Supabase avec le statut `applied` seulement après une réponse d’envoi réussie.
-5. Ne placez ni mot de passe, ni clé n8n secrète dans une variable `VITE_*` : ces valeurs sont accessibles depuis le navigateur. Si vous connectez plus tard le front-end à n8n, passez par une Supabase Edge Function.
+- Une instance n8n accessible en HTTPS : n8n Cloud, Render, Railway ou un serveur. `localhost:5678` ne fonctionne pas depuis le site Vercel.
+- Le compte Gmail officiel connecté **dans n8n** avec `marrakechcareer@gmail.com`.
+- La migration `202609290001_n8n_application_delivery.sql` appliquée dans Supabase.
 
-## État actuel
+## Créer le workflow n8n
 
-Le bouton « Ouvrir le brouillon » ouvre le client e-mail local du candidat et crée une candidature au statut `prepared`. Vous gardez donc la validation et l’envoi sous contrôle, jusqu’à l’intégration n8n.
-
-## Campagne groupée avec CV joint
-
-La nouvelle campagne envoie à n8n la liste d’entreprises favorites sélectionnées, l’objet, le message et un CV PDF/DOC/DOCX. L’utilisateur confirme toujours l’envoi final dans l’application.
-
-1. Dans le nœud **Webhook**, utilisez `POST`, le chemin `marrakech-career` et **Respond** → `Using Respond to Webhook Node`.
-2. Dans les options du Webhook, activez la réception du champ binaire nommé `cv`.
-3. Ajoutez un nœud **Code** : il transforme le tableau JSON `candidates` en un élément par entreprise et conserve le fichier binaire `cv`.
-
-Code à coller dans ce nœud :
+1. Dans n8n, créez un workflow et ajoutez un nœud **Webhook**.
+   - Méthode : `POST`
+   - Path : `marrakech-career-application`
+   - Response : **Using Respond to Webhook Node**
+   - Authentification : **Header Auth**
+   - Nom de l’en-tête : `x-marrakech-career-secret`
+   - Valeur : créez une longue valeur secrète aléatoire.
+2. Ajoutez un nœud **Code** après Webhook et collez :
 
 ```javascript
-const input = $input.first();
-const body = input.json.body ?? input.json;
-const candidates = typeof body.candidates === 'string'
-  ? JSON.parse(body.candidates)
-  : body.candidates;
+const input = $input.first().json;
+const data = input.body ?? input;
 
-return (candidates ?? [])
-  .filter((company) => company.email)
-  .map((company) => ({
-    json: {
-      recipient: company.email,
-      companyName: company.name,
-      subject: body.subject,
-      message: body.message,
-    },
-    binary: input.binary,
-  }));
+if (!data.applicationId || !data.recipient?.email || !data.cv?.downloadUrl) {
+  throw new Error('Payload de candidature invalide.');
+}
+
+return [{
+  json: {
+    applicationId: data.applicationId,
+    recipient: data.recipient,
+    candidate: data.candidate,
+    subject: data.subject,
+    message: `${data.coverLetter}\n\n---\nCandidat : ${data.candidate.name}\nE-mail : ${data.candidate.email}`,
+    cv: data.cv,
+  },
+}];
 ```
 
-4. Ajoutez **Gmail → Send a message**. Connectez vous-même votre compte Gmail, utilisez l’adresse de chaque élément comme destinataire, `subject` et `message` pour le contenu, puis joignez la propriété binaire `cv`.
-5. Reliez le résultat au nœud **Respond to Webhook** avec une réponse JSON de succès.
+3. Ajoutez **HTTP Request** après ce Code :
+   - Method : `GET`
+   - URL : `={{ $json.cv.downloadUrl }}`
+   - Response Format : `File`
+   - Put Output in Field : `cvFile`
+4. Ajoutez **Gmail → Send a message** :
+   - Credential : connectez `marrakechcareer@gmail.com`.
+   - To : `={{ $json.recipient.email }}`
+   - Subject : `={{ $json.subject }}`
+   - Message : `={{ $json.message }}`
+   - Attachment / Binary property : `cvFile`
+5. Ajoutez **Respond to Webhook** après Gmail avec ce JSON :
 
-Dans `.env`, ajoutez :
-
-```env
-VITE_N8N_WEBHOOK_URL=http://localhost:5678/webhook/marrakech-career
+```json
+{ "sent": true }
 ```
 
-Redémarrez `npm run dev`. Cette URL ne fonctionne que sur le même ordinateur ; pour un site publié, n8n doit avoir un domaine HTTPS ou un tunnel sécurisé.
+6. Activez le workflow, copiez l’URL **Production URL** du Webhook. Elle ressemble à :
+
+```text
+https://votre-n8n.exemple/webhook/marrakech-career-application
+```
+
+## Secrets Supabase à ajouter
+
+Dans **Supabase → Edge Functions → Secrets**, ajoutez :
+
+```text
+N8N_APPLICATION_WEBHOOK_URL = URL Production du Webhook n8n
+N8N_APPLICATION_WEBHOOK_SECRET = la même valeur que Header Auth dans n8n
+```
+
+Ne mettez jamais ces valeurs dans `VITE_*`, dans le navigateur ou dans Git.
+
+## Déployer le serveur Supabase
+
+Déployez la fonction puis testez avec une seule entreprise :
+
+```bash
+supabase functions deploy submit-n8n-application
+```
+
+En cas d’échec n8n, la candidature, la lettre, l’e-mail du candidat et le CV restent enregistrés dans Supabase. Le statut devient `failed` au lieu de perdre la candidature.

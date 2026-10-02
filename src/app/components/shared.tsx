@@ -1,7 +1,7 @@
 import { AlertTriangle, ArrowLeft, Check, Eye, Heart, MapPin, Send } from 'lucide-react';
 import { DOMAIN_COLORS } from '../constants';
 import type { Company } from '../types';
-import { companyAddress, companySkills, matchColor } from '../utils';
+import { companyAddress, companyMatch, companySkills, matchColor } from '../utils';
 
 export function MatchBadge({ pct }: { pct: number }) {
   const c = matchColor(pct);
@@ -13,7 +13,7 @@ export function MatchBadge({ pct }: { pct: number }) {
 export function SectorPill({ domaine, sousDomaine }: { domaine: string; sousDomaine?: string | null }) {
   const c = DOMAIN_COLORS[domaine] || '#621E3E';
   return (
-    <span className="text-[11px] font-bold" style={{ color: c }}>
+    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: c }}>
       {domaine}{sousDomaine ? ` · ${sousDomaine}` : ''}
     </span>
   );
@@ -37,13 +37,14 @@ export function SkillTag({ label, missing = false }: { label: string; missing?: 
   );
 }
 
-export function CompanyCard({ company, isFav, onFav, onView, onApply }: {
+export function CompanyCard({ company, isFav, onFav, onView }: {
   company: Company; isFav: boolean;
-  onFav: (id: number) => void; onView: (c: Company) => void; onApply?: (c: Company) => void;
+  onFav: (id: number) => void; onView: (c: Company) => void;
 }) {
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
   const skills = companySkills(company);
+  const match = companyMatch(company);
   return (
     <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
@@ -55,7 +56,7 @@ export function CompanyCard({ company, isFav, onFav, onView, onApply }: {
           <SectorPill domaine={company.domaine || 'Domaine non renseigné'} sousDomaine={company.sous_domaine} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {company.note !== null && <span className="text-xs font-bold text-[#78716C]">{company.note.toFixed(1)}/5</span>}
+          <MatchBadge pct={match} />
           <button onClick={() => onFav(company.id)}>
             <Heart size={15} className={isFav ? 'fill-[#D9828D] text-[#D9828D]' : 'text-[#C8C2BC] hover:text-[#D9828D]'} />
           </button>
@@ -74,7 +75,7 @@ export function CompanyCard({ company, isFav, onFav, onView, onApply }: {
         <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
           <Eye size={11} /> View
         </button>
-        <button onClick={() => onApply?.(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
+        <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
           <Send size={11} /> Apply
         </button>
       </div>

@@ -1,9 +1,9 @@
 import { MapPin, Sparkles, Eye } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useProfile } from '../../hooks/useProfile';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 import { DOMAIN_COLORS } from '../constants';
-import { matchColor, companySkills, companyAddress, recommendationScore, userInitials } from '../utils';
+import { matchColor, companyMatch, companySkills, companyAddress, recommendationScore, userInitials } from '../utils';
 import { SectorPill, SkillTag, CompanyStatus } from '../components/shared';
 import type { Company } from '../types';
 
@@ -13,28 +13,16 @@ export default function AIMatchingScreen({ companies, loading, error, favs, onFa
   const [aiRanking, setAiRanking] = useState<Record<number, { score: number; reason: string }>>({});
   const [matching, setMatching] = useState(false);
   const [matchError, setMatchError] = useState('');
-  const hasProfileForMatching = Boolean(
-    profile.job_title.trim() || profile.skills.trim() || profile.education.trim() ||
-    profile.experience.trim() || profile.projects.trim() || profile.languages.trim(),
-  );
-  const hasCalculatedMatches = Object.keys(aiRanking).length > 0;
   const baseRanked = useMemo(() => [...companies].sort((a, b) => recommendationScore(b, profile) - recommendationScore(a, profile)), [companies, profile]);
-  const rankedMatches = useMemo(() => !hasCalculatedMatches ? [] : [...baseRanked].sort((a, b) => (aiRanking[b.id]?.score ?? recommendationScore(b, profile)) - (aiRanking[a.id]?.score ?? recommendationScore(a, profile))), [aiRanking, baseRanked, hasCalculatedMatches, profile]);
+  const rankedMatches = useMemo(() => [...baseRanked].sort((a, b) => (aiRanking[b.id]?.score ?? recommendationScore(b, profile)) - (aiRanking[a.id]?.score ?? recommendationScore(a, profile))), [aiRanking, baseRanked, profile]);
   const scoreFor = (company: Company) => aiRanking[company.id]?.score ?? recommendationScore(company, profile);
   const strongMatches = rankedMatches.filter(c => scoreFor(c) >= 35);
-  const topMatches = hasCalculatedMatches ? (strongMatches.length > 0 ? strongMatches : rankedMatches).slice(0, 10) : [];
+  const topMatches = (strongMatches.length > 0 ? strongMatches : rankedMatches).slice(0, 10);
   const profileSkills = profile.skills.split(',').map(skill => skill.trim()).filter(Boolean);
-
-  // Un profil modifié invalide les anciens résultats : aucun score ne doit
-  // rester affiché avant un nouveau calcul à partir des nouvelles données.
-  useEffect(() => {
-    setAiRanking({});
-    setMatchError('');
-  }, [profile.job_title, profile.skills, profile.education, profile.experience, profile.projects, profile.languages]);
 
   const runAiMatching = async () => {
     if (!aiConsent) return setMatchError('Cochez l’autorisation IA avant de lancer le matching.');
-    if (!hasProfileForMatching) return setMatchError('Ajoutez au moins une compétence, un objectif, une formation ou une expérience avant de lancer le matching.');
+    if (!profile.job_title && !profile.skills && !profile.education && !profile.experience) return setMatchError('Complétez votre profil avant de lancer le matching IA.');
     setMatching(true); setMatchError('');
     try {
       const candidates = baseRanked.slice(0, 10).map(company => ({ id: company.id, name: company.nom, domain: company.domaine, subdomain: company.sous_domaine, category: company.categorie }));
@@ -100,7 +88,7 @@ export default function AIMatchingScreen({ companies, loading, error, favs, onFa
             </div>
           </div>
           <label className="mt-4 flex items-start gap-2 text-xs text-[#57534E] cursor-pointer"><input type="checkbox" checked={aiConsent} onChange={event => setAiConsent(event.target.checked)} className="mt-0.5 accent-[#621E3E]" /><span>J’accepte que mon profil soit envoyé au service IA pour calculer les compatibilités.</span></label>
-          <button onClick={() => void runAiMatching()} disabled={matching || !aiConsent || !hasProfileForMatching} className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border border-[#C6C954]/60 text-[#667436] bg-[#C6C954]/10 hover:bg-[#C6C954]/20 transition-colors disabled:opacity-50">
+          <button onClick={() => void runAiMatching()} disabled={matching || !aiConsent} className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border border-[#C6C954]/60 text-[#667436] bg-[#C6C954]/10 hover:bg-[#C6C954]/20 transition-colors disabled:opacity-50">
             <Sparkles size={12} /> {matching ? 'Analyse IA…' : 'Calculer mes matchs IA'}
           </button>
           {matchError && <p className="mt-2 text-xs text-red-700">{matchError}</p>}
@@ -109,8 +97,6 @@ export default function AIMatchingScreen({ companies, loading, error, favs, onFa
         {/* Match results */}
         <div className="col-span-2 space-y-4">
           <CompanyStatus loading={loading} error={error} />
-          {!hasProfileForMatching && <div className="rounded-xl border border-[#EAE5E0] bg-white px-5 py-10 text-center text-sm text-[#78716C]">Aucun matching n’est affiché. Complétez votre profil ou analysez votre CV, puis lancez le calcul.</div>}
-          {hasProfileForMatching && !hasCalculatedMatches && !matching && <div className="rounded-xl border border-[#EAE5E0] bg-white px-5 py-10 text-center text-sm text-[#78716C]">Vos données sont prêtes. Cochez l’autorisation IA puis cliquez sur « Calculer mes matchs IA ».</div>}
           {topMatches.map((c, i) => (
             <div key={c.id} className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
               <div className="flex items-start gap-4">

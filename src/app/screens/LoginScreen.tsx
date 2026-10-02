@@ -20,25 +20,6 @@ export default function LoginScreen() {
     window.localStorage.removeItem('marrakech-career-remembered-email');
   }, []);
 
-  useEffect(() => {
-    const previousScrollRestoration = window.history.scrollRestoration;
-    window.history.scrollRestoration = 'manual';
-
-    const scrollToTop = () => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-
-    scrollToTop();
-    const frame = window.requestAnimationFrame(scrollToTop);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.history.scrollRestoration = previousScrollRestoration;
-    };
-  }, []);
-
   const continueWithGoogle = async () => {
     setLoading(true);
     setMessage(null);
@@ -66,7 +47,7 @@ export default function LoginScreen() {
     if (resetError) setError(`Impossible d’envoyer le code : ${resetError.message}`);
     else {
       setResetStep('code');
-      setMessage('Un code à 8 chiffres a été envoyé à votre adresse e-mail.');
+      setMessage('Un code à 6 chiffres a été envoyé à votre adresse e-mail.');
     }
     setLoading(false);
   };
@@ -91,8 +72,8 @@ export default function LoginScreen() {
 
   const verifyResetCode = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!/^\d{8}$/.test(resetCode.trim())) {
-      setError('Saisissez le code à 8 chiffres reçu par e-mail.');
+    if (!/^\d{6}$/.test(resetCode.trim())) {
+      setError('Saisissez le code à 6 chiffres reçu par e-mail.');
       return;
     }
     setLoading(true);
@@ -138,24 +119,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#621E3E] md:flex-row md:bg-transparent">
-      {/* Mobile brand background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden md:hidden">
-        <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-[#D9828D]/20" />
-        <div className="absolute -right-20 top-24 h-44 w-44 rounded-full bg-[#C6C954]/15" />
-        <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(30deg,transparent_48%,white_49%,transparent_51%),linear-gradient(-30deg,transparent_48%,white_49%,transparent_51%)] [background-size:48px_84px]" />
-      </div>
-      <div className="absolute left-7 top-6 z-10 flex items-center gap-3 md:hidden">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-          <MapPin size={19} className="text-[#C6C954]" />
-        </div>
-        <div>
-          <p className="text-base font-extrabold leading-tight text-white">Marrakech</p>
-          <p className="text-[10px] font-extrabold tracking-[0.18em] text-[#E5E78F]">CAREER</p>
-        </div>
-      </div>
+    <div className="flex h-screen">
       {/* Left brand panel */}
-      <div className="relative hidden w-2/5 flex-col overflow-hidden bg-[#621E3E] md:flex">
+      <div className="w-2/5 bg-[#621E3E] flex flex-col relative overflow-hidden">
         {/* Geometric Moroccan decoration */}
         <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -194,45 +160,45 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="relative z-10 mt-24 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[48px] bg-[#FBF9F7] px-7 py-5 md:mt-0 md:flex-1 md:justify-center md:rounded-none md:p-12">
+      <div className="flex-1 bg-[#FBF9F7] flex items-center justify-center p-12">
         <div className="w-full max-w-md">
-          <div className="mb-5 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
+          <div className="flex gap-1 bg-[#EAE5E0] rounded-xl p-1 mb-8 w-fit">
             {(['login', 'register'] as const).map(mode => (
-              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-all md:px-5 md:py-2 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
+              <button key={mode} onClick={() => setTab(mode)} className={`px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
                 {mode === 'login' ? t('signIn') : t('register')}
               </button>
             ))}
           </div>
 
-          <h2 className="mb-1 text-[22px] font-bold text-[#1C1917] md:text-2xl">
+          <h2 className="text-2xl font-bold text-[#1C1917] mb-1">
             {tab === 'login' ? t('welcomeBack') : t('createAccount')}
           </h2>
-          <p className="mb-5 text-sm text-[#78716C] md:mb-8">
+          <p className="text-[#78716C] text-sm mb-8">
             {tab === 'login' ? t('existingAccount') : t('newAccount')}
           </p>
 
-          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2.5 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-5 md:py-3">
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-3 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60">
             <Chrome size={18} className="text-[#4285F4]" /> {t('continueGoogle')}
           </button>
-          <div className="mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
+          <div className="mb-5 flex items-center gap-3 text-xs text-[#A8A29E]"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
 
-          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-3 md:space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {tab === 'register' && (
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('fullName')}</label>
-                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre nom complet" />
+                <label className="text-xs font-semibold text-[#57534E] mb-1.5 block">{t('fullName')}</label>
+                <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-white border border-[#EAE5E0] rounded-xl px-4 py-3 text-sm text-[#1C1917] focus:outline-none focus:border-[#621E3E]" placeholder="Votre nom complet" />
               </div>
             )}
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">Email</label>
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="vous@exemple.com" />
+              <label className="text-xs font-semibold text-[#57534E] mb-1.5 block">Email</label>
+              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border border-[#EAE5E0] rounded-xl px-4 py-3 text-sm text-[#1C1917] focus:outline-none focus:border-[#621E3E]" placeholder="vous@exemple.com" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('password')}</label>
-              <input required minLength={6} type="password" name="marrakech-career-password" autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre mot de passe" />
+              <label className="text-xs font-semibold text-[#57534E] mb-1.5 block">{t('password')}</label>
+              <input required minLength={6} type="password" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full bg-white border border-[#EAE5E0] rounded-xl px-4 py-3 text-sm text-[#1C1917] focus:outline-none focus:border-[#621E3E]" placeholder="Votre mot de passe" />
             </div>
             {tab === 'login' && (
-              <div className="flex justify-end gap-3 text-xs md:gap-4">
+              <div className="flex justify-end gap-4 text-xs">
                 <button type="button" onClick={() => void resendConfirmation()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">Renvoyer confirmation</button>
                 <button type="button" onClick={() => void sendPasswordReset()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">{t('forgotPassword')}</button>
               </div>
@@ -244,7 +210,7 @@ export default function LoginScreen() {
                 Renvoyer l’e-mail de confirmation
               </button>
             )}
-            <button type="submit" disabled={loading} className="mt-1.5 w-full rounded-xl bg-[#621E3E] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-2 md:py-3">
+            <button type="submit" disabled={loading} className="w-full bg-[#621E3E] text-white rounded-xl py-3 text-sm font-bold hover:bg-[#4e1830] transition-colors mt-2 disabled:opacity-60">
               {loading ? t('wait') : tab === 'login' ? t('signIn') : t('create')}
             </button>
           </form>
@@ -255,7 +221,7 @@ export default function LoginScreen() {
                 <p className="text-sm font-bold text-[#1C1917]">Vérifier votre e-mail</p>
                 <p className="mt-1 text-xs text-[#57534E]">Saisissez le code reçu sur {email.trim()}.</p>
               </div>
-              <input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="w-full rounded-xl border border-[#D6D3D1] bg-white px-4 py-3 text-center text-lg font-bold tracking-[0.35em] text-[#1C1917] outline-none focus:border-[#621E3E]" placeholder="00000000" />
+              <input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="w-full rounded-xl border border-[#D6D3D1] bg-white px-4 py-3 text-center text-lg font-bold tracking-[0.45em] text-[#1C1917] outline-none focus:border-[#621E3E]" placeholder="000000" />
               <button disabled={loading} type="submit" className="w-full rounded-xl bg-[#621E3E] py-3 text-sm font-bold text-white hover:bg-[#4e1830] disabled:opacity-60">{loading ? t('wait') : 'Vérifier le code'}</button>
             </form>
           )}

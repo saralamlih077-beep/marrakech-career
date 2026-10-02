@@ -52,11 +52,12 @@ Deno.serve(async (request) => {
       updated_at: new Date().toISOString(),
     });
     if (saveError) throw saveError;
+
     const { error: metadataError } = await service.auth.admin.updateUserById(user.id, {
       user_metadata: {
         ...user.user_metadata,
-        gmail_connected_at: new Date().toISOString(),
         gmail_sender_email: email,
+        gmail_connected_at: new Date().toISOString(),
       },
     });
     if (metadataError) throw metadataError;

@@ -11,21 +11,6 @@ export default function SettingsScreen() {
   const { profile, email, loading, error } = useProfile();
   const [gmailStatus, setGmailStatus] = useState<'checking' | 'disconnected' | 'connected' | 'error'>('checking');
   const [gmailMessage, setGmailMessage] = useState('');
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
-
-  useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => {
-      const value = data.user?.user_metadata?.password_updated_at;
-      setPasswordChangedAt(typeof value === 'string' ? value : null);
-    });
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -49,6 +34,13 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error_code') === 'identity_already_exists') {
+      setGmailStatus('error');
+      setGmailMessage('Ce compte Gmail est déjà lié à un autre profil Marrakech Career. Connectez-vous avec ce profil ou utilisez un autre compte Gmail.');
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
     if (new URLSearchParams(window.location.search).get('gmail') !== 'connected') return;
     let active = true;
     const saveGooglePermission = async () => {
@@ -72,12 +64,12 @@ export default function SettingsScreen() {
       });
       if (!active) return;
       if (saveError) {
+        setGmailStatus('error');
         let serverMessage = saveError.message;
         if ('context' in saveError && saveError.context instanceof Response) {
           const payload = await saveError.context.clone().json().catch(() => null) as { error?: unknown } | null;
           if (typeof payload?.error === 'string') serverMessage = payload.error;
         }
-        setGmailStatus('error');
         setGmailMessage(`Connexion Google effectuée, mais le serveur Gmail n’est pas prêt : ${serverMessage}`);
       } else {
         setGmailStatus('connected');
@@ -92,18 +84,10 @@ export default function SettingsScreen() {
   const connectGmail = async () => {
     setGmailStatus('checking');
     setGmailMessage('Redirection vers Google…');
-    // Start a fresh OAuth sign-in. This avoids Supabase reusing a previous
-    // link-identity flow and returning "identity_already_exists".
-    const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
-    if (signOutError) {
-      setGmailStatus('error');
-      setGmailMessage(signOutError.message);
-      return;
-    }
-    const { error: connectError } = await supabase.auth.signInWithOAuth({
+    const { error: connectError } = await supabase.auth.linkIdentity({
       provider: 'google',
       options: {
-          redirectTo: `${window.location.origin}/gmail-callback.html`,
+        redirectTo: `${window.location.origin}/?gmail=connected`,
         scopes: 'openid email profile https://www.googleapis.com/auth/gmail.send',
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
@@ -112,31 +96,6 @@ export default function SettingsScreen() {
       setGmailStatus('error');
       setGmailMessage(connectError.message);
     }
-  };
-
-  const changePassword = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setPasswordError(''); setPasswordMessage('');
-    if (!email) { setPasswordError('Votre session a expiré. Connectez-vous de nouveau.'); return; }
-    if (newPassword.length < 6) { setPasswordError('Le nouveau mot de passe doit contenir au moins 6 caractères.'); return; }
-    if (newPassword !== passwordConfirmation) { setPasswordError('Les deux nouveaux mots de passe ne sont pas identiques.'); return; }
-    setChangingPassword(true);
-    // Check the existing password first so this action is meaningful and cannot
-    // be triggered by somebody who only has temporary access to an open session.
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
-    if (signInError) {
-      setPasswordError('Le mot de passe actuel est incorrect.');
-      setChangingPassword(false);
-      return;
-    }
-    const changedAt = new Date().toISOString();
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword, data: { password_updated_at: changedAt } });
-    setChangingPassword(false);
-    if (updateError) { setPasswordError(`Impossible de modifier le mot de passe : ${updateError.message}`); return; }
-    setPasswordChangedAt(changedAt);
-    setCurrentPassword(''); setNewPassword(''); setPasswordConfirmation('');
-    setPasswordMessage('Mot de passe modifié avec succès.');
-    setShowPasswordForm(false);
   };
 
   function Toggle({ v, onChange }: { v: boolean; onChange: () => void }) {
@@ -206,26 +165,17 @@ export default function SettingsScreen() {
             <span className="text-xs font-semibold text-[#667436] bg-[#667436]/10 px-2 py-1 rounded-lg">Supabase ✓</span>
           </Row>
           <Row label="Gmail officiel Marrakech Career" sub="Seul l’administrateur connecte une fois marrakechcareer@gmail.com. Les candidats n’ont rien à connecter.">
-            <button onClick={() => void connectGmail()} disabled={gmailStatus === 'checking'} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"><Link2 size={13} />{gmailStatus === 'checking' ? 'Vérification…' : 'Connecter Gmail officiel'}</button>
+            {gmailStatus === 'connected' ? <span className="text-xs font-semibold text-[#667436] bg-[#667436]/10 px-2 py-1 rounded-lg">Connecté</span> : <button onClick={() => void connectGmail()} disabled={gmailStatus === 'checking'} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"><Link2 size={13} />{gmailStatus === 'checking' ? 'Vérification…' : 'Connecter Gmail officiel'}</button>}
           </Row>
           {gmailStatus === 'error' && <p className="text-xs text-red-700">{gmailMessage}</p>}
         </Section>
 
         <Section title="Security">
-          <Row label="Mot de passe" sub={passwordChangedAt ? `Dernière modification : ${new Date(passwordChangedAt).toLocaleDateString('fr-FR')}` : 'Aucune modification enregistrée'}>
-            <button onClick={() => { setShowPasswordForm(value => !value); setPasswordError(''); setPasswordMessage(''); }} className="flex items-center gap-1.5 text-xs text-[#78716C] font-semibold hover:text-[#621E3E]">
-              <Lock size={12} /> Modifier
+          <Row label="Password" sub="Last changed 30 days ago">
+            <button className="flex items-center gap-1.5 text-xs text-[#78716C] font-semibold hover:text-[#621E3E]">
+              <Lock size={12} /> Change
             </button>
           </Row>
-          {passwordMessage && <p className="rounded-lg bg-[#667436]/10 p-3 text-xs font-medium text-[#4a4d1a]">{passwordMessage}</p>}
-          {showPasswordForm && <form onSubmit={changePassword} className="space-y-3 rounded-xl border border-[#EAE5E0] bg-[#FBF9F7] p-4">
-            <p className="text-xs text-[#57534E]">Confirmez votre mot de passe actuel avant d’en choisir un nouveau.</p>
-            <input required type="password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="Mot de passe actuel" className="w-full rounded-xl border border-[#EAE5E0] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#621E3E]" />
-            <input required minLength={6} type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="Nouveau mot de passe (6 caractères minimum)" className="w-full rounded-xl border border-[#EAE5E0] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#621E3E]" />
-            <input required minLength={6} type="password" value={passwordConfirmation} onChange={event => setPasswordConfirmation(event.target.value)} placeholder="Confirmer le nouveau mot de passe" className="w-full rounded-xl border border-[#EAE5E0] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#621E3E]" />
-            {passwordError && <p className="text-xs font-medium text-red-700">{passwordError}</p>}
-            <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowPasswordForm(false)} className="rounded-lg px-3 py-2 text-xs font-semibold text-[#78716C]">Annuler</button><button disabled={changingPassword} type="submit" className="rounded-lg bg-[#621E3E] px-3 py-2 text-xs font-semibold text-white disabled:opacity-60">{changingPassword ? 'Modification…' : 'Enregistrer le mot de passe'}</button></div>
-          </form>}
         </Section>
       </div>
     </div>

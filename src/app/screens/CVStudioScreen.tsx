@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowLeft, Award, Briefcase, Check, Download, FileSearch, FileText, Globe, ImagePlus, Palette, Plus, Sparkles, Target, User,
+  Award, Briefcase, Check, Download, FileSearch, FileText, Globe, ImagePlus, Palette, Plus, Sparkles, Target, User,
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useProfile } from '../../hooks/useProfile';
@@ -15,7 +15,6 @@ const cvThemes = [
 ];
 
 export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void }) {
-  const [showEditor, setShowEditor] = useState(false);
   const [activeSection, setActiveSection] = useState('personal');
   const { profile, email, userId, saving, saveProfile } = useProfile();
   const [draft, setDraft] = useState(profile);
@@ -150,55 +149,26 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
     { id: 'languages', label: 'Languages', icon: Globe },
   ];
 
-  // Première étape volontairement simple : l’utilisateur choisit d’abord
-  // entre analyser son CV existant ou créer son premier CV.
-  if (!showEditor) {
-    return (
-      <div className="flex-1 overflow-auto bg-[#FBF9F7] p-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-8">
-            <h1 className="text-2xl font-extrabold text-[#1C1917]">Studio CV</h1>
-            <p className="mt-1 text-sm text-[#78716C]">Commencez par analyser un CV existant ou créez le vôtre étape par étape.</p>
-          </div>
-
-          <section className="rounded-2xl border border-[#C6C954]/45 bg-white p-7 shadow-sm">
-            <div className="flex flex-wrap items-start gap-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#C6C954]/20 text-[#667436]"><FileSearch size={23} /></div>
-              <div className="min-w-0 flex-1"><h2 className="text-lg font-bold text-[#1C1917]">Analyser mon CV</h2><p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#78716C]">Téléversez votre CV PDF, DOCX ou TXT. L’analyse détecte les compétences réellement présentes et propose des conseils liés au document.</p><button onClick={onAnalyze} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#667436] px-5 py-3 text-sm font-bold text-white hover:bg-[#52592b]"><FileSearch size={16} /> Analyser un CV existant</button></div>
-            </div>
-          </section>
-
-          <div className="my-7 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-[#A8A29E]"><span className="h-px flex-1 bg-[#EAE5E0]" />ou<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
-
-          <section className="rounded-2xl border border-[#EAE5E0] bg-white p-7 shadow-sm">
-            <div className="flex flex-wrap items-start gap-5"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#621E3E]/10 text-[#621E3E]"><FileText size={23} /></div><div className="min-w-0 flex-1"><h2 className="text-lg font-bold text-[#1C1917]">Vous n’avez pas encore de CV ?</h2><p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#78716C]">Créez-en un professionnel : renseignez vos informations, compétences, formation, expériences et projets. Vous pourrez ensuite choisir une couleur, ajouter une photo et exporter le PDF.</p><button onClick={() => setShowEditor(true)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#621E3E] px-5 py-3 text-sm font-bold text-white hover:bg-[#4e1830]"><FileText size={16} /> Créer mon CV</button></div></div>
-          </section>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
-      <div className="w-full shrink-0 border-b border-[#EAE5E0] bg-white flex flex-col md:w-72 md:border-b-0 md:border-r">
+    <div className="flex-1 flex overflow-hidden">
+      <div className="w-72 bg-white border-r border-[#EAE5E0] flex flex-col">
         <div className="px-5 py-4 border-b border-[#EAE5E0]">
-          <button onClick={() => setShowEditor(false)} className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-[#621E3E] hover:underline"><ArrowLeft size={13} /> Accueil du Studio</button>
-          <h2 className="text-sm font-bold text-[#1C1917]">Créer mon CV</h2>
+          <h2 className="text-sm font-bold text-[#1C1917]">CV Studio</h2>
           <p className="text-xs text-[#78716C]">Build your professional CV</p>
         </div>
-        <div className="grid grid-cols-2 gap-1 border-b border-[#EAE5E0] p-2 md:block md:flex-1 md:overflow-y-auto md:border-b-0 md:p-0">
+        <div className="flex-1 overflow-y-auto">
           {sections.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveSection(id)} className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors border-l-2 ${activeSection === id ? 'border-[#621E3E] bg-[#621E3E]/5 text-[#621E3E] font-semibold' : 'border-transparent text-[#78716C] hover:bg-[#FBF9F7]'}`}>
               <Icon size={15} /> {label}
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2 border-t border-[#EAE5E0] p-3 md:block md:space-y-2 md:p-4">
-          <label className="col-span-2 w-full flex items-center justify-center gap-2 py-2 bg-[#C6C954]/20 text-[#4a4d1a] rounded-xl text-xs font-bold border border-[#C6C954]/40 hover:bg-[#C6C954]/30 transition-colors cursor-pointer">
+        <div className="p-4 border-t border-[#EAE5E0] space-y-2">
+          <label className="w-full flex items-center justify-center gap-2 py-2 bg-[#C6C954]/20 text-[#4a4d1a] rounded-xl text-xs font-bold border border-[#C6C954]/40 hover:bg-[#C6C954]/30 transition-colors cursor-pointer">
             <ImagePlus size={13} /> {photoDataUrl ? 'Changer la photo' : 'Ajouter une photo'}
             <input type="file" accept="image/jpeg,image/png" onChange={handlePhoto} className="hidden" />
           </label>
-          {photoDataUrl && <button type="button" onClick={() => { setPhotoDataUrl(''); if (photoStorageKey) window.localStorage.removeItem(photoStorageKey); }} className="col-span-2 w-full text-[11px] font-semibold text-[#78716C] hover:text-red-700">Supprimer la photo</button>}
+          {photoDataUrl && <button type="button" onClick={() => { setPhotoDataUrl(''); if (photoStorageKey) window.localStorage.removeItem(photoStorageKey); }} className="w-full text-[11px] font-semibold text-[#78716C] hover:text-red-700">Supprimer la photo</button>}
           {photoError && <p className="rounded-lg bg-[#FFEC8E]/30 px-2.5 py-2 text-[11px] leading-relaxed text-[#6B5500]">{photoError}</p>}
           <button onClick={onAnalyze} className="w-full flex items-center justify-center gap-2 py-2 bg-[#667436] text-white rounded-xl text-xs font-bold hover:bg-[#52592b] transition-colors">
             <FileSearch size={12} /> Analyze CV
@@ -213,7 +183,7 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
         </div>
       </div>
 
-      <div className="w-full shrink-0 border-b border-[#EAE5E0] bg-[#FBF9F7] p-5 overflow-y-auto md:w-80 md:border-b-0 md:border-r">
+      <div className="w-80 border-r border-[#EAE5E0] bg-[#FBF9F7] p-5 overflow-y-auto">
         <div className="space-y-4">
           {activeSection === 'personal' && (
             <>
@@ -280,8 +250,8 @@ export default function CVStudioScreen({ onAnalyze }: { onAnalyze: () => void })
             ))}
           </div>
         </div>
-        <div className="flex-1 p-4 sm:p-6 flex items-start justify-center overflow-auto">
-          <div className="w-full max-w-[520px] min-h-[720px] overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex-1 p-6 flex items-start justify-center overflow-auto">
+          <div className="bg-white shadow-xl rounded-xl w-[520px] min-h-[720px] overflow-hidden">
             <div className="px-8 py-6 text-white" style={{ backgroundColor: theme.primary }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">

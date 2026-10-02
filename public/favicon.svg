@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Marrakech Career">
+  <path d="M32 5C22 5 14 13 14 23c0 14 18 32 18 32s18-18 18-32C50 13 42 5 32 5Z" fill="#621E3E"/>
+  <path d="M25 24v-3.5c0-3 1.8-4.5 4.8-4.5h4.4c3 0 4.8 1.5 4.8 4.5V24h-3.5v-3.2c0-1-.5-1.5-1.5-1.5h-4c-1 0-1.5.5-1.5 1.5V24H25Z" fill="#C6C954"/>
+  <rect x="19" y="23" width="26" height="18" rx="3" fill="#C6C954"/>
+  <path d="M19 29h26v3H19z" fill="#621E3E"/>
+  <path d="M29.2 27.5h5.6v6h-5.6z" fill="#fff"/>
+</svg>

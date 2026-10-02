@@ -4,25 +4,13 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useProfile } from '../hooks/useProfile';
 import { supabase, supabaseConfigError } from '../lib/supabaseClient';
 import Sidebar from './components/Sidebar';
-import AIAssistantScreen from './screens/AIAssistantScreen';
-import AIMatchingScreen from './screens/AIMatchingScreen';
-import AdminScreen from './screens/AdminScreen';
-import AnalyticsScreen from './screens/AnalyticsScreen';
-import ApplicationTrackerScreen from './screens/ApplicationTrackerScreen';
-import AutomationScreen from './screens/AutomationScreen';
-import CampaignScreen from './screens/CampaignScreen';
-import CompaniesScreen from './screens/CompaniesScreen';
-import CompanyDetailScreen from './screens/CompanyDetailScreen';
-import CVAnalyzerScreen from './screens/CVAnalyzerScreen';
-import CVStudioScreen from './screens/CVStudioScreen';
-import DashboardScreen from './screens/DashboardScreen';
-import FavoritesScreen from './screens/FavoritesScreen';
-import LoginScreen from './screens/LoginScreen';
-import MapScreen from './screens/MapScreen';
-import OpportunitiesScreen from './screens/OpportunitiesScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import ResetPasswordScreen from './screens/ResetPasswordScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import {
+  AIAssistantScreen, AIMatchingScreen, AdminScreen, AnalyticsScreen,
+  ApplicationTrackerScreen, AutomationScreen, CampaignScreen, CompaniesScreen,
+  CompanyDetailScreen, CVAnalyzerScreen, CVStudioScreen, DashboardScreen,
+  FavoritesScreen, LoginScreen, MapScreen, OpportunitiesScreen, ProfileScreen,
+  ResetPasswordScreen, SettingsScreen,
+} from './pages';
 import type { Company, NavPage } from './types';
 
 export default function App() {

@@ -4,8 +4,8 @@ Cette intégration copie uniquement les offres publiques de Marrakech dans `job_
 
 ## Une seule configuration
 
-1. Dans **Supabase > SQL Editor**, exécuter le contenu de `supabase/migrations/202609190005_jobsquare_offer_sync.sql`.
-2. Déployer `sync-jobsquare-offers` depuis **Supabase > Edge Functions** en collant le contenu de `supabase/functions/sync-jobsquare-offers/index.ts`.
+1. Dans **Supabase > SQL Editor**, exécuter le contenu de `backend/supabase/migrations/202609190005_jobsquare_offer_sync.sql`.
+2. Déployer `sync-jobsquare-offers` depuis **Supabase > Edge Functions** en collant le contenu de `backend/supabase/functions/sync-jobsquare-offers/index.ts`.
 3. Dans **Edge Functions > Secrets**, créer :
    - `JOBSQUARE_SYNC_SECRET` : une longue valeur secrète créée par vous ;
    - `ADMIN_EMAILS` : l'e-mail administrateur déjà utilisé par l'application.

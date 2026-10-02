@@ -12,6 +12,12 @@ node_modules
 dist
 dist-ssr
 
+# Données générées localement
+data/outputs/*
+!data/outputs/.gitkeep
+data/src/__pycache__/
+*.pyc
+
 # Supabase (CLI locale)
 supabase/.branches
 supabase/.temp

@@ -8,7 +8,7 @@ Chaque candidat connecte son propre Gmail dans **Settings > Gmail personnel**. L
 2. Active Google et ajoute le Client ID et le Client Secret du client OAuth Google prévu pour l’application. Ajoute dans ce client Google l’URI de rappel affichée par Supabase, habituellement `https://rometmtcpaoggerucisc.supabase.co/auth/v1/callback`.
 3. Dans **Authentication > URL Configuration**, ajoute `http://localhost:5173` et l’URL publique future du site comme URLs de redirection.
 4. Active *Manual linking* dans la configuration Auth de Supabase : l’utilisateur pourra lier Gmail sans remplacer son compte Marrakech Career.
-5. Exécute la migration `supabase/migrations/202609170001_gmail_connections.sql` dans le SQL Editor Supabase.
+5. Exécute la migration `backend/supabase/migrations/202609170001_gmail_connections.sql` dans le SQL Editor Supabase.
 6. Déploie les deux fonctions Edge :
 
    ```powershell

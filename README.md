@@ -15,8 +15,8 @@ Marrakech Career est une application web qui aide les étudiants et candidats à
 ## Lancer le projet localement
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Ouvrez ensuite l’adresse affichée par Vite, habituellement `http://localhost:5173`.
@@ -32,6 +32,15 @@ VITE_GROQ_API_KEY=votre_cle_groq_de_developpement
 ```
 
 Ne publiez jamais ces clés dans GitHub. Les secrets Brevo, Groq côté serveur et n8n sont configurés dans **Supabase → Edge Functions → Secrets**.
+
+## Organisation du dépôt
+
+- `frontend/` : interface React/Vite ; les pages sont dans `frontend/src/app/pages/`.
+- `backend/supabase/` : Edge Functions, migrations SQL et configuration Supabase.
+- `data/` : notebooks, scripts de collecte, fichiers intermédiaires et exports.
+- `docs/setup/` : guides Gmail, n8n, IA et JobSquare.
+
+La documentation complète est disponible dans [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md).
 
 ## Services
 

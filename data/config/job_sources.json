@@ -1,0 +1,6 @@
+[
+  {"source": "Jooble", "mode": "api", "enabled": true, "env_key": "JOOBLE_API_KEY"},
+  {"source": "JobSquare", "mode": "partner_api", "enabled": false, "note": "API partenaire de publication, pas de recherche publique."},
+  {"source": "Stagiaire.ma", "mode": "public_page_if_authorized", "enabled": false, "note": "Vérifier robots.txt et les conditions avant activation."},
+  {"source": "Trabajo", "mode": "public_page_if_authorized", "enabled": false, "note": "Vérifier robots.txt et les conditions avant activation."}
+]

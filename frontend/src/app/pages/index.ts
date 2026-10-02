@@ -1,0 +1,20 @@
+// Centralised page exports: App.tsx remains a small navigation coordinator.
+export { default as AIAssistantScreen } from './AIAssistantScreen';
+export { default as AIMatchingScreen } from './AIMatchingScreen';
+export { default as AdminScreen } from './AdminScreen';
+export { default as AnalyticsScreen } from './AnalyticsScreen';
+export { default as ApplicationTrackerScreen } from './ApplicationTrackerScreen';
+export { default as AutomationScreen } from './AutomationScreen';
+export { default as CampaignScreen } from './CampaignScreen';
+export { default as CompaniesScreen } from './CompaniesScreen';
+export { default as CompanyDetailScreen } from './CompanyDetailScreen';
+export { default as CVAnalyzerScreen } from './CVAnalyzerScreen';
+export { default as CVStudioScreen } from './CVStudioScreen';
+export { default as DashboardScreen } from './DashboardScreen';
+export { default as FavoritesScreen } from './FavoritesScreen';
+export { default as LoginScreen } from './LoginScreen';
+export { default as MapScreen } from './MapScreen';
+export { default as OpportunitiesScreen } from './OpportunitiesScreen';
+export { default as ProfileScreen } from './ProfileScreen';
+export { default as ResetPasswordScreen } from './ResetPasswordScreen';
+export { default as SettingsScreen } from './SettingsScreen';

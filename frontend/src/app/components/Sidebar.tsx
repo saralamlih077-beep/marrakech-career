@@ -2,12 +2,11 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Building2, Map, Sparkles, MessageSquare,
   FileText, ClipboardList, Heart, BarChart3, User,
-  Settings as Gear, ShieldCheck, BriefcaseBusiness, Menu, X,
+  Settings as Gear, Users, ContactRound, BriefcaseBusiness, Menu, X,
 } from 'lucide-react';
 import type { NavPage } from '../types';
 import { userInitials } from '../utils';
 import { useLanguage } from '../i18n';
-import logo from '../../assets/marrakech-career-logo.svg';
 
 type NavigationItem = {
   id: NavPage;
@@ -20,7 +19,12 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
 }) {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const primaryNav: NavigationItem[] = [
+
+  const primaryNav: NavigationItem[] = isAdmin ? [
+    { id: 'admin-data', label: 'Analyse des données', icon: BarChart3 },
+    { id: 'admin-users', label: 'Analyse des utilisateurs', icon: Users },
+    { id: 'admin-user-directory', label: 'Utilisateurs', icon: ContactRound },
+  ] : [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { id: 'companies', label: t('companies'), icon: Building2 },
     { id: 'map', label: t('map'), icon: Map },
@@ -33,7 +37,6 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
     { id: 'analytics', label: t('analytics'), icon: BarChart3 },
   ];
   const bottomNav: NavigationItem[] = [
-    ...(isAdmin ? [{ id: 'admin' as NavPage, label: t('admin'), icon: ShieldCheck }] : []),
     { id: 'profile', label: t('profile'), icon: User },
     { id: 'settings', label: t('settings'), icon: Gear },
   ];
@@ -41,7 +44,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
   const isActive = (id: NavPage) =>
     id === active ||
     (id === 'companies' && active === 'company-detail') ||
-    (id === 'cv-studio' && active === 'cv-analyzer') ||
+    (id === 'cv-studio' && (active === 'cv-analyzer' || active === 'cv-tailored')) ||
     (id === 'applications' && (active === 'campaign' || active === 'automation'));
 
   const navigate = (id: NavPage) => {
@@ -61,7 +64,19 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
   ));
 
   const brand = (
-    <img src={logo} alt="Marrakech Career" className="h-10 w-auto max-w-[166px] object-contain object-left" />
+    <img src="/brand/marrakech-career.svg" alt="Marrakech Career" width={440} height={128} className="h-auto w-[168px] shrink-0" />
+  );
+
+  const userBlock = (
+    <div className="flex items-center gap-2.5 px-3 py-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
+        {userInitials(userName, userEmail)}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-white/90">{userName || userEmail}</p>
+        {userEmail && <p className="truncate text-[10px] text-white/50">{userEmail}</p>}
+      </div>
+    </div>
   );
 
   return (

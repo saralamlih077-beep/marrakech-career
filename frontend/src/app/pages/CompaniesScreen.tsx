@@ -3,7 +3,7 @@ import { ChevronDown, Filter, Search } from 'lucide-react';
 import { CompanyCard, CompanyStatus, PageHeader } from '../components/shared';
 import type { Company } from '../types';
 
-export default function CompaniesScreen({ companies, loading, error, favs, onFav, onView }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void }) {
+export default function CompaniesScreen({ companies, loading, error, favs, onFav, onView, onApply, onTailoredCv }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void; onApply: (c: Company) => void; onTailoredCv: (c: Company) => void }) {
   const [search, setSearch] = useState('');
   const [domaine, setDomaine] = useState('All');
   const domaines = ['All', ...Array.from(new Set(companies.map(c => c.domaine).filter((value): value is string => Boolean(value))))];
@@ -41,7 +41,7 @@ export default function CompaniesScreen({ companies, loading, error, favs, onFav
       <div className="grid grid-cols-4 gap-4">
         <CompanyStatus loading={loading} error={error} />
         {filtered.map(c => (
-          <CompanyCard key={c.id} company={c} isFav={favs.has(c.id)} onFav={onFav} onView={onView} />
+          <CompanyCard key={c.id} company={c} isFav={favs.has(c.id)} onFav={onFav} onView={onView} onApply={onApply} onTailoredCv={onTailoredCv} />
         ))}
         {filtered.length === 0 && (
           <div className="col-span-4 py-16 text-center text-[#A8A29E]">No companies match your search.</div>

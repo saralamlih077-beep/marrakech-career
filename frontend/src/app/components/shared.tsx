@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Check, Eye, Heart, MapPin, Send } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Eye, FileText, Heart, MapPin, Send } from 'lucide-react';
 import { DOMAIN_COLORS } from '../constants';
 import type { Company } from '../types';
 import { companyAddress, companyMatch, companySkills, matchColor } from '../utils';
@@ -37,9 +37,9 @@ export function SkillTag({ label, missing = false }: { label: string; missing?: 
   );
 }
 
-export function CompanyCard({ company, isFav, onFav, onView }: {
+export function CompanyCard({ company, isFav, onFav, onView, onApply, onTailoredCv }: {
   company: Company; isFav: boolean;
-  onFav: (id: number) => void; onView: (c: Company) => void;
+  onFav: (id: number) => void; onView: (c: Company) => void; onApply?: (c: Company) => void; onTailoredCv?: (c: Company) => void;
 }) {
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
@@ -75,7 +75,8 @@ export function CompanyCard({ company, isFav, onFav, onView }: {
         <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
           <Eye size={11} /> View
         </button>
-        <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
+        {onTailoredCv && <button onClick={() => onTailoredCv(company)} aria-label={`Générer un CV avec l’IA pour ${company.nom}`} title={`Générer un CV avec l’IA pour ${company.nom}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold border border-[#C6C954]/50 bg-[#C6C954]/15 text-[#4a4d1a] hover:bg-[#C6C954]/25 transition-colors whitespace-nowrap"><FileText size={11} className="shrink-0" /> CV IA</button>}
+        <button onClick={() => (onApply || onView)(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
           <Send size={11} /> Apply
         </button>
       </div>
@@ -104,7 +105,7 @@ export function PageHeader({ title, sub, back, onBack }: { title: string; sub?: 
   return (
     <div className="flex items-center gap-3 mb-6">
       {back && (
-        <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-[#EAE5E0] transition-colors">
+        <button onClick={onBack} aria-label="Retour" className="p-1.5 rounded-lg hover:bg-[#EAE5E0] transition-colors">
           <ArrowLeft size={18} className="text-[#78716C]" />
         </button>
       )}

@@ -2,7 +2,7 @@ import { Heart } from 'lucide-react';
 import { CompanyCard, CompanyStatus, PageHeader } from '../components/shared';
 import type { Company } from '../types';
 
-export default function FavoritesScreen({ companies, loading, error, favs, onFav, onView }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void }) {
+export default function FavoritesScreen({ companies, loading, error, favs, onFav, onView, onTailoredCv }: { companies: Company[]; loading: boolean; error: string | null; favs: Set<number>; onFav: (id: number) => void; onView: (c: Company) => void; onTailoredCv: (c: Company) => void }) {
   const saved = companies.filter(c => favs.has(c.id));
 
   return (
@@ -16,7 +16,7 @@ export default function FavoritesScreen({ companies, loading, error, favs, onFav
         </div>
       ) : (
         <div className="grid grid-cols-4 gap-4">
-          {saved.map(c => <CompanyCard key={c.id} company={c} isFav={true} onFav={onFav} onView={onView} />)}
+          {saved.map(c => <CompanyCard key={c.id} company={c} isFav={true} onFav={onFav} onView={onView} onTailoredCv={onTailoredCv} />)}
         </div>
       )}
     </div>

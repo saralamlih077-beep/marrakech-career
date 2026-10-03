@@ -10,10 +10,10 @@ import type { Company, NavPage } from '../types';
 import { recommendationScore } from '../utils';
 import { useLanguage } from '../i18n';
 
-export default function DashboardScreen({ companies, loading, error, favs, onFav, onView, onNavigate }: {
+export default function DashboardScreen({ companies, loading, error, favs, onFav, onView, onNavigate, onApply, onTailoredCv }: {
   companies: Company[]; loading: boolean; error: string | null;
   favs: Set<number>; onFav: (id: number) => void;
-  onView: (c: Company) => void; onNavigate: (p: NavPage) => void;
+  onView: (c: Company) => void; onNavigate: (p: NavPage) => void; onApply: (c: Company) => void; onTailoredCv: (c: Company) => void;
 }) {
   const { t } = useLanguage();
   const { profile } = useProfile();
@@ -107,7 +107,7 @@ export default function DashboardScreen({ companies, loading, error, favs, onFav
         <CompanyStatus loading={loading} error={error} />
         <div className="grid grid-cols-4 gap-4">
           {recommended.map(c => (
-            <CompanyCard key={c.id} company={c} isFav={favs.has(c.id)} onFav={onFav} onView={onView} />
+            <CompanyCard key={c.id} company={c} isFav={favs.has(c.id)} onFav={onFav} onView={onView} onApply={onApply} onTailoredCv={onTailoredCv} />
           ))}
         </div>
       </div>

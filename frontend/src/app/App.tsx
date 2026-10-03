@@ -50,7 +50,7 @@ export default function App() {
   const [mapOffer, setMapOffer] = useState<JobOffer | null>(null);
   const { favorites: favs, toggleFavorite: toggleFav } = useFavorites();
   const { data: companies, loading, error } = useEntreprises();
-  const { profile, email: userEmail, loading: profileLoading } = useProfile();
+  const { profile, email: userEmail, loading: profileLoading, avatarChoice } = useProfile();
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
   const [checkedEmail, setCheckedEmail] = useState('');
@@ -189,7 +189,7 @@ export default function App() {
 
   return (
     <div className="flex h-dvh overflow-hidden" style={{ fontFamily: "'Manrope', sans-serif" }}>
-      <Sidebar active={activePage} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} />
+      <Sidebar active={activePage} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} avatarChoice={avatarChoice} />
       <main className="flex min-h-0 min-w-0 flex-1 pt-[68px] md:pt-0">
         {screen}
       </main>

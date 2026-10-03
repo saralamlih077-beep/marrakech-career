@@ -5,7 +5,8 @@ import {
   Settings as Gear, Users, ContactRound, BriefcaseBusiness, Menu, X,
 } from 'lucide-react';
 import type { NavPage } from '../types';
-import { userInitials } from '../utils';
+import ProfileAvatar from './ProfileAvatar';
+import type { ProfileAvatarChoice } from '../../lib/profileAvatar';
 import { useLanguage } from '../i18n';
 
 type NavigationItem = {
@@ -14,8 +15,9 @@ type NavigationItem = {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 };
 
-export default function Sidebar({ active, onNavigate, userName, userEmail, isAdmin }: {
+export default function Sidebar({ active, onNavigate, userName, userEmail, isAdmin, avatarChoice }: {
   active: NavPage; onNavigate: (p: NavPage) => void; userName: string; userEmail: string; isAdmin: boolean;
+  avatarChoice: ProfileAvatarChoice | null;
 }) {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,9 +73,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
 
   const userBlock = (
     <div className="flex items-center gap-2.5 px-3 py-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
-        {userInitials(userName, userEmail)}
-      </div>
+      <ProfileAvatar choice={avatarChoice} name={userName} email={userEmail} className="h-8 w-8 text-xs" />
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-white/90">{userName || userEmail}</p>
         {userEmail && <p className="truncate text-[10px] text-white/50">{userEmail}</p>}

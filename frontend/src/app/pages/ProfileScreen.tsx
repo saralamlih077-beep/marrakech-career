@@ -4,10 +4,11 @@ import { useProfile } from '../../hooks/useProfile';
 import type { ProfileData } from '../../types/profile';
 import { supabase } from '../../lib/supabaseClient';
 import { CompanyStatus, PageHeader } from '../components/shared';
-import { userInitials } from '../utils';
+import ProfileAvatar from '../components/ProfileAvatar';
+import { profileAvatars, type ProfileAvatarChoice } from '../../lib/profileAvatar';
 
 export default function ProfileScreen() {
-  const { profile, email, loading, saving, error, saveProfile } = useProfile();
+  const { profile, email, loading, saving, error, saveProfile, avatarChoice, avatarSaving, avatarError, chooseAvatar } = useProfile();
   const [draft, setDraft] = useState<ProfileData>(profile);
   useEffect(() => setDraft(profile), [profile]);
 
@@ -19,14 +20,31 @@ export default function ProfileScreen() {
 
       <div className="max-w-xl rounded-2xl border border-[#EAE5E0] bg-white p-7 shadow-sm">
         <div className="mb-7 flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#621E3E] text-lg font-extrabold text-white">
-            {userInitials(draft.full_name, email)}
-          </div>
-          <div>
+          <ProfileAvatar choice={avatarChoice} name={draft.full_name} email={email} className="h-16 w-16 text-lg" />
+          <div className="min-w-0">
             <h2 className="text-base font-bold text-[#1C1917]">{draft.full_name || 'Nom non renseigné'}</h2>
-            <p className="mt-0.5 text-xs text-[#78716C]">{email}</p>
+            <p className="mt-0.5 break-all text-xs text-[#78716C]">{email}</p>
           </div>
         </div>
+
+        {!loading && !avatarChoice && (
+          <section aria-labelledby="profile-avatar-question" className="mb-7 rounded-xl border border-[#EAE5E0] bg-[#FBF9F7] p-4">
+            <h3 id="profile-avatar-question" className="text-sm font-bold text-[#1C1917]">Êtes-vous une fille ou un garçon ?</h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#78716C]">Choisissez votre avatar. Ce choix sera enregistré et conservé pour vos prochaines connexions.</p>
+            <div className="mt-4 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3">
+              {(Object.keys(profileAvatars) as ProfileAvatarChoice[]).map(choice => (
+                <button key={choice} type="button" onClick={() => void chooseAvatar(choice)} disabled={avatarSaving}
+                  aria-label={`Choisir ${profileAvatars[choice].label}`}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-[#EAE5E0] bg-white p-3 text-sm font-bold text-[#621E3E] transition-colors hover:border-[#621E3E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#621E3E] disabled:cursor-wait disabled:opacity-60">
+                  <img src={profileAvatars[choice].src} alt="" className="h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24" />
+                  {profileAvatars[choice].label}
+                </button>
+              ))}
+            </div>
+            {avatarSaving && <p role="status" className="mt-3 text-xs text-[#78716C]">Enregistrement de votre avatar…</p>}
+            {avatarError && <p role="alert" className="mt-3 text-xs text-red-700">{avatarError}</p>}
+          </section>
+        )}
 
         <label className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-[#57534E]"><User size={14} /> Nom complet</label>
         <input

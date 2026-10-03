@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { emptyProfile, type ProfileData } from '../types/profile';
+import { persistProfileAvatar, readProfileAvatar, type ProfileAvatarChoice } from '../lib/profileAvatar';
 
 const PROFILE_UPDATED_EVENT = 'marrakech-career-profile-updated';
+const AVATAR_UPDATED_EVENT = 'marrakech-career-avatar-updated';
 
 function profileFromRecord(record: Record<string, unknown> | null | undefined): ProfileData {
   if (!record) return emptyProfile;
@@ -27,8 +29,14 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avatarChoice, setAvatarChoice] = useState<ProfileAvatarChoice | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const currentUserId = useRef('');
 
   const loadProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
@@ -38,6 +46,8 @@ export function useProfile() {
       }
       setEmail(userData.user.email ?? '');
       setUserId(userData.user.id);
+      currentUserId.current = userData.user.id;
+      setAvatarChoice(readProfileAvatar(userData.user.user_metadata));
 
       // 1. Fetch from 'profiles' table
       const { data: profileRow, error: profileError } = await supabase
@@ -79,8 +89,48 @@ export function useProfile() {
     };
 
     window.addEventListener(PROFILE_UPDATED_EVENT, applyProfileUpdate);
-    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, applyProfileUpdate);
+    const applyAvatarUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; choice: ProfileAvatarChoice }>).detail;
+      if (detail?.userId === currentUserId.current) setAvatarChoice(detail.choice);
+    };
+    window.addEventListener(AVATAR_UPDATED_EVENT, applyAvatarUpdate);
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      const previousUserId = currentUserId.current;
+      currentUserId.current = session?.user.id ?? '';
+      setAvatarChoice(readProfileAvatar(session?.user.user_metadata));
+      if (!session) {
+        setProfile(emptyProfile);
+        setEmail('');
+        setUserId('');
+      } else if (event === 'SIGNED_IN' && previousUserId !== session.user.id) {
+        // Defer authenticated requests until the auth callback releases its lock.
+        window.setTimeout(() => void loadProfile(), 0);
+      }
+    });
+    return () => {
+      window.removeEventListener(PROFILE_UPDATED_EVENT, applyProfileUpdate);
+      window.removeEventListener(AVATAR_UPDATED_EVENT, applyAvatarUpdate);
+      authListener.subscription.unsubscribe();
+    };
   }, [loadProfile]);
+
+  const chooseAvatar = async (choice: ProfileAvatarChoice) => {
+    setAvatarSaving(true);
+    setAvatarError(null);
+    try {
+      const confirmedChoice = await persistProfileAvatar(supabase.auth, choice);
+      setAvatarChoice(confirmedChoice);
+      window.dispatchEvent(new CustomEvent(AVATAR_UPDATED_EVENT, {
+        detail: { userId: currentUserId.current, choice: confirmedChoice },
+      }));
+      return true;
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : 'Impossible d’enregistrer votre avatar.');
+      return false;
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
 
   const saveProfile = async (nextProfile: ProfileData) => {
     setSaving(true);
@@ -123,5 +173,5 @@ export function useProfile() {
     }
   };
 
-  return { profile, email, userId, loading, saving, error, saveProfile, refetch: loadProfile };
+  return { profile, email, userId, loading, saving, error, saveProfile, avatarChoice, avatarSaving, avatarError, chooseAvatar, refetch: loadProfile };
 }

@@ -2,6 +2,21 @@
 
 Ce dossier sépare la collecte, le nettoyage, la visualisation et les offres d'emploi.
 
+## Catalogue actuel
+
+`inputs/data_filtrer_final.xlsx` contient les 436 entreprises fournies le 3 octobre 2026.
+La migration `backend/supabase/migrations/202610030003_replace_company_catalog.sql`
+importe ce catalogue dans la table `entreprises`. Elle conserve les identifiants
+des 284 entreprises déjà présentes, ajoute 152 entreprises et archive les 7
+entreprises absentes du fichier (`is_active = false`). Le catalogue de l'application
+affiche uniquement les entreprises actives. Les références des favoris, candidatures
+et offres restent intactes.
+
+La sauvegarde avant import est conservée dans
+`company_import_backups.entreprises_before_20261003`, hors des schémas exposés par
+l'API. Les colonnes `offre_emploi` et `offre_stage` conservent les valeurs du fichier.
+Elles ne créent aucune offre dans la table `job_offers`.
+
 ## Structure
 
 ```text

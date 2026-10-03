@@ -47,6 +47,7 @@ export function useEntreprises(filters: EntrepriseFilters = {}) {
 
       const filteredRows = parsedRows
         .filter((entreprise) => {
+          if (entreprise.is_active === false) return false;
           const matchesSearch = !recherche || entreprise.nom.toLocaleLowerCase().includes(recherche);
           const matchesDomaine = domaines.length === 0 || (entreprise.domaine !== null && domaines.includes(entreprise.domaine));
           const matchesSousDomaine = sousDomaines.length === 0 || (entreprise.sous_domaine !== null && sousDomaines.includes(entreprise.sous_domaine));

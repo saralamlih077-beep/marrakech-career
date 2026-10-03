@@ -15,6 +15,9 @@ export interface Entreprise {
   priorite: string | null;
   score_priorite: number | null;
   google_maps: string | null;
+  is_active?: boolean;
+  offre_emploi?: string | null;
+  offre_stage?: string | null;
   about_summary?: string | null;
   about_source_url?: string | null;
   about_updated_at?: string | null;

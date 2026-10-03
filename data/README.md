@@ -17,6 +17,28 @@ La sauvegarde avant import est conservée dans
 l'API. Les colonnes `offre_emploi` et `offre_stage` conservent les valeurs du fichier.
 Elles ne créent aucune offre dans la table `job_offers`.
 
+## Offres importées
+
+`inputs/offres_stage_marrakech.xlsx` contient 44 annonces dans la feuille
+`Toutes_offres` : Trabajo (38), Maremploi (3), Joobaz (2), Offres-emploi.ma (1).
+Les feuilles par source sont des vues du même contenu et ne sont pas réimportées.
+La migration `backend/supabase/migrations/202610030004_import_offers_by_source.sql`
+ajoute ou actualise les annonces par URL sans remplacer les offres déjà présentes.
+La sauvegarde préalable est conservée dans
+`company_import_backups.job_offers_before_20261003` avec RLS activée.
+
+Les annonces conservent leur source, leur employeur même sans lien au catalogue,
+leurs coordonnées publiques, leurs détails et leur lien d’origine. L'intégralité
+de chaque ligne source est conservée dans `import_metadata`. Un contrat « Temps
+plein » est conservé comme tel ; le type « Stage » est utilisé uniquement lorsque
+le contrat ou le titre fourni le précise. Les noms d'entreprise manquants ou issus
+d'un bouton de sauvegarde ne deviennent pas des entreprises fictives. Les liens
+au catalogue utilisent uniquement une correspondance de nom unique.
+Les préambules de navigation et d'inscription copiés par le scraper sont retirés
+des descriptions d'annonces. Le mot « tableau » extrait de « tableau de bord »
+dans ces préambules ne devient pas une compétence Tableau. Les valeurs originales
+restent disponibles dans le fichier source et dans `import_metadata`.
+
 ## Structure
 
 ```text

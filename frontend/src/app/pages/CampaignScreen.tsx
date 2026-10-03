@@ -7,6 +7,7 @@ import { CompanyStatus, PageHeader } from '../components/shared';
 import type { Company } from '../types';
 import type { JobOffer } from '../../hooks/useJobOffers';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
+import { offerEmployerName } from '../offerSources';
 
 const acceptedCvTypes = [
   'application/pdf',
@@ -14,13 +15,14 @@ const acceptedCvTypes = [
   'application/msword',
 ];
 
-const applicationTypes = ['Stage', 'CDI', 'CDD', 'Freelance', 'Candidature spontanée'] as const;
+const applicationTypes = ['Stage', 'CDI', 'CDD', 'Freelance', 'Temps plein', 'Candidature spontanée'] as const;
 
 function initialApplicationType(offer?: JobOffer | null) {
   if (offer?.contract_type === 'internship') return 'Stage';
   if (offer?.contract_type === 'cdi') return 'CDI';
   if (offer?.contract_type === 'cdd') return 'CDD';
   if (offer?.contract_type === 'freelance') return 'Freelance';
+  if (offer?.contract_type === 'full_time') return 'Temps plein';
   return 'Candidature spontanée';
 }
 
@@ -41,8 +43,8 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
   }, [initialCompanyId, favoriteCompanies]);
   const { createCandidature } = useCandidatures();
 
-  const directOfferRecipient = initialOffer && favoriteCompanies.length === 0 && initialOffer.entreprise?.email
-    ? { id: initialOffer.entreprise_id, nom: initialOffer.entreprise.nom || 'Entreprise', email: initialOffer.entreprise.email }
+  const directOfferRecipient = initialOffer && favoriteCompanies.length === 0 && (initialOffer.contact_email || initialOffer.entreprise?.email)
+    ? { id: initialOffer.entreprise_id, nom: offerEmployerName(initialOffer), email: initialOffer.contact_email || initialOffer.entreprise?.email }
     : null;
   const recipients = directOfferRecipient ? [directOfferRecipient] : favoriteCompanies.filter((company) => selected.includes(company.id) && company.email);
   const withoutEmail = favoriteCompanies.filter((company) => selected.includes(company.id) && !company.email);
@@ -69,7 +71,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
     setNotice(null);
     try {
       const company = favoriteCompanies[0];
-      const prompt = `Rédige une lettre de motivation professionnelle en français, sans Markdown, prête à envoyer par e-mail. Type de candidature demandé : ${applicationType}. Candidat : ${profile.full_name || email || 'Candidat'}. Profil : ${profile.job_title} ${profile.education} ${profile.experience} ${profile.skills}. Cible : ${initialOffer?.title || 'candidature spontanée'} chez ${company?.nom || initialOffer?.entreprise?.nom || 'l’entreprise ciblée'}. Ne mens pas. Maximum 250 mots.`;
+      const prompt = `Rédige une lettre de motivation professionnelle en français, sans Markdown, prête à envoyer par e-mail. Type de candidature demandé : ${applicationType}. Candidat : ${profile.full_name || email || 'Candidat'}. Profil : ${profile.job_title} ${profile.education} ${profile.experience} ${profile.skills}. Cible : ${initialOffer?.title || 'candidature spontanée'} chez ${company?.nom || (initialOffer ? offerEmployerName(initialOffer) : 'l’entreprise ciblée')}. Ne mens pas. Maximum 250 mots.`;
       setMessage(await askGeminiCareerAssistant({ message: prompt, companies: [] }));
     } catch (generationError) {
       setNotice(generationError instanceof Error ? `Lettre impossible : ${generationError.message}` : 'Lettre impossible à générer.');

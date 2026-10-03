@@ -172,7 +172,7 @@ export default function App() {
       case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} focusedOffer={mapOffer} onClearFocusedOffer={() => setMapOffer(null)} />;
       case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} onViewOnMap={(offer) => { setMapOffer(offer); setPage('map'); }} onApply={(offer) => { setCampaignOffer(offer); setCampaignCompanyId(offer.entreprise_id); setPage('campaign'); }} />;
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} onGenerate={() => { setCvCompany(null); setCvReturnPage('cv-studio'); setPage('cv-tailored'); }} />;
-      case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
+      case 'cv-analyzer': return <CVAnalyzerScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} onBack={() => setPage('cv-studio')} />;
       case 'cv-tailored': return <TailoredCVScreen key={cvCompany?.id ?? 'general'} initialCompany={cvCompany} onChooseCompany={() => setPage('companies')} onBack={() => setPage(cvReturnPage)} />;
       case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;
       case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} initialOffer={campaignOffer} loading={loading} error={error} onBack={() => setPage('applications')} />;

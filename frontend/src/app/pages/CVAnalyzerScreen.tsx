@@ -6,6 +6,8 @@ import * as mammoth from 'mammoth/mammoth.browser';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 import { PageHeader, SkillTag } from '../components/shared';
 import { useProfile } from '../../hooks/useProfile';
+import type { Company } from '../types';
+import CvCompanyRecommendations from '../components/CvCompanyRecommendations';
 
 type CvAnalysis = {
   completeness: number;
@@ -14,11 +16,16 @@ type CvAnalysis = {
   advice: { type: 'warning' | 'info' | 'success'; text: string }[];
 };
 
-export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
+export default function CVAnalyzerScreen({ onBack, companies, loading, error, favs, onFav, onView, onApply, onTailoredCv }: {
+  onBack: () => void; companies: Company[]; loading: boolean; error: string | null;
+  favs: Set<number>; onFav: (id: number) => void; onView: (company: Company) => void;
+  onApply: (company: Company) => void; onTailoredCv: (company: Company) => void;
+}) {
   const [fileName, setFileName] = useState('');
   const [fileText, setFileText] = useState('');
   const [fileError, setFileError] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
+  const [reading, setReading] = useState(false);
   const [aiConsent, setAiConsent] = useState(false);
   const [analysis, setAnalysis] = useState<CvAnalysis | null>(null);
   const { profile, saveProfile } = useProfile();
@@ -36,6 +43,7 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
     const file = event.target.files?.[0];
     if (!file) return;
     setAnalysis(null);
+    setFileName('');
     setFileText('');
     setFileError('');
     if (file.size > 5 * 1024 * 1024) {
@@ -43,6 +51,7 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
       setFileError('Le fichier dépasse la limite de 5 Mo.');
       return;
     }
+    setReading(true);
     try {
       const lowerName = file.name.toLowerCase();
       const text = lowerName.endsWith('.txt')
@@ -61,6 +70,8 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
       setFileName('');
       const detail = error instanceof Error && error.message ? ` (${error.message})` : '';
       setFileError(`Impossible de lire ce fichier${detail} Utilisez un PDF avec texte sélectionnable, un DOCX ou un fichier TXT.`);
+    } finally {
+      setReading(false);
     }
   };
   const analyze = async () => {
@@ -100,17 +111,17 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7]">
-      <PageHeader title="CV Analyzer" sub="AI-powered CV analysis and optimization" back onBack={onBack} />
+      <PageHeader title="Analyse de CV" sub="Conseils personnalisés et entreprises adaptées à votre parcours." back onBack={onBack} />
 
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="col-span-1 space-y-5">
           {!fileName ? (
             <label className="bg-white rounded-xl border-2 border-dashed border-[#EAE5E0] p-8 flex flex-col items-center text-center cursor-pointer hover:border-[#621E3E] transition-colors group">
-              <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFile} className="hidden" />
+              <input type="file" aria-label="Importer un CV" accept=".pdf,.docx,.txt" onChange={handleFile} disabled={reading || analyzing} className="hidden" />
               <div className="w-14 h-14 rounded-2xl bg-[#FBF9F7] group-hover:bg-[#621E3E]/5 flex items-center justify-center mb-3 transition-colors">
                 <Upload size={22} className="text-[#A8A29E]" />
               </div>
-              <p className="text-sm font-semibold text-[#1C1917]">Upload CV</p>
+              <p className="text-sm font-semibold text-[#1C1917]">{reading ? 'Lecture du CV…' : 'Importer un CV'}</p>
               <p className="text-xs text-[#A8A29E] mt-1">PDF, DOCX ou TXT · analyse locale · max 5 Mo</p>
             </label>
           ) : (
@@ -119,18 +130,22 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
                 <div className="w-10 h-10 rounded-xl bg-[#621E3E]/10 flex items-center justify-center">
                   <FileText size={18} className="text-[#621E3E]" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#1C1917]">{fileName}</p>
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold text-[#1C1917]">{fileName}</p>
                   <p className="text-xs text-[#78716C]">Fichier chargé · analyse prête</p>
                 </div>
               </div>
               <div className="text-center py-4">
                 <div className="text-4xl font-extrabold text-[#667436] mb-1">{analysis?.completeness ?? 0}%</div>
-                <p className="text-xs text-[#78716C]">CV Completeness</p>
+                <p className="text-xs text-[#78716C]">Complétude du CV</p>
                 <div className="w-full h-3 bg-[#F5F1ED] rounded-full mt-3 overflow-hidden">
                   <div className="h-full bg-[#667436] rounded-full" style={{ width: `${analysis?.completeness ?? 0}%` }} />
                 </div>
               </div>
+              <label className={`mt-3 block text-center text-xs font-semibold text-[#621E3E] ${reading || analyzing ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
+                <input type="file" aria-label="Changer de CV" accept=".pdf,.docx,.txt" onChange={handleFile} disabled={reading || analyzing} className="hidden" />
+                Changer de CV
+              </label>
             </div>
           )}
 
@@ -138,17 +153,17 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
             <input type="checkbox" checked={aiConsent} onChange={event => setAiConsent(event.target.checked)} className="mt-0.5 accent-[#621E3E]" />
             <span>J’accepte que le texte de mon CV soit envoyé au service IA pour obtenir une analyse personnalisée.</span>
           </label>
-          <button onClick={() => void analyze()} disabled={!fileText || !aiConsent || analyzing} className="w-full flex items-center justify-center gap-2 py-2 bg-[#667436] text-white rounded-xl text-xs font-bold disabled:opacity-50">
-            <FileSearch size={12} /> {analyzing ? 'Analyzing...' : 'Analyze this CV'}
+          <button onClick={() => void analyze()} disabled={!fileText || !aiConsent || analyzing || reading} className="w-full flex items-center justify-center gap-2 py-2 bg-[#667436] text-white rounded-xl text-xs font-bold disabled:opacity-50">
+            <FileSearch size={12} /> {analyzing ? 'Analyse en cours…' : 'Analyser ce CV'}
           </button>
 
           {fileError && <p className="text-xs text-[#6B5500] bg-[#FFEC8E]/30 border border-[#C6C954]/40 rounded-xl p-3">{fileError}</p>}
 
         </div>
 
-        <div className="col-span-2 space-y-5">
+        <div className="min-w-0 space-y-5 lg:col-span-2">
           <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5">
-            <h3 className="text-sm font-bold text-[#1C1917] mb-3">Detected Skills</h3>
+            <h3 className="text-sm font-bold text-[#1C1917] mb-3">Compétences détectées</h3>
             <div className="flex flex-wrap gap-2">
               {(analysis?.skills ?? []).map(sk => <SkillTag key={sk} label={sk} />)}
               {analysis && analysis.skills.length === 0 && <span className="text-xs text-[#A8A29E]">Aucune compétence détectée.</span>}
@@ -172,6 +187,9 @@ export default function CVAnalyzerScreen({ onBack }: { onBack: () => void }) {
               ))}
             </div>
           </div>
+          <CvCompanyRecommendations companies={companies} loading={loading} error={error}
+            cv={analysis ? { text: fileText, skills: analysis.skills } : null}
+            favs={favs} onFav={onFav} onView={onView} onApply={onApply} onTailoredCv={onTailoredCv} />
         </div>
       </div>
     </div>

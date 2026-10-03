@@ -8,6 +8,7 @@ import { SectorPill, MatchBadge, CompanyStatus } from '../components/shared';
 import type { Company } from '../types';
 import { useProfile } from '../../hooks/useProfile';
 import type { JobOffer } from '../../hooks/useJobOffers';
+import FilterSelect from '../components/FilterSelect';
 
 function InteractiveCompanyMap({ companies, onSelect, focusCompanyId, focusedOfferTitle }: { companies: Company[]; onSelect: (id: number) => void; focusCompanyId?: number | null; focusedOfferTitle?: string | null }) {
   const mapElementRef = useRef<HTMLDivElement>(null);
@@ -91,10 +92,9 @@ export default function MapScreen({ companies, loading, error, favs, onFav, onVi
       <div className="w-full shrink-0 border-b border-[#EAE5E0] bg-white p-4 md:w-56 md:border-b-0 md:border-r md:p-5">
         <div className="space-y-3 md:space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-[#57534E]">Domaine</label>
-            <select value={filterDomaine} onChange={(event) => setFilterDomaine(event.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-3 py-2.5 text-sm text-[#1C1917] outline-none focus:border-[#621E3E]">
-              {domaines.map((domaine) => <option key={domaine} value={domaine}>{domaine === 'All' ? 'Tous les domaines' : domaine}</option>)}
-            </select>
+            <label htmlFor="map-domain" className="mb-1.5 block text-xs font-semibold text-[#57534E]">Domaine</label>
+            <FilterSelect id="map-domain" label="Domaine" value={filterDomaine} onValueChange={setFilterDomaine}
+              options={domaines.map(domaine => ({ value: domaine, label: domaine === 'All' ? 'Tous les domaines' : domaine }))} />
           </div>
           {hasProfileForMatching && <div>
             <div className="mb-2 flex items-center justify-between"><label className="text-xs font-semibold text-[#57534E]">Match Score</label><span className="text-xs font-bold text-[#621E3E]">{minimumMatch}%+</span></div>

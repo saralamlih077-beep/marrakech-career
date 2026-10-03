@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { emptyProfile, type ProfileData } from '../types/profile';
 
+const PROFILE_UPDATED_EVENT = 'marrakech-career-profile-updated';
+
 function profileFromRecord(record: Record<string, unknown> | null | undefined): ProfileData {
   if (!record) return emptyProfile;
   return {
@@ -70,6 +72,14 @@ export function useProfile() {
 
   useEffect(() => {
     void loadProfile();
+
+    const applyProfileUpdate = (event: Event) => {
+      const nextProfile = (event as CustomEvent<ProfileData>).detail;
+      if (nextProfile) setProfile(nextProfile);
+    };
+
+    window.addEventListener(PROFILE_UPDATED_EVENT, applyProfileUpdate);
+    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, applyProfileUpdate);
   }, [loadProfile]);
 
   const saveProfile = async (nextProfile: ProfileData) => {
@@ -102,6 +112,7 @@ export function useProfile() {
       await supabase.auth.updateUser({ data: nextProfile });
 
       setProfile(nextProfile);
+      window.dispatchEvent(new CustomEvent<ProfileData>(PROFILE_UPDATED_EVENT, { detail: nextProfile }));
       setSaving(false);
       return !upsertError;
     } catch (err) {

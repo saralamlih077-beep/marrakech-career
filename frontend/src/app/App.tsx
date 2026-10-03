@@ -6,31 +6,48 @@ import { supabase, supabaseConfigError } from '../lib/supabaseClient';
 import { trackActivity } from '../lib/activityTracking';
 import { ChatBot } from './components/ChatBot';
 import Sidebar from './components/Sidebar';
-import {
-  AIAssistantScreen, AIMatchingScreen, AdminDataScreen, AdminUsersScreen, AdminUserDirectoryScreen, AnalyticsScreen,
-  ApplicationTrackerScreen, AutomationScreen, CampaignScreen, CompaniesScreen,
-  CompanyDetailScreen, CVAnalyzerScreen, CVStudioScreen, DashboardScreen,
-  FavoritesScreen, LoginScreen, MapScreen, OpportunitiesScreen, ProfileScreen,
-  ResetPasswordScreen, SettingsScreen, TailoredCVScreen,
-} from './pages';
+import AdminUsersScreen from './pages/AdminUsersScreen';
+import AdminDataScreen from './pages/AdminDataScreen';
+import AdminUserDirectoryScreen from './pages/AdminUserDirectoryScreen';
+import AnalyticsScreen from './pages/AnalyticsScreen';
+import ApplicationTrackerScreen from './pages/ApplicationTrackerScreen';
+import CampaignScreen from './pages/CampaignScreen';
+import CompaniesScreen from './pages/CompaniesScreen';
+import CompanyDetailScreen from './pages/CompanyDetailScreen';
+import CVAnalyzerScreen from './pages/CVAnalyzerScreen';
+import CVStudioScreen from './pages/CVStudioScreen';
+import TailoredCVScreen from './pages/TailoredCVScreen';
+import DashboardScreen from './pages/DashboardScreen';
+import FavoritesScreen from './pages/FavoritesScreen';
+import LoginScreen from './pages/LoginScreen';
+import LegalScreen from './pages/LegalScreen';
+import MapScreen from './pages/MapScreen';
+import OpportunitiesScreen from './pages/OpportunitiesScreen';
+import ProfileScreen from './pages/ProfileScreen';
+import ResetPasswordScreen from './pages/ResetPasswordScreen';
+import SettingsScreen from './pages/SettingsScreen';
 import type { Company, NavPage } from './types';
+import type { JobOffer } from '../hooks/useJobOffers';
 
 export default function App() {
+  if (window.location.pathname === '/privacy') return <LegalScreen page="privacy" />;
+  if (window.location.pathname === '/terms') return <LegalScreen page="terms" />;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionEmail, setSessionEmail] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
-  const oauthParams = new URLSearchParams(window.location.search);
   // Google returns here after the administrator grants Gmail permission.
-  // Render Settings immediately so its callback can securely save the
-  // one-time refresh token before the dashboard is shown.
+  // Open Settings directly so the callback can store the one-time token.
   const [page, setPage] = useState<NavPage>(() => (
-    oauthParams.get('gmail') === 'connected' || oauthParams.get('error_code') === 'identity_already_exists'
+    new URLSearchParams(window.location.search).get('gmail') === 'connected'
       ? 'settings'
       : 'dashboard'
   ));
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [cvCompany, setCvCompany] = useState<Company | null>(null);
   const [cvReturnPage, setCvReturnPage] = useState<NavPage>('companies');
+  const [campaignCompanyId, setCampaignCompanyId] = useState<number | null>(null);
+  const [campaignOffer, setCampaignOffer] = useState<JobOffer | null>(null);
+  const [mapOffer, setMapOffer] = useState<JobOffer | null>(null);
   const { favorites: favs, toggleFavorite: toggleFav } = useFavorites();
   const { data: companies, loading, error } = useEntreprises();
   const { profile, email: userEmail, loading: profileLoading } = useProfile();
@@ -38,6 +55,11 @@ export default function App() {
   const [adminLoading, setAdminLoading] = useState(true);
   const [checkedEmail, setCheckedEmail] = useState('');
   const isPasswordRecovery = new URLSearchParams(window.location.search).get('reset-password') === 'true';
+  const offerFromEmail = new URLSearchParams(window.location.search).get('offer');
+
+  useEffect(() => {
+    if (isLoggedIn && offerFromEmail) setPage('opportunities');
+  }, [isLoggedIn, offerFromEmail]);
 
   useEffect(() => {
     let active = true;
@@ -62,17 +84,38 @@ export default function App() {
       setAuthLoading(false);
       return;
     }
+    const saveOfficialGmail = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+      if (new URLSearchParams(window.location.search).get('gmail') !== 'connected') return;
+      const gmailSession = session as (typeof session & { provider_refresh_token?: string }) | null;
+      const refreshToken = gmailSession?.provider_refresh_token;
+      const googleIdentity = gmailSession?.user.identities?.find((identity) => identity.provider === 'google');
+      const googleEmail = typeof googleIdentity?.identity_data?.email === 'string'
+        ? googleIdentity.identity_data.email
+        : gmailSession?.user.email;
+      if (!refreshToken || !googleEmail) return;
+      // Google only exposes this refresh token during the OAuth callback.
+      window.setTimeout(() => {
+        void supabase.functions.invoke('save-gmail-connection', {
+          body: { email: googleEmail, refreshToken, scopes: ['https://www.googleapis.com/auth/gmail.send'] },
+        }).then(({ error: saveError }) => {
+          if (!saveError) window.history.replaceState({}, '', window.location.pathname);
+        });
+      }, 0);
+    };
+
     void supabase.auth.getSession().then(({ data }) => {
       setIsLoggedIn(Boolean(data.session));
       setSessionEmail(data.session?.user.email || '');
       setAdminLoading(Boolean(data.session));
       setAuthLoading(false);
+      saveOfficialGmail(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(Boolean(session));
       setSessionEmail(session?.user.email || '');
       setAuthLoading(false);
+      saveOfficialGmail(session);
     });
 
     return () => listener.subscription.unsubscribe();
@@ -111,7 +154,7 @@ export default function App() {
         <h1 className="text-xl font-bold text-[#1C1917]">Configuration requise</h1>
         <p className="mt-3 text-sm leading-relaxed text-[#57534E]">Les variables Supabase requises ne sont pas configurées pour cette version de l’application.</p>
         <pre className="mt-5 whitespace-pre-wrap text-left rounded-xl bg-[#FBF9F7] border border-[#EAE5E0] p-4 text-xs text-[#621E3E]">VITE_SUPABASE_URL=...{`\n`}VITE_SUPABASE_ANON_KEY=...</pre>
-        <p className="mt-4 text-xs text-[#78716C]">Les clés IA restent protégées dans les secrets des Edge Functions Supabase.</p>
+        <p className="mt-4 text-xs text-[#78716C]">L’URL et la clé anonyme sont dans Supabase → Settings → API. Les clés IA restent protégées dans les secrets des Edge Functions et ne doivent jamais être placées dans Vercel.</p>
       </div>
     </div>
   );
@@ -121,22 +164,19 @@ export default function App() {
 
   const screen = (() => {
     switch (activePage) {
-      case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} onApply={viewCompany} onTailoredCv={openTailoredCv} />;
-      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onApply={viewCompany} onTailoredCv={openTailoredCv} />;
+      case 'dashboard': return <DashboardScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onNavigate={setPage} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
+      case 'companies': return <CompaniesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'company-detail': return selectedCompany
-        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} />
+        ? <CompanyDetailScreen company={selectedCompany} isFav={favs.has(selectedCompany.id)} onFav={toggleFav} onBack={() => setPage('companies')} onNavigate={setPage} onCampaign={(id) => { setCampaignOffer(null); setCampaignCompanyId(id); setPage('campaign'); }} />
         : null;
-      case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
-      case 'matching': return <AIMatchingScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} />;
-      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} />;
-      case 'assistant': return <AIAssistantScreen companies={companies} loading={loading} error={error} onView={viewCompany} />;
+      case 'map': return <MapScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} focusedOffer={mapOffer} onClearFocusedOffer={() => setMapOffer(null)} />;
+      case 'opportunities': return <OpportunitiesScreen onNavigate={setPage} focusOfferId={offerFromEmail} onViewOnMap={(offer) => { setMapOffer(offer); setPage('map'); }} onApply={(offer) => { setCampaignOffer(offer); setCampaignCompanyId(offer.entreprise_id); setPage('campaign'); }} />;
       case 'cv-studio': return <CVStudioScreen onAnalyze={() => setPage('cv-analyzer')} onGenerate={() => { setCvCompany(null); setCvReturnPage('cv-studio'); setPage('cv-tailored'); }} />;
       case 'cv-analyzer': return <CVAnalyzerScreen onBack={() => setPage('cv-studio')} />;
       case 'cv-tailored': return <TailoredCVScreen key={cvCompany?.id ?? 'general'} initialCompany={cvCompany} onChooseCompany={() => setPage('companies')} onBack={() => setPage(cvReturnPage)} />;
-      case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} onAutomation={() => setPage('automation')} />;
-      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} loading={loading} error={error} onBack={() => setPage('applications')} />;
-      case 'automation': return <AutomationScreen onBack={() => setPage('applications')} />;
-      case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} />;
+      case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;
+      case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} initialOffer={campaignOffer} loading={loading} error={error} onBack={() => setPage('applications')} />;
+      case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'analytics': return <AnalyticsScreen companies={companies} />;
       case 'admin-data': return <AdminDataScreen companies={companies} loading={loading} error={error} />;
       case 'admin-users': return <AdminUsersScreen onDirectory={() => setPage('admin-user-directory')} />;
@@ -150,7 +190,9 @@ export default function App() {
   return (
     <div className="flex h-dvh overflow-hidden" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <Sidebar active={activePage} onNavigate={setPage} userName={profile.full_name} userEmail={userEmail} isAdmin={isAdmin} />
-      <main className="flex min-h-0 min-w-0 flex-1 pt-[68px] md:pt-0">{screen}</main>
+      <main className="flex min-h-0 min-w-0 flex-1 pt-[68px] md:pt-0">
+        {screen}
+      </main>
       {!isAdmin && <ChatBot />}
     </div>
   );

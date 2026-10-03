@@ -181,7 +181,7 @@ export default function App() {
       case 'admin-data': return <AdminDataScreen companies={companies} loading={loading} error={error} />;
       case 'admin-users': return <AdminUsersScreen onDirectory={() => setPage('admin-user-directory')} />;
       case 'admin-user-directory': return <AdminUserDirectoryScreen />;
-      case 'profile': return <ProfileScreen />;
+      case 'profile': return <ProfileScreen isAdmin={isAdmin} />;
       case 'settings': return <SettingsScreen />;
       default: return null;
     }

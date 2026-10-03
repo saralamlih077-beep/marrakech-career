@@ -73,7 +73,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
 
   const userBlock = (
     <div className="flex items-center gap-2.5 px-3 py-3">
-      <ProfileAvatar choice={avatarChoice} name={userName} email={userEmail} className="h-8 w-8 text-xs" />
+      <ProfileAvatar choice={avatarChoice} name={userName} email={userEmail} isAdmin={isAdmin} className="h-8 w-8 text-xs" />
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-white/90">{userName || userEmail}</p>
         {userEmail && <p className="truncate text-[10px] text-white/50">{userEmail}</p>}

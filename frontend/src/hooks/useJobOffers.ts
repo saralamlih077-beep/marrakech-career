@@ -36,8 +36,11 @@ export function useJobOffers() {
 
   useEffect(() => {
     let active = true;
+    let inFlight = false;
     async function load() {
-      setLoading(true);
+      if (inFlight || !active) return;
+      inFlight = true;
+      try {
       const { data, error: queryError } = await supabase
         .from('job_offers')
         .select('id, entreprise_id, title, contract_type, location, description, requirements, skills, source_name, source_url, created_at, expires_at, employer_name, contact_email, source_origin, contract_label, published_at, publication_date_estimated, offer_domain, work_mode, duration, compensation, education_level, alternative_source_urls, entreprises(nom, email)')
@@ -46,15 +49,28 @@ export function useJobOffers() {
       if (!active) return;
       if (queryError) {
         setError(queryError.message);
-        setOffers([]);
       } else {
         setError(null);
         setOffers((data ?? []).map((row: any) => ({ ...row, entreprise: Array.isArray(row.entreprises) ? row.entreprises[0] ?? null : row.entreprises ?? null })) as JobOffer[]);
       }
-      setLoading(false);
+      } catch {
+        if (active) setError('Les offres ne peuvent pas être actualisées pour le moment.');
+      } finally {
+        inFlight = false;
+        if (active) setLoading(false);
+      }
     }
+    const refresh = () => { if (document.visibilityState === 'visible') void load(); };
     void load();
-    return () => { active = false; };
+    const interval = window.setInterval(refresh, 5 * 60 * 1000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
   }, []);
 
   return { offers, loading, error };

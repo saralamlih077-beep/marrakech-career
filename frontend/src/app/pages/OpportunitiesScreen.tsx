@@ -37,7 +37,9 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOn
   const [letterLoading, setLetterLoading] = useState(false);
   const [letterError, setLetterError] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [alertsEnabled, setAlertsEnabled] = useState(false);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [alertsLoadFailed, setAlertsLoadFailed] = useState(false);
   const [alertsUpdating, setAlertsUpdating] = useState(false);
   const [selectedSource, setSelectedSource] = useState('all');
   const profileText = `${profile.job_title} ${profile.education} ${profile.experience} ${profile.skills} ${profile.projects} ${profile.languages}`;
@@ -52,14 +54,25 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOn
   useEffect(() => {
     let active = true;
     void (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from('job_alert_preferences')
-        .select('enabled')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (active) setAlertsEnabled(data?.enabled ?? true);
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        if (!user) return;
+        const { data, error: preferenceError } = await supabase
+          .from('job_alert_preferences')
+          .select('enabled')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (preferenceError) throw preferenceError;
+        if (active) setAlertsEnabled(data?.enabled ?? false);
+      } catch {
+        if (active) {
+          setAlertsLoadFailed(true);
+          setAlertMessage('Impossible de charger vos alertes. Rechargez la page pour réessayer.');
+        }
+      } finally {
+        if (active) setAlertsLoading(false);
+      }
     })();
     return () => { active = false; };
   }, []);
@@ -102,7 +115,7 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOn
     if (error) setAlertMessage('Impossible de modifier les alertes.');
     else {
       setAlertsEnabled(next);
-      setAlertMessage(next ? 'Alertes activées : vous recevrez toutes les nouvelles offres par e-mail.' : 'Alertes désactivées.');
+      setAlertMessage(next ? 'Alertes activées : un récapitulatif quotidien des nouvelles offres sera envoyé à votre adresse d’inscription. Aucun e-mail sans nouvelle offre.' : 'Alertes désactivées.');
     }
     setAlertsUpdating(false);
   };
@@ -114,7 +127,7 @@ export default function OpportunitiesScreen({ onNavigate, focusOfferId, onViewOn
       <div><h1 className="text-xl font-bold text-[#1C1917]">Offres</h1><p className="text-sm text-[#78716C]">{availableCount} offre{availableCount > 1 ? 's' : ''} disponible{availableCount > 1 ? 's' : ''}, classées par source.</p></div>
     </div>
     {!hasProfileData && <div className="mb-5 max-w-5xl rounded-xl border border-[#C6C954]/45 bg-[#C6C954]/10 px-4 py-3 text-sm text-[#4a4d1a]">Ajoutez des compétences dans le Studio CV ou analysez votre CV pour calculer les matchs avec les offres.</div>}
-    <section className="mb-5 flex max-w-5xl flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#667436]/25 bg-white px-5 py-4 shadow-sm"><div className="flex items-start gap-3"><div className="mt-0.5 rounded-xl bg-[#667436]/10 p-2 text-[#667436]"><Bell size={17} /></div><div><h2 className="text-sm font-bold text-[#1C1917]">Alertes de nouvelles offres</h2><p className="mt-0.5 text-xs text-[#78716C]">Recevez un e-mail récapitulatif de toutes les nouvelles offres disponibles.</p></div></div><button type="button" role="switch" aria-checked={alertsEnabled} disabled={alertsUpdating} onClick={() => void updateAlerts()} className={`rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-60 ${alertsEnabled ? 'bg-[#667436] text-white hover:bg-[#53602d]' : 'border border-[#D6CEC6] text-[#57534E] hover:bg-[#FBF9F7]'}`}>{alertsUpdating ? 'Mise à jour…' : alertsEnabled ? 'Alertes activées' : 'Activer les alertes'}</button></section>
+    <section className="mb-5 flex max-w-5xl flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#667436]/25 bg-white px-5 py-4 shadow-sm"><div className="flex items-start gap-3"><div className="mt-0.5 rounded-xl bg-[#667436]/10 p-2 text-[#667436]"><Bell size={17} /></div><div><h2 className="text-sm font-bold text-[#1C1917]">Alertes de nouvelles offres</h2><p className="mt-0.5 text-xs text-[#78716C]">Recevez chaque jour les nouvelles offres à votre adresse d’inscription. Aucun e-mail sans nouvelle offre.</p></div></div><button type="button" role="switch" aria-checked={alertsEnabled} disabled={alertsUpdating || alertsLoading || alertsLoadFailed} onClick={() => void updateAlerts()} className={`rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-60 ${alertsEnabled ? 'bg-[#667436] text-white hover:bg-[#53602d]' : 'border border-[#D6CEC6] text-[#57534E] hover:bg-[#FBF9F7]'}`}>{alertsLoading ? 'Chargement…' : alertsUpdating ? 'Mise à jour…' : alertsEnabled ? 'Alertes activées' : 'Activer les alertes'}</button></section>
     {alertMessage && <div className="mb-5 max-w-5xl rounded-xl border border-[#667436]/30 bg-[#667436]/10 px-4 py-3 text-sm text-[#4a4d1a]">{alertMessage}</div>}
     {loading && <p className="text-sm text-[#78716C]">Chargement des offres validées…</p>}
     {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Impossible de charger les offres : {error}</div>}

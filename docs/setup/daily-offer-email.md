@@ -1,0 +1,17 @@
+# Daily offer email
+
+`send-daily-offer-digest` sends one summary to each explicitly subscribed, confirmed Supabase Auth account. The recipient is always the account's registration address. No match threshold or CV is required: all new verified and unexpired offers from all sources are included.
+
+Deploy the function with JWT verification enabled and apply `202610040002_daily_offer_emails.sql` and `202610040003_daily_offer_email_cron.sql`. Existing server-side `JOOBLE_SYNC_SECRET` (fallback `JOBSQUARE_SYNC_SECRET`), `BREVO_API_KEY`, and `BREVO_SENDER_EMAIL` are required. Brevo's transactional relay and sender must both be active; the function checks these before reserving mail. Never put these values in Vite configuration or source control.
+
+Call `public.invoke_daily_offer_digest(true,true)` and inspect the returned request ID in `net._http_response`. This checks subscriptions, pending offers, sender validation and the Brevo sandbox without sending or reserving user mail. After successful validation, apply `202610040004_schedule_daily_offer_emails.sql`: it schedules `public.invoke_daily_offer_digest(false,false)` after the 06:00 and 07:00 UTC collectors, at **08:00 UTC daily**. This is 09:00 Casablanca outside the temporary Ramadan UTC adjustment. The helper reuses the existing `sync-job-opportunities-daily` authenticated HTTP template on each call, replacing the endpoint/body and raising its timeout to 120 seconds. Keep that source job/template available; no credentials are returned to the client.
+
+Only offers first verified after `enabled_since` are eligible. Existing opt-in rows retain their activation date. No preference row means no email. Turning alerts off and on starts a new subscription window, without replaying past offers. Confirmation, banned-account status and the preference are checked again before delivery.
+
+`claim_job_alert_digest` locks a subscriber's preference and atomically reserves a unique local calendar day and a snapshot of offers. The finish RPC records the Brevo message ID and the delivery history in one transaction. `sent` means accepted by Brevo, not proof of inbox delivery. Actual delivery is checked through Brevo transactional logs. An ambiguous timeout/server error is marked `unknown` and these offers are not retried automatically. A crash leaving `reserved` has the same conservative behavior; inspect the Brevo logs before any manual repair. A definitive 4xx failure allows those offers in a later day's summary. Unexpected runtime/database errors fail the HTTP request rather than claiming success.
+
+Diagnostic tables and RPCs are service-role-only. Check cron runs and `net._http_response` for HTTP failures, and `job_alert_digests` for `failed`, `unknown` or stale `reserved` rows. The authenticated dry-run response contains aggregate counts, never email addresses.
+
+Users can opt out through the footer link, which opens Offres after login. The frontend reflects saved preferences and defaults to disabled; it does not call Brevo.
+
+Validation: `node --test --test-isolation=none tests/daily-offer-email.test.mjs`, live SQL rollback checks for opt-in/expiry/deduplication, protected endpoint access checks, and live sandbox validation. [Brevo sandbox](https://developers.brevo.com/docs/using-sandbox-mode) validates the request but does not prove inbox delivery. [Brevo idempotency](https://developers.brevo.com/docs/heterogenous-versions-batch-emails) has a limited TTL; the persistent database reservation is the main duplicate guard.

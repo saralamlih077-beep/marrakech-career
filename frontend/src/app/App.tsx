@@ -58,7 +58,7 @@ export default function App() {
   const offerFromEmail = new URLSearchParams(window.location.search).get('offer');
 
   useEffect(() => {
-    if (isLoggedIn && offerFromEmail) setPage('opportunities');
+    if (isLoggedIn && (offerFromEmail || new URLSearchParams(window.location.search).get('alerts') === 'manage')) setPage('opportunities');
   }, [isLoggedIn, offerFromEmail]);
 
   useEffect(() => {

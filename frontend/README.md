@@ -36,14 +36,27 @@ images générées avec la modification du catalogue.
 La page Entreprises cherche dans le nom, les catégories, les descriptions déjà
 présentes et l'index des activités issues des sites publics. Les synonymes
 français/anglais sont gérés par `src/app/companySearch.ts`, avec des limites de
-mots pour les sigles courts. Les mots significatifs d'une requête sont combinés,
+mots pour les sigles courts. Les phrases courantes sont analysées localement :
+les mots de demande et de recherche de stage sont retirés, les petites fautes
+uniques sont corrigées à partir du vocabulaire réel, « ou » propose des alternatives
+et « sans / sauf » exclut des activités. L'interface affiche les critères interprétés
+et les corrections. Les mots significatifs d'une requête sont combinés,
 le domaine sélectionné reste un filtre, et les résultats sont classés par
 pertinence. Une catégorie importée « IA & Data » ne suffit pas seule à prouver
 une activité d'intelligence artificielle.
 
+Si aucun résultat ne satisfait tous les critères, jusqu'à 24 correspondances
+partielles sont proposées séparément (au moins la moitié des critères d'une
+alternative), avec les critères non retrouvés sur chaque carte. Un texte sans
+activité ni nom n'affiche pas tous les comptes comme une recherche réussie.
+Une recherche de stage trouve des entreprises pertinentes, pas une preuve de
+recrutement. Aucune entreprise ou activité n'est inventée.
+
 Chaque résultat indique le texte qui correspond et le site source lorsqu'il
 est disponible. L'index est chargé une fois, puis la recherche s'effectue
-localement sans appel externe par frappe. Si l'index ne peut pas être chargé, la
+localement sans appel externe ni modèle IA par frappe, après 220 ms de pause.
+Les correspondances par champ sont mémorisées et les timers périmés annulés.
+Si l'index ne peut pas être chargé, la
 page continue à chercher dans le catalogue et le signale.
 
 Après un import ou une actualisation des activités, préparer l'index avant de

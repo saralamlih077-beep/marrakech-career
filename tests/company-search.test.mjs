@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCompanySearchDocuments, searchCompanyDocuments, companyWebsiteKey } from '../frontend/src/app/companySearch.ts';
+import { buildCompanySearchDocuments, searchCompanyDocuments, companyWebsiteKey, runCompanySearch } from '../frontend/src/app/companySearch.ts';
 
 const company = (id, nom, extra = {}) => ({ id, nom, domaine: 'IT & Digital', sous_domaine: null, categorie: 'Services', site_web: null, adresse: 'Marrakech', ...extra });
 const companies = [
@@ -82,4 +82,48 @@ test('website index keys drop query parameters and fragments and reject credenti
   assert.equal(companyWebsiteKey('https://MONARK.example/?campaign=1#services'),'https://monark.example/');
   assert.equal(companyWebsiteKey('https://secret:password@example.test'),'');
   assert.equal(companyWebsiteKey('javascript:alert(1)'), '');
+});
+
+test('extracts activities from French and English requests instead of requiring filler or recruitment claims', () => {
+  for (const query of ['je cherche une entreprise pour un stage en IA à Marrakech', 'je veux une agence qui fait de l’intelligence artificielle', 'I am looking for companies related to artificial intelligence']) {
+    const result = runCompanySearch(documents, query);
+    assert.deepEqual(result.results.map(row => row.company.id), [2], query);
+    assert.equal(result.related.length, 0);
+  }
+  assert.equal(runCompanySearch(documents, 'stage en IA').analysis.recruitment, true);
+  assert.equal(runCompanySearch(documents, 'IA').analysis.recruitment, false);
+  assert.deepEqual(ids('je cherche un stage'), []);
+});
+
+test('corrects a unique small typo while preserving exact names, prefixes and short acronyms', () => {
+  assert.deepEqual(ids('infrastruture'), [1]);
+  assert.deepEqual(ids('inteligence artificielle'), [2]);
+  assert.deepEqual(ids('monrak'), [2]);
+  assert.deepEqual(ids('212 ser'), [1]);
+  assert.deepEqual(runCompanySearch(documents,'monrak').analysis.corrections, [{from:'monrak',to:'monark'}]);
+  assert.deepEqual(ids('zzzzaucune'), []);
+});
+
+test('OR alternatives and exclusions preserve domains and exclude inactive records', () => {
+  assert.deepEqual(ids('IA ou infrastructure').sort(), [1,2]);
+  assert.deepEqual(ids('IA or infrastructure').sort(), [1,2]);
+  assert.deepEqual(ids('web sans IA'), [5]);
+  assert.deepEqual(ids('sans IA').sort(), [1,3,4,5,6]);
+  assert.deepEqual(searchCompanyDocuments(documents,'IA ou comptabilité','Services aux entreprises').map(row=>row.company.id), [3]);
+  assert.deepEqual(runCompanySearch(documents,'IA infrastructure','Santé').related, []);
+});
+
+test('labels partial matches separately and never claims they meet all criteria', () => {
+  const result = runCompanySearch(documents,'IA infrastructure');
+  assert.deepEqual(result.results, []);
+  assert.deepEqual(result.related.map(row=>row.company.id).sort(), [1,2]);
+  assert.deepEqual(result.related.find(row=>row.company.id===1).missing,['Intelligence artificielle']);
+  assert.deepEqual(result.related.find(row=>row.company.id===2).missing,['Infrastructure informatique']);
+  assert.deepEqual(runCompanySearch(documents,'IA').related, []);
+  assert.deepEqual(runCompanySearch(documents,'zzzzaucune').related, []);
+});
+
+test('understands common Arabic activity names using the same grounded service matches', () => {
+  assert.deepEqual(ids('أبحث عن شركة في الذكاء الاصطناعي'), [2]);
+  assert.deepEqual(ids('البنية التحتية'), [1]);
 });

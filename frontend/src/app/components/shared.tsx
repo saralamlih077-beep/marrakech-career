@@ -3,6 +3,7 @@ import { DOMAIN_COLORS } from '../constants';
 import type { Company } from '../types';
 import { companyAddress, companySkills, matchColor } from '../utils';
 import CompanyWebsitePreview from './CompanyWebsitePreview';
+import type { CompanySearchEvidence } from '../companySearch';
 
 export function MatchBadge({ pct }: { pct: number }) {
   const c = matchColor(pct);
@@ -38,9 +39,10 @@ export function SkillTag({ label, missing = false }: { label: string; missing?: 
   );
 }
 
-export function CompanyCard({ company, isFav, onFav, onView, onApply, onTailoredCv }: {
+export function CompanyCard({ company, isFav, onFav, onView, onApply, onTailoredCv, searchEvidence }: {
   company: Company; isFav: boolean;
   onFav: (id: number) => void; onView: (c: Company) => void; onApply?: (c: Company) => void; onTailoredCv?: (c: Company) => void;
+  searchEvidence?: CompanySearchEvidence;
 }) {
   const initials = company.nom.split(' ').slice(0, 2).map(w => w[0]).join('');
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
@@ -73,6 +75,11 @@ export function CompanyCard({ company, isFav, onFav, onView, onApply, onTailored
           ))}
           {skills.length > 3 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBF9F7] border border-[#EAE5E0] text-[#78716C]">+{skills.length - 3}</span>}
         </div>
+        {searchEvidence && <div className="rounded-lg bg-[#FBF9F7] px-3 py-2 text-xs text-[#57534E]">
+          <p className="font-semibold text-[#621E3E]">{searchEvidence.label}</p>
+          <p className="mt-1 line-clamp-3 break-words">{searchEvidence.excerpt}</p>
+          {searchEvidence.sourceUrl && /^https?:\/\//i.test(searchEvidence.sourceUrl) && <a href={searchEvidence.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block font-medium text-[#621E3E] underline underline-offset-2">Source : site de l’entreprise</a>}
+        </div>}
         <div className="mt-auto flex gap-2 pt-1">
           <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
             <Eye size={11} /> View

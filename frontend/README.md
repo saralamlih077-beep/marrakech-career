@@ -30,3 +30,30 @@ python data/src/cache_company_previews.py --source data/outputs/entreprises_impo
 Le script conserve les images existantes et limite la collecte à quatre requêtes
 simultanées, avec deux tentatives par nouveau site. Versionner le manifeste et les
 images générées avec la modification du catalogue.
+
+## Recherche d'entreprises
+
+La page Entreprises cherche dans le nom, les catégories, les descriptions déjà
+présentes et l'index des activités issues des sites publics. Les synonymes
+français/anglais sont gérés par `src/app/companySearch.ts`, avec des limites de
+mots pour les sigles courts. Les mots significatifs d'une requête sont combinés,
+le domaine sélectionné reste un filtre, et les résultats sont classés par
+pertinence. Une catégorie importée « IA & Data » ne suffit pas seule à prouver
+une activité d'intelligence artificielle.
+
+Chaque résultat indique le texte qui correspond et le site source lorsqu'il
+est disponible. L'index est chargé une fois, puis la recherche s'effectue
+localement sans appel externe par frappe. Si l'index ne peut pas être chargé, la
+page continue à chercher dans le catalogue et le signale.
+
+Après un import ou une actualisation des activités, préparer l'index avant de
+compiler et publier :
+
+```powershell
+python data/src/build_company_search_index.py --source data/outputs/entreprises_import_supabase.csv
+node --test --test-isolation=none tests/company-search.test.mjs
+```
+
+Versionner `public/company-search/` et `src/app/companySearchIndexInfo.json`.
+Le collecteur lit uniquement les réponses HTML publiques accessibles ; les
+sites inaccessibles ne reçoivent aucune description inventée.

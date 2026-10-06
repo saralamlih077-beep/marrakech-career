@@ -53,13 +53,6 @@ export default function AnalyticsScreen({ companies }: { companies: Company[] })
   }, {})).map(([name, value], index) => ({ name, value, color: ['#621E3E', '#667436', '#C6C954', '#D9828D'][index % 4] })).sort((a, b) => b.value - a.value).slice(0, 6);
   const activeApplications = candidatures.filter(item => ['prepared', 'applied', 'interview'].includes(item.statut)).length;
   const followedApplications = candidatures.filter(item => ['interview', 'accepted', 'rejected'].includes(item.statut)).length;
-  const statusLabels: Record<string, string> = { saved: 'Brouillon', prepared: 'Préparée', applied: 'Envoyée', interview: 'Entretien', accepted: 'Acceptée', rejected: 'Refusée' };
-  const statusColors: Record<string, string> = { saved: '#A8A29E', prepared: '#C6C954', applied: '#667436', interview: '#621E3E', accepted: '#3B8B5B', rejected: '#D9828D' };
-  const applicationPipeline = Object.keys(statusLabels).map((status) => ({
-    name: statusLabels[status],
-    value: candidatures.filter((item) => item.statut.toLowerCase() === status).length,
-    color: statusColors[status],
-  })).filter((item) => item.value > 0);
   return (
     <div className="flex-1 overflow-auto p-8 bg-[#FBF9F7]">
       <PageHeader title="Career Analytics" sub="Data insights for your job search in Marrakech" />
@@ -161,13 +154,7 @@ export default function AnalyticsScreen({ companies }: { companies: Company[] })
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-5">
-        <div className="rounded-xl border border-[#EAE5E0] bg-white p-5 shadow-sm">
-          <h3 className="mb-1 text-sm font-bold text-[#1C1917]">Pipeline des candidatures</h3>
-          <p className="mb-3 text-xs text-[#78716C]">Répartition réelle selon le statut que vous suivez.</p>
-          {applicationPipeline.length === 0 ? <p className="py-16 text-center text-sm text-[#78716C]">Aucune candidature à analyser pour le moment.</p> :
-          <ResponsiveContainer width="100%" height={210}><BarChart data={applicationPipeline}><CartesianGrid strokeDasharray="3 3" stroke="#F5F1ED" /><XAxis dataKey="name" tick={{ fontSize: 10, fill: '#78716C' }} /><YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#78716C' }} /><Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #EAE5E0', fontSize: 12 }} /> <Bar dataKey="value" radius={[5, 5, 0, 0]}>{applicationPipeline.map((item) => <Cell key={item.name} fill={item.color} />)}</Bar></BarChart></ResponsiveContainer>}
-        </div>
+      <div className="mt-5">
         <div className="rounded-xl border border-[#EAE5E0] bg-white p-5 shadow-sm">
           <h3 className="mb-1 text-sm font-bold text-[#1C1917]">Taux de suivi</h3>
           <p className="mb-4 text-xs text-[#78716C]">Part des candidatures ayant reçu une décision ou un entretien.</p>

@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowLeft, Check, Eye, FileText, Heart, MapPin, Send } f
 import { DOMAIN_COLORS } from '../constants';
 import type { Company } from '../types';
 import { companyAddress, companySkills, matchColor } from '../utils';
+import CompanyWebsitePreview from './CompanyWebsitePreview';
 
 export function MatchBadge({ pct }: { pct: number }) {
   const c = matchColor(pct);
@@ -45,39 +46,42 @@ export function CompanyCard({ company, isFav, onFav, onView, onApply, onTailored
   const sc = DOMAIN_COLORS[company.domaine || ''] || '#621E3E';
   const skills = companySkills(company);
   return (
-    <div className="bg-white rounded-xl border border-[#EAE5E0] shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: sc }}>
-          {initials}
+    <div className="company-card min-w-0 overflow-hidden bg-white rounded-xl border border-[#EAE5E0] shadow-sm flex flex-col hover:shadow-md transition-shadow">
+      <CompanyWebsitePreview website={company.site_web} name={company.nom} color={sc} />
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: sc }}>
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 title={company.nom} className="text-sm font-semibold text-[#1C1917] line-clamp-2 break-words">{company.nom}</h3>
+            <SectorPill domaine={company.domaine || 'Domaine non renseigné'} sousDomaine={company.sous_domaine} />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {company.note !== null && <span className="text-xs font-bold text-[#78716C]">{company.note.toFixed(1)}/5</span>}
+            <button onClick={() => onFav(company.id)} aria-label={`${isFav ? 'Retirer' : 'Ajouter'} ${company.nom} ${isFav ? 'des' : 'aux'} favoris`} aria-pressed={isFav}>
+              <Heart size={15} className={isFav ? 'fill-[#D9828D] text-[#D9828D]' : 'text-[#C8C2BC] hover:text-[#D9828D]'} />
+            </button>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-[#1C1917] truncate">{company.nom}</h3>
-          <SectorPill domaine={company.domaine || 'Domaine non renseigné'} sousDomaine={company.sous_domaine} />
+        <div className="flex items-center gap-1 text-xs text-[#78716C]">
+          <MapPin size={11} className="shrink-0" />{companyAddress(company)}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {company.note !== null && <span className="text-xs font-bold text-[#78716C]">{company.note.toFixed(1)}/5</span>}
-          <button onClick={() => onFav(company.id)}>
-            <Heart size={15} className={isFav ? 'fill-[#D9828D] text-[#D9828D]' : 'text-[#C8C2BC] hover:text-[#D9828D]'} />
+        <div className="flex flex-wrap gap-1">
+          {skills.slice(0, 3).map(sk => (
+            <span key={sk} className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBF9F7] border border-[#EAE5E0] text-[#57534E]">{sk}</span>
+          ))}
+          {skills.length > 3 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBF9F7] border border-[#EAE5E0] text-[#78716C]">+{skills.length - 3}</span>}
+        </div>
+        <div className="mt-auto flex gap-2 pt-1">
+          <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
+            <Eye size={11} /> View
+          </button>
+          {onTailoredCv && <button onClick={() => onTailoredCv(company)} aria-label={`Générer un CV avec l’IA pour ${company.nom}`} title={`Générer un CV avec l’IA pour ${company.nom}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold border border-[#C6C954]/50 bg-[#C6C954]/15 text-[#4a4d1a] hover:bg-[#C6C954]/25 transition-colors whitespace-nowrap"><FileText size={11} className="shrink-0" /> CV IA</button>}
+          <button onClick={() => onApply?.(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
+            <Send size={11} /> Apply
           </button>
         </div>
-      </div>
-      <div className="flex items-center gap-1 text-xs text-[#78716C]">
-        <MapPin size={11} />{companyAddress(company)}
-      </div>
-      <div className="flex flex-wrap gap-1">
-        {skills.slice(0, 3).map(sk => (
-          <span key={sk} className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBF9F7] border border-[#EAE5E0] text-[#57534E]">{sk}</span>
-        ))}
-        {skills.length > 3 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FBF9F7] border border-[#EAE5E0] text-[#78716C]">+{skills.length - 3}</span>}
-      </div>
-      <div className="flex gap-2 pt-1">
-        <button onClick={() => onView(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold border border-[#EAE5E0] text-[#621E3E] hover:bg-[#621E3E]/5 transition-colors">
-          <Eye size={11} /> View
-        </button>
-        {onTailoredCv && <button onClick={() => onTailoredCv(company)} aria-label={`Générer un CV avec l’IA pour ${company.nom}`} title={`Générer un CV avec l’IA pour ${company.nom}`} className="flex-1 flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold border border-[#C6C954]/50 bg-[#C6C954]/15 text-[#4a4d1a] hover:bg-[#C6C954]/25 transition-colors whitespace-nowrap"><FileText size={11} className="shrink-0" /> CV IA</button>}
-        <button onClick={() => onApply?.(company)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-[#621E3E] text-white hover:bg-[#4e1830] transition-colors">
-          <Send size={11} /> Apply
-        </button>
       </div>
     </div>
   );

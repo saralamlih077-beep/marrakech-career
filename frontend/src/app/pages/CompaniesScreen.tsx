@@ -37,13 +37,13 @@ export default function CompaniesScreen({ companies, loading, error, favs, onFav
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <CompanyStatus loading={loading} error={error} />
         {filtered.map(c => (
           <CompanyCard key={c.id} company={c} isFav={favs.has(c.id)} onFav={onFav} onView={onView} onApply={onApply} onTailoredCv={onTailoredCv} />
         ))}
         {filtered.length === 0 && (
-          <div className="col-span-1 py-16 sm:col-span-2 xl:col-span-4 text-center text-[#A8A29E]">No companies match your search.</div>
+          <div className="col-span-full py-16 text-center text-[#A8A29E]">No companies match your search.</div>
         )}
       </div>
     </div>

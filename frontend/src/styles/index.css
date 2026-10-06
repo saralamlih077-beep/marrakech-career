@@ -8,6 +8,21 @@
 	border: 0;
 }
 
+/* Keep the full login button visible in short mobile windows; longer forms scroll. */
+@media (max-width: 767px) and (max-height: 640px) {
+  .login-form-panel {
+    padding-top: 0.75rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .login-tabs,
+  .login-intro,
+  .login-google,
+  .login-email-divider {
+    margin-bottom: 0.75rem;
+  }
+}
+
 
 .company-map-marker svg {
 	display: block;

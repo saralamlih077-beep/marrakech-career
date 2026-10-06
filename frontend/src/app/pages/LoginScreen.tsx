@@ -185,9 +185,9 @@ export default function LoginScreen() {
       </div>
 
       {/* Right form panel */}
-      <div className="relative z-10 mt-24 flex min-h-0 w-full flex-1 flex-col items-center justify-start rounded-t-[48px] bg-[#FBF9F7] px-7 py-5 md:mt-0 md:flex-1 md:justify-center md:rounded-none md:p-12">
-        <div className="w-full max-w-md">
-          <div className="mb-5 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
+      <div className="login-form-panel relative z-10 mt-24 flex min-h-0 w-full flex-1 flex-col items-center justify-start overflow-y-auto overscroll-contain rounded-t-[48px] bg-[#FBF9F7] px-7 py-5 md:mt-0 md:flex-1 md:rounded-none md:p-12">
+        <div className="my-auto w-full max-w-md shrink-0">
+          <div className="login-tabs mb-5 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
             {(['login', 'register'] as const).map(mode => (
               <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-all md:px-5 md:py-2 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
                 {mode === 'login' ? t('signIn') : t('register')}
@@ -198,14 +198,14 @@ export default function LoginScreen() {
           <h2 className="mb-1 text-[22px] font-bold text-[#1C1917] md:text-2xl">
             {tab === 'login' ? t('welcomeBack') : t('createAccount')}
           </h2>
-          <p className="mb-5 text-sm text-[#78716C] md:mb-8">
+          <p className="login-intro mb-5 text-sm text-[#78716C] md:mb-8">
             {tab === 'login' ? t('existingAccount') : t('newAccount')}
           </p>
 
-          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2.5 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-5 md:py-3">
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="login-google mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2.5 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-5 md:py-3">
             <Chrome size={18} className="text-[#4285F4]" /> {t('continueGoogle')}
           </button>
-          <div className="mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
+          <div className="login-email-divider mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
 
           <form onSubmit={handleSubmit} autoComplete="off" className="space-y-3 md:space-y-4">
             {tab === 'register' && (

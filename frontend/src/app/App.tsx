@@ -23,6 +23,7 @@ import LoginScreen from './pages/LoginScreen';
 import LegalScreen from './pages/LegalScreen';
 import MapScreen from './pages/MapScreen';
 import OpportunitiesScreen from './pages/OpportunitiesScreen';
+import EventsScreen from './pages/EventsScreen';
 import ProfileScreen from './pages/ProfileScreen';
 import ResetPasswordScreen from './pages/ResetPasswordScreen';
 import SettingsScreen from './pages/SettingsScreen';
@@ -178,6 +179,7 @@ export default function App() {
       case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} initialOffer={campaignOffer} loading={loading} error={error} onBack={() => setPage('applications')} />;
       case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
       case 'analytics': return <AnalyticsScreen companies={companies} />;
+      case 'events': return <EventsScreen />;
       case 'admin-data': return <AdminDataScreen companies={companies} loading={loading} error={error} />;
       case 'admin-users': return <AdminUsersScreen onDirectory={() => setPage('admin-user-directory')} />;
       case 'admin-user-directory': return <AdminUserDirectoryScreen />;

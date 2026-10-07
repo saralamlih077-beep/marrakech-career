@@ -1,0 +1,43 @@
+import { useEffect, useState } from 'react';
+import { ArrowUpRight, CalendarDays, MapPin, Search, GraduationCap, Building2, Ticket, RotateCcw } from 'lucide-react';
+import FilterSelect from '../components/FilterSelect';
+import { useMoroccoEvents } from '../../hooks/useMoroccoEvents';
+import { currentEvents, EVENT_DOMAINS, filterEvents, formatEventDate, moroccoToday, type EventFilters } from '../moroccoEvents';
+
+const initialFilters: EventFilters = { query: '', domain: 'all', city: 'all', period: 'all' };
+export default function EventsScreen() {
+  const { events, loading, error, retry } = useMoroccoEvents();
+  const [filters, setFilters] = useState(initialFilters);
+  const [today, setToday] = useState(() => moroccoToday());
+  useEffect(() => { const timer = window.setInterval(() => setToday(moroccoToday()), 60000); return () => window.clearInterval(timer); }, []);
+  const upcoming = currentEvents(events, today);
+  const cities = [...new Set(upcoming.map(event => event.city))].sort((a, b) => a.localeCompare(b, 'fr'));
+  const results = filterEvents(events, filters, today);
+  const activeFilter = Object.keys(initialFilters).some(key => filters[key as keyof EventFilters] !== initialFilters[key as keyof EventFilters]);
+  return <section className="min-w-0 flex-1 overflow-y-auto bg-[#FBF9F7] p-4 pb-24 sm:p-6 lg:p-8" aria-labelledby="events-title">
+    <div className="mx-auto max-w-7xl">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div><p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#667436]">Apprendre · Découvrir · Rencontrer</p><h1 id="events-title" className="text-2xl font-extrabold text-[#1C1917] sm:text-3xl">Événements au Maroc</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[#78716C]">Salons et rencontres pour comprendre votre domaine, découvrir ses métiers et échanger avec des professionnels dans tout le Maroc.</p></div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#EAE5E0] bg-white px-4 py-2 text-sm font-semibold text-[#621E3E]"><MapPin size={16} /> Tout le Maroc</span>
+      </div>
+      <div className="mb-6 rounded-2xl border border-[#EAE5E0] bg-white p-4 shadow-sm sm:p-5">
+        <label htmlFor="events-search" className="mb-2 block text-xs font-semibold text-[#57534E]">Rechercher un événement ou un sujet</label>
+        <div className="relative"><Search size={18} className="pointer-events-none absolute left-3.5 top-3.5 text-[#78716C]" /><input id="events-search" value={filters.query} onChange={event => setFilters(value => ({ ...value, query: event.target.value }))} placeholder="IA, cybersécurité, bâtiment, formation…" className="min-h-11 w-full rounded-xl border border-[#EAE5E0] bg-[#FBF9F7] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#621E3E]" /></div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {[{ key: 'domain', label: 'Domaine', options: [{ value: 'all', label: 'Tous les domaines' }, ...EVENT_DOMAINS.map(value => ({ value, label: value }))] }, { key: 'city', label: 'Ville', options: [{ value: 'all', label: 'Toutes les villes' }, ...cities.map(value => ({ value, label: value }))] }, { key: 'period', label: 'Période', options: [{ value: 'all', label: 'Tous les événements à venir' }, { value: '30', label: 'Dans les 30 prochains jours' }, { value: '90', label: 'Dans les 3 prochains mois' }] }].map(filter => <div key={filter.key}><label htmlFor={`events-${filter.key}`} className="mb-2 block text-xs font-semibold text-[#57534E]">{filter.label}</label><FilterSelect id={`events-${filter.key}`} label={filter.label} value={filters[filter.key as keyof EventFilters]} options={filter.options} onValueChange={value => setFilters(previous => ({ ...previous, [filter.key]: value }))} /></div>)}
+        </div>
+      </div>
+      {loading ? <p role="status" className="py-12 text-center text-sm text-[#78716C]">Chargement des événements…</p> : error ? <div role="alert" className="rounded-2xl border border-[#EAE5E0] bg-white p-8 text-center"><p className="text-sm text-[#57534E]">Impossible de charger les événements pour le moment.</p><button onClick={retry} className="mt-4 rounded-xl bg-[#621E3E] px-5 py-3 text-sm font-bold text-white">Réessayer</button></div> : <>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><p role="status" aria-live="polite" className="text-sm text-[#57534E]"><b className="text-[#1C1917]">{results.length}</b> événement{results.length > 1 ? 's' : ''} {activeFilter ? 'pour votre recherche' : 'à venir ou en cours'}{!activeFilter && ` · ${cities.length} villes`}</p>{activeFilter && <button onClick={() => setFilters(initialFilters)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#621E3E]"><RotateCcw size={14} /> Réinitialiser les filtres</button>}</div>
+        {results.length === 0 ? <div className="rounded-2xl border border-dashed border-[#D8CDC6] bg-white p-8 text-center"><CalendarDays size={30} className="mx-auto mb-3 text-[#B696A5]" /><h2 className="font-bold text-[#1C1917]">Aucun événement confirmé pour ces critères</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#78716C]">Essayez une autre ville, une période plus large ou un autre domaine. Ce catalogue est une sélection et ne couvre pas tous les événements au Maroc.</p>{activeFilter && <button onClick={() => setFilters(initialFilters)} className="mt-4 rounded-xl border border-[#EAE5E0] px-4 py-2.5 text-sm font-semibold text-[#621E3E]">Voir tous les événements</button>}</div> : <div className="grid items-stretch gap-5 lg:grid-cols-2 xl:grid-cols-3">{results.map(event => <article key={event.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#EAE5E0] bg-white shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-[#EAE5E0] bg-[#621E3E]/5 px-5 py-4"><span className="inline-flex items-center gap-2 text-xs font-bold text-[#621E3E]"><CalendarDays size={16} /> {event.type}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${event.startDate <= today ? 'bg-[#667436] text-white' : 'bg-white text-[#621E3E]'}`}>{event.startDate <= today ? 'En cours' : 'À venir'}</span></div>
+          <div className="flex flex-1 flex-col p-5"><div className="mb-3 flex flex-wrap gap-1.5">{event.domains.map(domain => <span key={domain} className="rounded-md bg-[#F5F1ED] px-2 py-1 text-[11px] font-semibold text-[#57534E]">{domain}</span>)}</div><h2 className="text-lg font-extrabold leading-6 text-[#1C1917]">{event.title}</h2><p className="mt-3 flex gap-2 text-sm leading-6 text-[#621E3E]"><CalendarDays size={15} className="mt-1 shrink-0" /><span>{formatEventDate(event.startDate)}{event.endDate !== event.startDate && ` – ${formatEventDate(event.endDate)}`}</span></p><p className="mt-2 flex gap-2 text-sm leading-6 text-[#78716C]"><MapPin size={15} className="mt-1 shrink-0" /><span><b className="font-semibold text-[#57534E]">{event.city}</b> · {event.venue}</span></p><p className="mt-4 text-sm leading-6 text-[#57534E]">{event.description}</p>
+          <div className="mt-4 rounded-xl bg-[#F4F4DF] p-3.5"><h3 className="flex items-center gap-2 text-xs font-bold text-[#667436]"><GraduationCap size={16} /> Ce que vous pouvez découvrir</h3><p className="mt-2 text-xs leading-5 text-[#57534E]">{event.learning}</p></div>
+          <div className="mt-auto pt-4"><p className="flex items-start gap-2 text-xs leading-5 text-[#78716C]"><Building2 size={14} className="mt-0.5 shrink-0" />{event.organizer}</p><p className="mt-1.5 flex items-start gap-2 text-xs leading-5 text-[#78716C]"><Ticket size={14} className="mt-0.5 shrink-0" />{event.price}</p><a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Informations et inscription : ${event.title} (nouvel onglet)`} className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#621E3E] px-3 py-3 text-sm font-bold text-white hover:bg-[#4F1731]">Informations et inscription <ArrowUpRight size={16} /></a><p className="mt-2 break-words text-center text-[10px] leading-5 text-[#A8A29E]">Source : {new URL(event.sourceUrl).hostname.replace(/^www\./, '')} · Vérifié le {formatEventDate(event.verifiedAt)}</p></div>
+          </div>
+        </article>)}</div>}
+        <p className="mt-6 text-xs leading-6 text-[#78716C]">Sélection vérifiée à partir des annonces des organisateurs. Les inscriptions et les tarifs se consultent sur leurs sites ; vérifiez les informations avant de vous déplacer. Les événements terminés disparaissent automatiquement de cette page.</p>
+      </>}
+    </div>
+  </section>;
+}

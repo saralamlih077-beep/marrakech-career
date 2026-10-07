@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-07",
+  "events": [
+    {
+      "id": "marrakech-airshow-2026", "title": "Marrakech Airshow 2026", "country": "MA", "city": "Marrakech", "venue": "Base aérienne des Forces Royales Air",
+      "startDate": "2026-10-07", "endDate": "2026-10-10", "type": "Salon", "domains": ["Industrie & Logistique", "IT & Digital"], "topics": ["Aéronautique", "Spatial", "Intelligence artificielle"],
+      "description": "Une rencontre professionnelle consacrée à l’industrie aéronautique, aux technologies spatiales et aux innovations du secteur.",
+      "learning": "Découvrir les technologies aéronautiques et les applications de l’IA présentées par les acteurs industriels.", "organizer": "Marrakech Airshow", "price": "Pass et conditions d’accès à consulter sur le site officiel", "sourceUrl": "https://marrakechairshow2026.com/", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "global-green-2026", "title": "Global Green Event 2026", "country": "MA", "city": "Casablanca", "venue": "ICEC, Aïn Sebaâ",
+      "startDate": "2026-10-14", "endDate": "2026-10-17", "type": "Salon", "domains": ["Énergies & Environnement", "Industrie & Logistique", "Immobilier & Construction"], "topics": ["Énergies renouvelables", "Eau", "Recyclage", "Bâtiment vert"],
+      "description": "Un salon professionnel consacré aux solutions environnementales, à l’énergie et aux technologies de la transition écologique.",
+      "learning": "Explorer le traitement de l’eau, le recyclage, les énergies renouvelables et les solutions pour des bâtiments durables.", "organizer": "Global Green Event · A.S. Exhibitions", "price": "Tarif et inscription à consulter auprès de l’organisateur", "sourceUrl": "https://globalgreen.ma/", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "sib-2026", "title": "SIB · Salon International du Bâtiment 2026", "country": "MA", "city": "El Jadida", "venue": "Parc d’Exposition Mohammed VI",
+      "startDate": "2026-11-25", "endDate": "2026-11-29", "type": "Salon", "domains": ["Immobilier & Construction", "Industrie & Logistique"], "topics": ["Bâtiment", "Architecture", "Matériaux", "Construction"],
+      "description": "Le rendez-vous des acteurs du bâtiment, des matériaux de construction, de l’architecture et des bureaux d’études.",
+      "learning": "Comparer les matériaux et les solutions de construction, découvrir les métiers et les acteurs de la filière.", "organizer": "Salon International du Bâtiment · URBACOM", "price": "Entrée gratuite sur badge ou invitation, selon les conditions de l’organisateur", "sourceUrl": "https://www.sib.ma/infos-pratique", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "forum-etudiant-rabat-2027", "title": "Forum International de l’Étudiant · Rabat", "country": "MA", "city": "Rabat", "venue": "Hôtel Sofitel Jardin des Roses",
+      "startDate": "2027-02-05", "endDate": "2027-02-06", "type": "Forum", "domains": ["Éducation & Formation"], "topics": ["Orientation", "Formations", "Études"],
+      "description": "Une rencontre pour explorer les possibilités d’études et de formation.", "learning": "Comparer les parcours et préparer vos questions d’orientation.", "organizer": "Groupe L’Étudiant Marocain", "price": "Conditions d’accès à consulter sur le site de l’organisateur", "sourceUrl": "https://www.etudiant.ma/forums-salons", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "forum-etudiant-tanger-2027", "title": "Forum International de l’Étudiant · Tanger", "country": "MA", "city": "Tanger", "venue": "Salle d’exposition annoncée par l’organisateur ; adresse à vérifier",
+      "startDate": "2027-02-05", "endDate": "2027-02-06", "type": "Forum", "domains": ["Éducation & Formation"], "topics": ["Orientation", "Formations", "Études"],
+      "description": "Une rencontre pour explorer les possibilités d’études et de formation.", "learning": "Comparer les parcours et préparer vos questions d’orientation.", "organizer": "Groupe L’Étudiant Marocain", "price": "Conditions d’accès à consulter sur le site de l’organisateur", "sourceUrl": "https://www.etudiant.ma/forums-salons", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "forum-etudiant-agadir-2027", "title": "Forum International de l’Étudiant · Agadir", "country": "MA", "city": "Agadir", "venue": "Hôtel Les Dunes d’Or, salle d’exposition",
+      "startDate": "2027-04-02", "endDate": "2027-04-03", "type": "Forum", "domains": ["Éducation & Formation"], "topics": ["Orientation", "Formations", "Études"],
+      "description": "Une rencontre pour explorer les possibilités d’études et de formation.", "learning": "Comparer les parcours et préparer vos questions d’orientation.", "organizer": "Groupe L’Étudiant Marocain", "price": "Conditions d’accès à consulter sur le site de l’organisateur", "sourceUrl": "https://www.etudiant.ma/forums-salons", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "forum-etudiant-fes-2027", "title": "Forum International de l’Étudiant · Fès", "country": "MA", "city": "Fès", "venue": "Salle Crystal Luxury Events",
+      "startDate": "2027-04-09", "endDate": "2027-04-10", "type": "Forum", "domains": ["Éducation & Formation"], "topics": ["Orientation", "Formations", "Études"],
+      "description": "Une rencontre pour explorer les possibilités d’études et de formation.", "learning": "Comparer les parcours et préparer vos questions d’orientation.", "organizer": "Groupe L’Étudiant Marocain", "price": "Conditions d’accès à consulter sur le site de l’organisateur", "sourceUrl": "https://www.etudiant.ma/forums-salons", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "forum-etudiant-casablanca-2027", "title": "Forum International de l’Étudiant · Casablanca", "country": "MA", "city": "Casablanca", "venue": "Foire Internationale de Casablanca",
+      "startDate": "2027-04-15", "endDate": "2027-04-18", "type": "Forum", "domains": ["Éducation & Formation"], "topics": ["Orientation", "Écoles", "Universités", "Formation professionnelle"],
+      "description": "Quatre jours dédiés aux études, à l’orientation et aux formations, avec des écoles, universités et acteurs de l’insertion professionnelle.",
+      "learning": "Découvrir différentes formations et échanger avec les établissements sur les parcours adaptés à votre projet.", "organizer": "Groupe L’Étudiant Marocain", "price": "Entrée gratuite sur inscription", "sourceUrl": "https://www.etudiant.ma/forums/forum-international-de-letudiant-casablanca", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "siam-2027", "title": "SIAM · Salon International de l’Agriculture au Maroc 2027", "country": "MA", "city": "Meknès", "venue": "École d’horticulture, Jnan Ben Halima",
+      "startDate": "2027-04-19", "endDate": "2027-04-27", "type": "Salon", "domains": ["Agriculture", "Industrie & Logistique", "Commerce & Distribution"], "topics": ["Agroalimentaire", "Agriculture", "Agri-digital", "Machinisme"],
+      "description": "Un salon agricole organisé autour des filières, des équipements et de l’agroalimentaire, avec une édition consacrée à la jeunesse.",
+      "learning": "Explorer les technologies agricoles, les équipements et les activités de transformation agroalimentaire.", "organizer": "Salon International de l’Agriculture au Maroc", "price": "Billets et badges selon le public ; tarifs sur le site officiel", "sourceUrl": "https://www.salon-agriculture.ma/en/", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "gitex-africa-2027", "title": "GITEX AFRICA Morocco 2027", "country": "MA", "city": "Marrakech", "venue": "Marrakech ; lieu détaillé à consulter auprès de l’organisateur",
+      "startDate": "2027-04-26", "endDate": "2027-04-28", "type": "Salon", "domains": ["IT & Digital", "Finance & Assurance", "Industrie & Logistique", "Énergies & Environnement"], "topics": ["Intelligence artificielle", "IA", "Cybersécurité", "Cloud", "Fintech", "Startups"],
+      "description": "Un événement technologique réunissant entreprises et startups autour de l’IA, de la cybersécurité, de la connectivité et de la transformation numérique.",
+      "learning": "Explorer les usages de l’IA, les solutions cloud, la sécurité numérique et les applications de la technologie dans les secteurs professionnels.", "organizer": "KAOUN International · GITEX AFRICA", "price": "Préinscription et conditions d’accès sur le site officiel", "sourceUrl": "https://gitexafrica.com/who-attends", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "logismed-2027", "title": "Logismed 2027", "country": "MA", "city": "Casablanca", "venue": "Foire Internationale de Casablanca",
+      "startDate": "2027-05-11", "endDate": "2027-05-13", "type": "Salon", "domains": ["Industrie & Logistique", "Commerce & Distribution"], "topics": ["Transport", "Logistique", "Supply chain"],
+      "description": "Un salon consacré au transport, à la logistique et à la chaîne d’approvisionnement, avec des échanges entre acteurs de la filière.",
+      "learning": "Comprendre les solutions de transport et de supply chain, ainsi que les transformations du secteur logistique.", "organizer": "Logismed", "price": "Inscription et conditions d’accès à consulter sur le site officiel", "sourceUrl": "https://logismed.ma/presentation-du-salon/", "verifiedAt": "2026-10-07", "status": "published"
+    },
+    {
+      "id": "siema-2027", "title": "Morocco SIEMA Expo 2027", "country": "MA", "city": "Casablanca", "venue": "Casablanca ; lieu de l’édition 2027 à vérifier sur le site officiel",
+      "startDate": "2027-09-07", "endDate": "2027-09-09", "type": "Salon", "domains": ["Industrie & Logistique", "Commerce & Distribution", "Agriculture"], "topics": ["Agroalimentaire", "Emballage", "Transformation alimentaire"],
+      "description": "Une exposition professionnelle sur les technologies de transformation alimentaire et d’emballage.",
+      "learning": "Découvrir les machines de production, les techniques d’emballage et les innovations de l’industrie alimentaire.", "organizer": "Elan Expo", "price": "Conditions de visite de l’édition 2027 à consulter sur le site officiel", "sourceUrl": "https://www.siemamaroc.com/", "verifiedAt": "2026-10-07", "status": "published"
+    }
+  ]
+}

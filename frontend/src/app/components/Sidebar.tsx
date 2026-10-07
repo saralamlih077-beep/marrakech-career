@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Building2, Map,
   FileText, ClipboardList, Heart, BarChart3, User,
-  Settings as Gear, Users, ContactRound, BriefcaseBusiness, Menu, X,
+  Settings as Gear, Users, ContactRound, BriefcaseBusiness, CalendarDays, Menu, X,
 } from 'lucide-react';
 import type { NavPage } from '../types';
 import ProfileAvatar from './ProfileAvatar';
@@ -30,6 +30,7 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { id: 'companies', label: t('companies'), icon: Building2 },
     { id: 'opportunities', label: 'Offres', icon: BriefcaseBusiness },
+    { id: 'events', label: 'Événements', icon: CalendarDays },
     { id: 'map', label: t('map'), icon: Map },
     { id: 'cv-studio', label: t('cvStudio'), icon: FileText },
     { id: 'applications', label: t('applications'), icon: ClipboardList },

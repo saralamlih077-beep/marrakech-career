@@ -2,7 +2,7 @@ import type { Entreprise } from '../types/entreprise';
 
 export type NavPage =
   | 'dashboard' | 'companies' | 'company-detail' | 'map'
-  | 'opportunities' | 'cv-studio' | 'cv-analyzer' | 'cv-tailored'
+  | 'opportunities' | 'events' | 'cv-studio' | 'cv-analyzer' | 'cv-tailored'
   | 'applications' | 'campaign'
   | 'favorites' | 'analytics' | 'admin-data' | 'admin-users' | 'admin-user-directory' | 'profile' | 'settings';
 

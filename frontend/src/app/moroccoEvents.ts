@@ -1,10 +1,10 @@
-export const EVENT_DOMAINS = ['IT & Digital', 'Services aux entreprises', 'Marketing & Communication', 'Immobilier & Construction', 'Tourisme & Hôtellerie', 'Commerce & Distribution', 'Santé', 'Éducation & Formation', 'Finance & Assurance', 'Industrie & Logistique', 'Énergies & Environnement', 'Agriculture'];
+export const EVENT_DOMAINS = ['IT & Digital', 'Services aux entreprises', 'Marketing & Communication', 'Immobilier & Construction', 'Tourisme & Hôtellerie', 'Commerce & Distribution', 'Santé', 'Éducation & Formation', 'Finance & Assurance', 'Industrie & Logistique', 'Énergies & Environnement', 'Agriculture', 'Non classé'];
 export type MoroccoEvent = {
   id: string; title: string; country: 'MA'; city: string; venue: string;
   startDate: string; endDate: string; domains: string[]; topics: string[];
   type: 'Salon' | 'Forum' | 'Conférence' | 'Atelier'; description: string;
   learning: string; organizer: string; price: string; sourceUrl: string;
-  verifiedAt: string; status: 'published';
+  verifiedAt: string; status: 'published'; registrationUrl?: string; sourceName?: string;
 };
 export type EventFilters = { query: string; domain: string; city: string; period: string };
 export function moroccoToday(now = new Date()): string {
@@ -26,6 +26,7 @@ export function parseEventCatalog(payload: unknown): MoroccoEvent[] {
     const strings = ['id', 'title', 'city', 'venue', 'description', 'learning', 'organizer', 'price'] as const;
     if (strings.some(key => typeof row[key] !== 'string' || !row[key].trim()) || row.country !== 'MA' || row.status !== 'published' || seen.has(row.id)) return false;
     if (!validDate(row.startDate) || !validDate(row.endDate) || row.endDate < row.startDate || !validDate(row.verifiedAt) || !safeEventUrl(row.sourceUrl)) return false;
+    if (row.registrationUrl !== undefined && !safeEventUrl(row.registrationUrl) || row.sourceName !== undefined && typeof row.sourceName !== 'string') return false;
     if (!['Salon', 'Forum', 'Conférence', 'Atelier'].includes(row.type) || !Array.isArray(row.domains) || !row.domains.length || row.domains.some(value => !EVENT_DOMAINS.includes(value)) || !Array.isArray(row.topics) || row.topics.some(value => typeof value !== 'string')) return false;
     seen.add(row.id);
     return true;

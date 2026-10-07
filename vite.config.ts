@@ -17,6 +17,27 @@ function figmaAssetResolver() {
   }
 }
 
+function localEventsApi() {
+  return {
+    name: 'local-events-api',
+    configureServer(server) {
+      server.middlewares.use('/api/events', async (request, response, next) => {
+        if (request.url?.split('?')[0] !== '/' && request.url?.split('?')[0] !== '') return next();
+        const result = {
+          setHeader: (name, value) => response.setHeader(name, value),
+          status: code => { response.statusCode = code; return result; },
+          json: body => { response.setHeader('Content-Type', 'application/json; charset=utf-8'); response.end(JSON.stringify(body)); },
+          end: () => response.end(),
+        };
+        try {
+          const { default: handler } = await server.ssrLoadModule(path.resolve(__dirname, 'api/events.ts'));
+          await handler(request, result);
+        } catch { response.statusCode = 502; response.end(JSON.stringify({ error: 'Sources momentanément indisponibles' })); }
+      });
+    },
+  }
+}
+
 export default defineConfig({
   // The repository root owns tooling; the React application lives in frontend/.
   root: frontendRoot,
@@ -28,6 +49,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   plugins: [
+    localEventsApi(),
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them

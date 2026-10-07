@@ -1,23 +1,34 @@
-# Événements au Maroc
+# Événements au Maroc — mise à jour automatique
 
-La page candidat « Événements » utilise `frontend/public/events/catalog.json`. Le catalogue initial est une sélection éditoriale vérifiée le 7 octobre 2026 auprès des organisateurs ; ce n’est pas une collecte automatique. Aucune inscription ni donnée de profil n’est envoyée par la page. L’utilisateur ouvre le site de l’organisateur pour consulter les modalités et s’inscrire.
+La page candidat « Événements » charge `/api/events`. La fonction Vercel collecte les calendriers publics à la demande, indépendamment de l’ordinateur du propriétaire. Aucun ajout manuel ni redéploiement n’est requis pour une nouvelle annonce publiée sur un calendrier connecté dont la structure reste compatible. Ce mécanisme est déclenché par les visites ; ce n’est pas un cron et il ne recherche pas tout le Web.
 
-Les dates sont inclusives, sans heures inventées. Le statut en cours et l’exclusion des événements terminés utilisent le jour du Maroc (`Africa/Casablanca`), actualisé chaque minute. Recherche, domaine, ville et période se combinent. Un domaine sans annonce publiée donne un état vide explicite. Les lieux et tarifs non annoncés restent indiqués comme à consulter. Les explications pédagogiques sont des synthèses éditoriales des thèmes annoncés, pas des promesses de l’organisateur.
+## Sources connectées
 
-## Mettre à jour la sélection
+- L’Étudiant marocain : https://www.etudiant.ma/forums-salons — découverte des cartes des forums, ville, salle et dates.
+- Chambre turque de commerce au Maroc : https://ctcim.ma/fr/informations/salons — découverte des salons marocains et des liens officiels.
+- GITEX Africa : https://gitexafrica.com/who-attends
+- SIAM : https://www.salon-agriculture.ma/en/
+- Logismed : https://logismed.ma/
+- Morocco SIEMA : https://www.siemamaroc.com/
+- Marrakech Air Show : https://marrakechairshow2026.com/
 
-Modifier le JSON après vérification de l’édition courante sur la source officielle, puis déployer. Conserver un identifiant unique par édition et ville, le pays `MA`, les dates ISO, les domaines reconnus, le statut `published`, un lien HTTPS et la date réelle de vérification. Pour retirer une annulation, supprimer la fiche ou passer son statut à `cancelled`. Ne pas réutiliser les tarifs ou lieux d’une édition précédente. `schemaVersion` vaut 1. Le navigateur revalide le catalogue à chaque ouverture ; les annonces nouvelles nécessitent une mise à jour du fichier et une publication.
+Les calendriers permettent de découvrir de nouvelles annonces. Les pages des organisateurs permettent de suivre leurs dates ; une nouvelle édition qui change d’adresse et n’apparaît pas dans un calendrier connecté nécessite l’ajout de sa source dans `backend/events/collector.ts`. Ajouter une source ou adapter un site qui change sa structure nécessite un déploiement. Les sujets des pages individuelles sont classés selon la série de l’événement ; les catégories des salons du calendrier CTCIM viennent des thèmes de chaque carte. Une catégorie inconnue devient « Non classé ».
 
-Les fiches actuelles renvoient vers :
+## Actualisation et fiabilité
 
-- https://marrakechairshow2026.com/ — 7–10 octobre 2026, Marrakech.
-- https://globalgreen.ma/ — 14–17 octobre 2026, Casablanca.
-- https://www.sib.ma/infos-pratique — 25–29 novembre 2026, El Jadida ; entrée gratuite sous conditions.
-- https://www.etudiant.ma/forums-salons — forums 2027 à Rabat, Tanger, Agadir et Fès. La page source annonce des salles génériques à Tanger ; aucun lieu plus précis n’est déduit.
-- https://www.etudiant.ma/forums/forum-international-de-letudiant-casablanca — 15–18 avril 2027, Casablanca.
-- https://www.salon-agriculture.ma/en/ — 19–27 avril 2027, Meknès.
-- https://gitexafrica.com/who-attends — 26–28 avril 2027, Marrakech.
-- https://logismed.ma/presentation-du-salon/ et https://logismed.ma/page/3/ — 11–13 mai 2027, Casablanca.
-- https://www.siemamaroc.com/ — 7–9 septembre 2027, Casablanca. Le lieu et le prix de 2026 ne sont pas reportés sur 2027.
+- Cache serveur et CDN : **1 heure maximum depuis la vérification** si les sept sources fonctionnent ; **5 minutes** si une source est indisponible. Le cache de l’instance ne prolonge pas la durée du cache CDN.
+- Le navigateur recharge à chaque ouverture, à son retour au premier plan et toutes les 10 minutes lorsque la page est visible. La première collecte peut prendre plusieurs secondes ; les lectures suivantes utilisent le cache.
+- Une source inaccessible ou dont la structure n’est plus reconnue est signalée avec son nom. Si toutes échouent : HTTP 502, sans cache. Une actualisation échouée garde les derniers résultats déjà affichés, avec avertissement ; elle ne les présente pas comme récemment vérifiés. Aucune ancienne sélection manuelle n’est injectée à la place.
+- Les annonces sont datées explicitement depuis le texte de leur édition, sans déduire d’année du titre HTML, de l’URL ou de la date courante. Les doublons par site d’événement, ville et date sont supprimés ; une annonce directe de l’organisateur prime sur celle du calendrier.
+- Les dates sont inclusives, au jour du Maroc (`Africa/Casablanca`). Les événements terminés sont exclus côté serveur et navigateur ; le navigateur recalcule son jour chaque minute.
+- Les liens d’inscription et les sources sont séparés. Aucun prix, lieu précis ou annulation n’est inventé. Consulter l’annonce officielle avant de se déplacer reste nécessaire.
 
-Validation : `node --test --test-isolation=none tests/morocco-events.test.mjs`, puis `npm run build`. Vérifier aussi le chargement réel, les filtres et le menu sur mobile.
+## Collecteur
+
+GET/HEAD uniquement. Aucune clé API, donnée de profil, inscription ni envoi de courrier. Collecte bornée aux sept URL configurées : pas de URL fournie par un visiteur. HTTPS, redirections limitées au même domaine, respect des règles robots.txt et du délai de collecte, 2 Mo maximum par réponse et délai de 24 secondes par source. Un délai robots supérieur à 10 secondes entraîne l’indisponibilité de cette source pour cette fenêtre de collecte. `vercel.json` accorde 30 secondes à la fonction. Les requêtes simultanées dans une même instance partagent une collecte.
+
+Le fichier `frontend/public/events/catalog.json` conserve la sélection initiale pour les tests historiques ; il n’alimente plus la page. En développement, `npm run dev` expose aussi `/api/events` via le middleware Vite, sans remplacer l’authentification de l’application.
+
+## Validation
+
+`node --test --test-isolation=none tests/*.test.mjs`, puis `npm run build`. Les tests couvrent nouvelles cartes, éditions, dates impossibles, exclusions des événements passés, doublons, URLs dangereuses, robots, redirections, réponses volumineuses, échecs partiels, méthodes HTTP et expiration du cache. Vérifier le JSON réel de `/api/events`, puis l’affichage et les filtres sur ordinateur et mobile après publication.

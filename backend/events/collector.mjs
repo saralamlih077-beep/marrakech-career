@@ -1,31 +1,30 @@
 import { load } from 'cheerio';
-import { moroccoToday, type MoroccoEvent } from '../../frontend/src/app/moroccoEvents.ts';
 
-const clean = (text: string) => text.replace(/\s+/g, ' ').trim();
-const normalized = (text: string) => clean(text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+const clean = (text        ) => text.replace(/\s+/g, ' ').trim();
+const normalized = (text        ) => clean(text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
 const monthNames = ['janvier|january|janv|jan', 'fevrier|february|fevr|feb', 'mars|march|mar', 'avril|april|avr', 'mai|may', 'juin|june|jun', 'juillet|july|jul', 'aout|august|aug', 'septembre|september|sept|sep', 'octobre|october|oct', 'novembre|november|nov', 'decembre|december|dec'];
 const monthPattern = `(${monthNames.join('|')})\\.?`;
-const iso = (day: string, month: string, year: string) => {
+const iso = (day        , month        , year        ) => {
   const number = monthNames.findIndex(names => names.split('|').includes(month)) + 1;
   const value = `${year}-${String(number).padStart(2, '0')}-${day.padStart(2, '0')}`;
   return number && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value ? value : null;
 };
 
 /** Only explicit source dates; never guess an edition from today's year or a URL. */
-export function parseDateRange(input: string): { startDate: string; endDate: string } | null {
+export function parseDateRange(input        )                                                {
   const text = normalized(input).replace(/[,]/g, ' ').replace(/\s+/g, ' ');
   const singles = [...text.matchAll(new RegExp(`(\\d{1,2})\\s+${monthPattern}\\s+(20\\d{2})`, 'g'))];
   const fullyDated = singles.length >= 2 ? [iso(singles[0][1], singles[0][2], singles[0][3]), iso(singles[1][1], singles[1][2], singles[1][3])] : null;
   const cross = text.match(new RegExp(`(\\d{1,2})\\s+${monthPattern}\\s*(?:-|–|—|au|to)\\s*(\\d{1,2})\\s+${monthPattern}\\s+(20\\d{2})`));
   const shared = text.match(new RegExp(`((?:\\d{1,2}\\s*(?:-|–|—|au|to|et|and)\\s*)*\\d{1,2})\\s+${monthPattern}\\s+(20\\d{2})`));
   const monthFirst = text.match(new RegExp(`${monthPattern}\\s+((?:\\d{1,2}\\s*(?:-|–|—|to|and)\\s*)*\\d{1,2})\\s+(20\\d{2})`));
-  let dates: (string | null)[] = [];
+  let dates                    = [];
   if (fullyDated) dates = fullyDated;
   else if (cross) dates = [iso(cross[1], cross[2], cross[5]), iso(cross[3], cross[4], cross[5])];
   else if (shared) dates = (shared[1].match(/\d{1,2}/g) || []).map(day => iso(day, shared[2], shared[3]));
   else if (monthFirst) dates = (monthFirst[2].match(/\d{1,2}/g) || []).map(day => iso(day, monthFirst[1], monthFirst[3]));
   if (!dates.length || dates.some(date => !date)) return null;
-  const startDate = dates[0]!, endDate = dates[dates.length - 1]!;
+  const startDate = dates[0] , endDate = dates[dates.length - 1] ;
   return endDate >= startDate ? { startDate, endDate } : null;
 }
 
@@ -37,15 +36,15 @@ export const EVENT_SOURCES = [
   { id: 'siema', label: 'Morocco SIEMA', url: 'https://www.siemamaroc.com/' },
   { id: 'airshow', label: 'Marrakech Air Show', url: 'https://marrakechairshow2026.com/' },
   { id: 'ctcim', label: 'Chambre turque de commerce au Maroc', url: 'https://ctcim.ma/fr/informations/salons' },
-] as const;
-export type EventSource = typeof EVENT_SOURCES[number];
-export type SourceStatus = { id: string; label: string; status: 'ok' | 'unavailable'; count: number; checkedAt: string };
+]         ;
+                                                       
+                                                                                                                         
 
 const cityNames = ['Marrakech', 'Casablanca', 'Rabat', 'Tanger', 'Fès', 'Meknès', 'Agadir', 'El Jadida', 'Laayoune', 'Dakhla', 'Béni Mellal', 'Kenitra', 'Oujda', 'Tetouan', 'Essaouira', 'Safi', 'Nador', 'Ouarzazate'];
-function moroccanCity(value: string) { return cityNames.find(city => normalized(city) === normalized(value)) || (normalized(value) === 'beni mellal' ? 'Béni Mellal' : null); }
-function domainsFor(text: string) {
+function moroccanCity(value        ) { return cityNames.find(city => normalized(city) === normalized(value)) || (normalized(value) === 'beni mellal' ? 'Béni Mellal' : null); }
+function domainsFor(text        ) {
   const value = normalized(text);
-  const rules: [RegExp, string][] = [
+  const rules                     = [
     [/digital|numerique|informatique|cyber|electronique|\bia\b|\bai\b|intelligence artificielle/, 'IT & Digital'],
     [/construction|batiment|immobilier|materiaux/, 'Immobilier & Construction'],
     [/aeronaut|aviation|logistique|transport|industri|automobile|textile|fabrication|automation/, 'Industrie & Logistique'],
@@ -57,10 +56,10 @@ function domainsFor(text: string) {
   ];
   return rules.filter(([pattern]) => pattern.test(value)).map(([, domain]) => domain).filter((value, index, all) => all.indexOf(value) === index);
 }
-function safeLink(value: string, base: string) {
+function safeLink(value        , base        ) {
   try { const url = new URL(value, base); return url.protocol === 'https:' && !url.username && !url.password ? url.href : null; } catch { return null; }
 }
-function makeEvent(source: EventSource, input: { title: string; city: string; venue: string; dates: string; topics: string[]; registrationUrl?: string; organizer?: string; type?: MoroccoEvent['type'] }, today: string): MoroccoEvent | null {
+function makeEvent(source             , input                                                                                                                                                            , today        )                      {
   const range = parseDateRange(input.dates), city = moroccanCity(clean(input.city));
   if (!range || !city) return null;
   const topics = input.topics.map(clean).filter(Boolean).slice(0, 12);
@@ -75,11 +74,11 @@ function makeEvent(source: EventSource, input: { title: string; city: string; ve
     registrationUrl: input.registrationUrl || source.url, sourceName: source.label, verifiedAt: today, status: 'published' };
 }
 
-export function parseSource(source: EventSource, html: string, today = moroccoToday()): MoroccoEvent[] {
+export function parseSource(source             , html        , today = moroccoToday())                 {
   const $ = load(html);
   $('script,style,nav,footer,header,noscript').remove();
-  const rows: MoroccoEvent[] = [];
-  const add = (input: Parameters<typeof makeEvent>[1]) => { const row = makeEvent(source, input, today); if (row) rows.push(row); };
+  const rows                 = [];
+  const add = (input                                 ) => { const row = makeEvent(source, input, today); if (row) rows.push(row); };
   if (source.id === 'etudiant') {
     $('h5').each((_, el) => {
       const heading = $(el), card = heading.parent();
@@ -123,8 +122,8 @@ export function parseSource(source: EventSource, html: string, today = moroccoTo
   return deduplicateEvents(rows).filter(row => row.endDate >= today);
 }
 
-export function deduplicateEvents(events: MoroccoEvent[]): MoroccoEvent[] {
-  const rows = new Map<string, MoroccoEvent>();
+export function deduplicateEvents(events                )                 {
+  const rows = new Map                      ();
   for (const row of events) {
     const host = new URL(row.registrationUrl || row.sourceUrl).hostname.replace(/^www\./, '');
     const key = `${host === 'etudiant.ma' ? normalized(row.title) : host}|${normalized(row.city)}|${row.startDate}`;
@@ -135,9 +134,9 @@ export function deduplicateEvents(events: MoroccoEvent[]): MoroccoEvent[] {
 }
 
 const BOT = 'MarrakechCareerEvents';
-function selectedRobotsGroups(text: string) {
-  const groups: { agents: string[]; rules: { allow: boolean; path: string }[]; delay: number }[] = [];
-  let group: typeof groups[number] | undefined;
+function selectedRobotsGroups(text        ) {
+  const groups                                                                                   = [];
+  let group                                   ;
   let hasRules = false;
   for (const line of text.split(/\r?\n/)) {
     const match = line.split('#')[0].trim().match(/^([^:]+):\s*(.*)$/);
@@ -154,8 +153,8 @@ function selectedRobotsGroups(text: string) {
   const maxAgent = Math.max(0, ...specific.flatMap(group => group.agents.filter(agent => agent !== '*' && bot.includes(agent)).map(agent => agent.length)));
   return maxAgent ? specific.filter(group => group.agents.some(agent => agent.length === maxAgent && bot.includes(agent))) : groups.filter(group => group.agents.includes('*'));
 }
-export function robotsDelay(text: string) { return Math.max(0, ...selectedRobotsGroups(text).map(group => group.delay)); }
-export function robotsAllows(text: string, pathname: string): boolean {
+export function robotsDelay(text        ) { return Math.max(0, ...selectedRobotsGroups(text).map(group => group.delay)); }
+export function robotsAllows(text        , pathname        )          {
   const selected = selectedRobotsGroups(text);
   const matches = selected.flatMap(group => group.rules).filter(rule => {
     if (!rule.path) return false;
@@ -166,7 +165,7 @@ export function robotsAllows(text: string, pathname: string): boolean {
 }
 
 const MAX_BYTES = 2_000_000;
-async function fetchText(url: string, signal: AbortSignal, fetcher: typeof fetch): Promise<{ status: number; text: string }> {
+async function fetchText(url        , signal             , fetcher              )                                            {
   const original = new URL(url); let current = original;
   for (let redirects = 0; redirects <= 3; redirects++) {
     const response = await fetcher(current.href, { signal, redirect: 'manual', headers: { 'User-Agent': `${BOT}/1.0 (+https://marrakech-career.vercel.app/)`, Accept: 'text/html,text/plain;q=0.9' } });
@@ -179,7 +178,7 @@ async function fetchText(url: string, signal: AbortSignal, fetcher: typeof fetch
     if (!response.ok) { await response.body?.cancel(); return { status: response.status, text: '' }; }
     if (Number(response.headers.get('content-length')) > MAX_BYTES) { await response.body?.cancel(); throw new Error('Source too large'); }
     const reader = response.body?.getReader(); if (!reader) throw new Error('Empty source');
-    const chunks: Uint8Array[] = []; let size = 0;
+    const chunks               = []; let size = 0;
     while (true) {
       const part = await reader.read(); if (part.done) break;
       size += part.value.length;
@@ -193,11 +192,11 @@ async function fetchText(url: string, signal: AbortSignal, fetcher: typeof fetch
   throw new Error('Too many redirects');
 }
 
-export async function collectEvents(options: { now?: Date; fetcher?: typeof fetch; sources?: readonly EventSource[] } = {}) {
+export async function collectEvents(options                                                                           = {}) {
   const now = options.now || new Date(), today = moroccoToday(now), checkedAt = now.toISOString();
   const fetcher = options.fetcher || fetch;
   const results = await Promise.all((options.sources || EVENT_SOURCES).map(async source => {
-    let events: MoroccoEvent[] = [], status: SourceStatus['status'] = 'unavailable';
+    let events                 = [], status                         = 'unavailable';
     const signal = AbortSignal.timeout(24000);
     try {
       const url = new URL(source.url);
@@ -213,4 +212,9 @@ export async function collectEvents(options: { now?: Date; fetcher?: typeof fetc
     return { events, source: { id: source.id, label: source.label, status, count: events.length, checkedAt } };
   }));
   return { schemaVersion: 1, mode: 'automatic', checkedAt, events: deduplicateEvents(results.flatMap(result => result.events)), sources: results.map(result => result.source) };
+}
+
+export function moroccoToday(now = new Date())         {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type)?.value).join('-');
 }

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EVENT_SOURCES, collectEvents, deduplicateEvents, parseDateRange, parseSource, robotsAllows, robotsDelay } from '../backend/events/collector.ts';
+import { EVENT_SOURCES, collectEvents, deduplicateEvents, parseDateRange, parseSource, robotsAllows, robotsDelay } from '../backend/events/collector.mjs';
 import { parseEventCatalog } from '../frontend/src/app/moroccoEvents.ts';
-import handler from '../api/events.ts';
+import handler from '../api/events.mjs';
 
 const source = id => EVENT_SOURCES.find(source => source.id === id);
 const forum = (city, dates, title = "Forum International de l'Etudiant") => `<div><h5>${title}</h5><p>${dates}</p><p>Salle annoncée - <span>${city}</span></p><p>09h–18h</p></div>`;

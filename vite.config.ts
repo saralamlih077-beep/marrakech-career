@@ -30,7 +30,7 @@ function localEventsApi() {
           end: () => response.end(),
         };
         try {
-          const { default: handler } = await server.ssrLoadModule(path.resolve(__dirname, 'api/events.ts'));
+          const { default: handler } = await server.ssrLoadModule(path.resolve(__dirname, 'api/events.mjs'));
           await handler(request, result);
         } catch { response.statusCode = 502; response.end(JSON.stringify({ error: 'Sources momentanément indisponibles' })); }
       });

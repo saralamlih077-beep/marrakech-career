@@ -12,7 +12,7 @@ La page candidat « Événements » charge `/api/events`. La fonction Vercel col
 - Morocco SIEMA : https://www.siemamaroc.com/
 - Marrakech Air Show : https://marrakechairshow2026.com/
 
-Les calendriers permettent de découvrir de nouvelles annonces. Les pages des organisateurs permettent de suivre leurs dates ; une nouvelle édition qui change d’adresse et n’apparaît pas dans un calendrier connecté nécessite l’ajout de sa source dans `backend/events/collector.ts`. Ajouter une source ou adapter un site qui change sa structure nécessite un déploiement. Les sujets des pages individuelles sont classés selon la série de l’événement ; les catégories des salons du calendrier CTCIM viennent des thèmes de chaque carte. Une catégorie inconnue devient « Non classé ».
+Les calendriers permettent de découvrir de nouvelles annonces. Les pages des organisateurs permettent de suivre leurs dates ; une nouvelle édition qui change d’adresse et n’apparaît pas dans un calendrier connecté nécessite l’ajout de sa source dans `backend/events/collector.mjs`. Ajouter une source ou adapter un site qui change sa structure nécessite un déploiement. Les sujets des pages individuelles sont classés selon la série de l’événement ; les catégories des salons du calendrier CTCIM viennent des thèmes de chaque carte. Une catégorie inconnue devient « Non classé ».
 
 ## Actualisation et fiabilité
 

@@ -1,5 +1,5 @@
 {
-  "functions": { "api/events.ts": { "maxDuration": 30 } },
+  "functions": { "api/events.mjs": { "maxDuration": 30 } },
   "headers": [
     {
       "source": "/company-search/:path*",

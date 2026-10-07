@@ -1,12 +1,12 @@
-import { collectEvents } from '../backend/events/collector.ts';
+import { collectEvents } from '../backend/events/collector.mjs';
 
-type Request = { method?: string };
-type Response = { setHeader: (name: string, value: string) => void; status: (code: number) => Response; json: (body: unknown) => void; end: () => void };
-type Catalog = Awaited<ReturnType<typeof collectEvents>>;
-let cached: { catalog: Catalog; expires: number } | undefined;
-let pending: Promise<Catalog> | undefined;
+                                   
+                                                                                                                                                         
+                                                         
+let cached                                                   ;
+let pending                              ;
 
-export default async function handler(request: Request, response: Response) {
+export default async function handler(request         , response          ) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     response.setHeader('Allow', 'GET, HEAD'); response.setHeader('Cache-Control', 'no-store');
     response.status(405).json({ error: 'Méthode non autorisée' }); return;

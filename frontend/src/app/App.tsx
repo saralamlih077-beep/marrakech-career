@@ -9,7 +9,6 @@ import Sidebar from './components/Sidebar';
 import AdminUsersScreen from './pages/AdminUsersScreen';
 import AdminDataScreen from './pages/AdminDataScreen';
 import AdminUserDirectoryScreen from './pages/AdminUserDirectoryScreen';
-import AnalyticsScreen from './pages/AnalyticsScreen';
 import ApplicationTrackerScreen from './pages/ApplicationTrackerScreen';
 import CampaignScreen from './pages/CampaignScreen';
 import CompaniesScreen from './pages/CompaniesScreen';
@@ -178,7 +177,6 @@ export default function App() {
       case 'applications': return <ApplicationTrackerScreen companies={companies} favs={favs} onCampaign={() => setPage('campaign')} />;
       case 'campaign': return <CampaignScreen companies={companies} favorites={favs} initialCompanyId={campaignCompanyId} initialOffer={campaignOffer} loading={loading} error={error} onBack={() => setPage('applications')} />;
       case 'favorites': return <FavoritesScreen companies={companies} loading={loading} error={error} favs={favs} onFav={toggleFav} onView={viewCompany} onTailoredCv={openTailoredCv} onApply={(company) => { setCampaignOffer(null); setCampaignCompanyId(company.id); setPage('campaign'); }} />;
-      case 'analytics': return <AnalyticsScreen companies={companies} />;
       case 'events': return <EventsScreen />;
       case 'admin-data': return <AdminDataScreen companies={companies} loading={loading} error={error} />;
       case 'admin-users': return <AdminUsersScreen onDirectory={() => setPage('admin-user-directory')} />;

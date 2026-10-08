@@ -35,7 +35,6 @@ export default function Sidebar({ active, onNavigate, userName, userEmail, isAdm
     { id: 'cv-studio', label: t('cvStudio'), icon: FileText },
     { id: 'applications', label: t('applications'), icon: ClipboardList },
     { id: 'favorites', label: t('favorites'), icon: Heart },
-    { id: 'analytics', label: t('analytics'), icon: BarChart3 },
   ];
   const bottomNav: NavigationItem[] = [
     { id: 'profile', label: t('profile'), icon: User },

@@ -3,7 +3,6 @@ export { default as AdminDataScreen } from './AdminDataScreen';
 export { default as AdminUsersScreen } from './AdminUsersScreen';
 export { default as AdminUserDirectoryScreen } from './AdminUserDirectoryScreen';
 export { default as TailoredCVScreen } from './TailoredCVScreen';
-export { default as AnalyticsScreen } from './AnalyticsScreen';
 export { default as ApplicationTrackerScreen } from './ApplicationTrackerScreen';
 export { default as CampaignScreen } from './CampaignScreen';
 export { default as CompaniesScreen } from './CompaniesScreen';

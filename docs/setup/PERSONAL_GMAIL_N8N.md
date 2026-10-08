@@ -38,6 +38,20 @@ Le test synthétique du webhook HTTPS a déclenché un POST réel vers `deliver-
 
 Il faut relancer une nouvelle connexion depuis les paramètres de l’application locale et laisser l’utilisateur valider son consentement Google. La propagation du réglage Google peut demander un délai. Aucun Gmail personnel n’est encore confirmé pour ce nouveau parcours, aucun CV ni e-mail réel n’a été envoyé et le nouveau frontend n’a pas été publié.
 
+## Publication OAuth Google le 8 octobre 2026
+
+Après accord explicite, le projet `marrakech-career-gmail` est passé de « Test » à « En production », type utilisateur externe. La console affiche « En production » et la liste de testeurs ne limite plus la demande d’autorisation. Le projet indique encore 3 utilisateurs sur une capacité de 100 pour les niveaux d’accès sensibles ou restreints non approuvés.
+
+Le centre de validation impose d’abord de valider et publier le branding avant de demander la validation de l’accès aux données. Le branding existant contient le nom « Marrakech Career », l’assistance `jeonsunhi07@gmail.com`, la page d’accueil Vercel et les pages `/privacy` et `/terms`. La vérification automatisée de ce branding a été lancée ; ce n’est pas encore une approbation Google. Le scope Gmail utilisé par le nouveau parcours est uniquement `gmail.send` (en plus d’openid/email).
+
+La vérification automatisée a signalé une propriété du site non confirmée, une page d’accueil réservée à la connexion, un lien de confidentialité non détecté et une politique inaccessible/insuffisante. Google demande d’attendre 24 heures après la validation de propriété avant de relancer le contrôle. La justification de `gmail.send` a été enregistrée ; la vidéo de démonstration reste à fournir. Aucun dossier de validation des scopes n’a encore pu être soumis.
+
+Les pages publiques statiques `/about`, `/privacy` et `/terms` et leurs routes Vercel ont été compilées puis publiées via la branche isolée `codex/google-oauth-public-pages` (commit `a0cb4a9`, envoyé à main le 8 octobre 2026). Leur accès public a été vérifié sur le domaine de production, sans bundle React ni connexion nécessaire. La page d’accueil OAuth a été remplacée par `https://marrakech-career.vercel.app/about` et l’enregistrement Google a été confirmé. Les scopes n’ont pas changé.
+
+La balise Search Console n’a pas été publiée : la confirmation spécifique pour valider la propriété du site au nom de `jeonsunhi07@gmail.com` est toujours attendue. Le centre Google n’a pas encore approuvé le branding ni les scopes, et aucune vidéo de démonstration n’a été fournie. L’avertissement d’application non validée reste donc attendu. Le nouveau parcours Gmail reste séparé de cette correction des pages publiques et n’a pas été envoyé à main.
+
+Cette publication OAuth ne publie pas le nouveau frontend et ne rend pas durable le tunnel temporaire Docker. Il faut encore confirmer un consentement et un envoi réel autorisé, terminer la validation Google, et disposer d’un n8n accessible durablement pour assurer l’envoi public.
+
 ## Parcours utilisateur
 
 - Aucune autorisation Gmail à l’inscription.

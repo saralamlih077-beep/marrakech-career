@@ -4,13 +4,15 @@ import {digestEmail,eligibleUser,failureStatus,runDigest} from '../backend/supab
 
 const offer={id:'offer-1',title:'Stage <script>alert(1)</script>',employer:'A & B',location:'Marrakech',contract:'Stage',source:'JobSquare',source_url:'javascript:alert(1)'};
 test('email escapes imported content and uses safe company/source links',()=>{
-  const mail=digestEmail([offer]);
+  const mail=digestEmail([offer], '<img> Nom');
   assert.match(mail.htmlContent,/&lt;script&gt;/);
   assert.match(mail.htmlContent,/A &amp; B/);
   assert.doesNotMatch(mail.htmlContent,/href="javascript:/);
   assert.match(mail.htmlContent,/\?offer=offer-1/);
   assert.match(mail.htmlContent,/\?alerts=manage/);
   assert.match(mail.textContent,/Source : JobSquare/);
+  assert.match(mail.htmlContent,/Bonjour &lt;img&gt;,/);
+  assert.doesNotMatch(mail.htmlContent, /<img>/);
 });
 test('only confirmed, available Auth accounts are eligible',()=>{
   assert.equal(eligibleUser({email:'a@example.com'}),false);
@@ -19,7 +21,7 @@ test('only confirmed, available Auth accounts are eligible',()=>{
 });
 function fakeService({enabled=true,confirmed=true,offers=[offer],duplicate=false,optOut=false}={}) {
   const calls=[]; let claimed=duplicate; const finished=[];
-  const service={calls,finished,auth:{admin:{getUserById:async()=>({data:{user:{email:'registered@example.com',email_confirmed_at:confirmed?'2026-01-01':undefined}}})}},
+  const service={calls,finished,auth:{admin:{getUserById:async()=>({data:{user:{email:'registered@example.com',user_metadata:{full_name:'Sara Lamlih'},email_confirmed_at:confirmed?'2026-01-01':undefined}}})}},
     from:()=>{
       const query={select:()=>query,eq:()=>query,order:()=>query,limit:()=>query,gt:()=>query,
         maybeSingle:async()=>({data:{enabled:!optOut}}),
@@ -41,6 +43,7 @@ test('all sources are grouped into one email to the registration address, once p
   assert.equal((await runDigest(service,mailer,false)).sent,0);
   assert.equal(messages.length,1);
   assert.equal(messages[0].email,'registered@example.com');
+  assert.equal(messages[0].digest.recipientName,'Sara Lamlih');
   assert.equal(messages[0].digest.offers.length,2);
   assert.equal(service.finished[0].p_message_id,'brevo-id');
 });

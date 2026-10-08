@@ -21,18 +21,22 @@ export function useEntreprises(filters: EntrepriseFilters = {}) {
 
   useEffect(() => {
     let isActive = true;
+    let inFlight = false;
+    let lastChecked = 0;
 
-    async function fetchEntreprises() {
-      setLoading(true);
-      setError(null);
+    async function fetchEntreprises(background = false) {
+      if (inFlight) return;
+      inFlight = true;
+      lastChecked = Date.now();
+      if (!background) { setLoading(true); setError(null); }
 
-      const { data: rows, error: queryError } = await supabase
-        .from('entreprises')
-        .select('*');
+      const { data: rows, error: queryError } = await supabase.from('entreprises').select('*');
+      inFlight = false;
 
       if (!isActive) return;
 
       if (queryError) {
+        if (background) return;
         setData([]);
         setError(queryError.message);
         setLoading(false);
@@ -64,9 +68,18 @@ export function useEntreprises(filters: EntrepriseFilters = {}) {
     }
 
     void fetchEntreprises();
+    const refresh = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastChecked >= 60_000) void fetchEntreprises(true);
+    };
+    const timer = window.setInterval(refresh, 5 * 60_000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
 
     return () => {
       isActive = false;
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
     };
   }, [filterKey]);
 

@@ -4,6 +4,10 @@
 # working directory name when running `supabase init`.
 project_id = "Marrakech_Career"
 
+# Server-only daily collector: gateway JWT plus the existing private cron secret.
+[functions.sync-new-companies]
+verify_jwt = true
+
 # Callback checks one-use state; other operations validate the user's JWT themselves.
 [functions.gmail-connection]
 verify_jwt = false

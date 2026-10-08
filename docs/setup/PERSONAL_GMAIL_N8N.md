@@ -2,9 +2,9 @@
 
 ## État de cette version
 
-Le parcours local, les trois nouvelles fonctions serveur, les migrations et le workflow Docker sont installés. Le lien HTTPS temporaire de test est actif. La connexion personnelle Gmail a été confirmée dans le formulaire après le consentement effectué par l’utilisateur. Un envoi réel confirmé par Gmail reste à vérifier avant publication du nouveau frontend.
+Le nouveau frontend et les fonctions Gmail sont publiés avec les migrations et le workflow Docker. La connexion personnelle Gmail a été confirmée après le consentement effectué par l’utilisateur, puis l’utilisateur a envoyé une candidature et obtenu la confirmation d’envoi du worker Gmail. Le lien HTTPS reste temporaire et dépend du PC. La validation publique Google et un hébergement n8n durable restent à terminer.
 
-Ne remplacer la version publique qu’après activation et vérification du serveur. Les tests automatisés utilisent des réponses Google/n8n simulées et n’envoient aucun e-mail réel.
+Les 23 tests Gmail, proxy et alertes passent ; la compilation de production inclut les pages publiques About, Privacy et Terms. Les tests automatisés utilisent des réponses Google/n8n simulées et n’envoient aucun e-mail réel. L’ancien endpoint `save-gmail-connection` est remplacé par une réponse 410 ; le nouveau frontend utilise uniquement le parcours OAuth serveur. Les confirmations réussies disparaissent après huit secondes et peuvent être fermées manuellement.
 
 ## Correction du suivi de candidature le 8 octobre 2026
 

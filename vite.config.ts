@@ -44,6 +44,9 @@ export default defineConfig({
   // Keep environment variables at the repository root alongside package.json.
   envDir: __dirname,
   build: {
+    rollupOptions: {
+      input: Object.fromEntries(['index', 'about', 'privacy', 'terms'].map(page => [page, path.resolve(frontendRoot, `${page}.html`)])),
+    },
     // Keep Vercel's standard output location at the repository root.
     outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,

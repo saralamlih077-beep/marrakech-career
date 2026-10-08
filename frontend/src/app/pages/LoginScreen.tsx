@@ -239,6 +239,12 @@ export default function LoginScreen() {
             </button>
           </form>
 
+          <nav aria-label="Informations sur Marrakech Career" className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-[#621E3E]">
+            <a href="/about" className="hover:underline">Le service</a>
+            <a href="/privacy" className="hover:underline">Confidentialité</a>
+            <a href="/terms" className="hover:underline">Conditions</a>
+          </nav>
+
           {resetStep === 'code' && (
             <form onSubmit={verifyResetCode} className="mt-6 space-y-3 rounded-2xl border border-[#C6C954]/50 bg-[#C6C954]/10 p-4">
               <div>

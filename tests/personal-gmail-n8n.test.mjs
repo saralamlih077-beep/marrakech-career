@@ -9,6 +9,9 @@ import { isDefinitiveSubmissionRejection } from '../frontend/src/app/application
 test('a lost connection or gateway error retains the pending candidature instead of allowing a duplicate submission', () => {
   for (const status of [undefined, 500, 502, 503, 504]) assert.equal(isDefinitiveSubmissionRejection(status), false);
   for (const status of [400, 401, 403, 409, 413]) assert.equal(isDefinitiveSubmissionRejection(status), true);
+  assert.equal(isDefinitiveSubmissionRejection(503, false), true);
+  for (const marker of [true, undefined, 'false']) assert.equal(isDefinitiveSubmissionRejection(503, marker), false);
+  assert.equal(isDefinitiveSubmissionRejection(undefined, false), false);
 });
 
 async function load(name, exported) {
@@ -90,11 +93,11 @@ test('changing Gmail without a new refresh token cannot reuse another sender’s
   assert.match(result.headers.get('location'), /status=error/); assert.equal(saved, false);
 });
 
-function campaignService() {
+function campaignService({ insertError } = {}) {
   const calls = []; const jobs = new Map();
-  const query = { insert: async data => { calls.push(['insert',data]); return {}; }, update: () => query, in: () => query, eq: async () => ({}) };
+  const query = { insert: async data => { calls.push(['insert',data]); return {error: insertError}; }, update: () => query, in: () => query, eq: async () => ({}) };
   return { calls, jobs, auth: { getUser: async () => ({ data: { user: { id: 'user-a' } } }) }, from: () => query,
-    storage: { from: () => ({ upload: async () => { calls.push(['upload']); return {}; }, remove: async () => ({}) }) },
+    storage: { from: () => ({ upload: async () => { calls.push(['upload']); return {}; }, remove: async () => { calls.push(['remove']); return {}; } }) },
     rpc: async (name, params) => {
       if (name === 'mc_get_gmail_connection') return { data: { email:'personal@gmail.com', scopes:[shared.SEND_SCOPE] } };
       if (name === 'mc_get_gmail_job') return { data: jobs.get(params.p_id) ?? null };
@@ -126,6 +129,19 @@ test('missing n8n configuration does not save or send a candidature; dispatch ti
   const response = await campaignHandler(campaignRequest(),service,env,async()=>{dispatched++;throw Error('timeout after acceptance');});
   assert.equal(response.status,202); assert.equal(dispatched,1);
   await campaignHandler(campaignRequest(),service,env,async()=>{dispatched++;}); assert.equal(dispatched,1);
+});
+
+test('an insert failure proves no dispatch occurred and removes the uploaded CV before allowing another submission', async () => {
+  const service = campaignService({insertError: {message: 'missing tracking column'}});
+  let dispatched = 0;
+  const response = await campaignHandler(campaignRequest(), service, env, async () => { dispatched++; return Response.json({}); });
+  assert.equal(response.status, 503);
+  const output = await response.json();
+  assert.equal(output.submissionAccepted, false);
+  assert.equal(isDefinitiveSubmissionRejection(response.status, output.submissionAccepted), true);
+  assert.equal(dispatched, 0);
+  assert.equal(service.jobs.size, 0);
+  assert.deepEqual(service.calls.map(call => call[0]), ['upload', 'insert', 'remove']);
 });
 
 async function deliveryScenario({gmailStatus=200,payload={id:'gmail-message'},timeout=false,changed=false}={}) {

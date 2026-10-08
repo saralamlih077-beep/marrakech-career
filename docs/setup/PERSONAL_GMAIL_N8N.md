@@ -2,9 +2,15 @@
 
 ## État de cette version
 
-Le parcours local, les trois nouvelles fonctions serveur, la migration et le workflow Docker sont installés. Le lien HTTPS temporaire de test est actif. La connexion personnelle Gmail et un envoi vers un destinataire de test autorisé restent à vérifier avant publication du nouveau frontend.
+Le parcours local, les trois nouvelles fonctions serveur, les migrations et le workflow Docker sont installés. Le lien HTTPS temporaire de test est actif. La connexion personnelle Gmail a été confirmée dans le formulaire après le consentement effectué par l’utilisateur. Un envoi réel confirmé par Gmail reste à vérifier avant publication du nouveau frontend.
 
 Ne remplacer la version publique qu’après activation et vérification du serveur. Les tests automatisés utilisent des réponses Google/n8n simulées et n’envoient aucun e-mail réel.
+
+## Correction du suivi de candidature le 8 octobre 2026
+
+La tentative manuelle a échoué avant le dispatch : aucune demande privée Gmail n’était enregistrée pour ce compte. Le schéma historique ne contenait pas `poste`, `contact_email`, `date_postulee` et `notes`. La migration additive `202610080002_gmail_application_tracking_columns.sql` a été appliquée ; `entreprise_id` est également nullable pour les offres qui ne sont pas liées au catalogue. Une insertion et une mise à jour de suivi ont été vérifiées dans une transaction annulée, sans conserver de candidature de test ni envoyer de message.
+
+La fonction `send-personal-gmail-campaign` a été redéployée. Elle renvoie `submissionAccepted: false` lorsqu’elle peut prouver un échec avant le dispatch. Le formulaire local libère alors l’envoi et affiche l’erreur réelle. Une erreur de passerelle ou une réponse perdue sans cette preuve conserve le suivi pour éviter un doublon. Les 17 tests du parcours Gmail et du proxy passent. Le bouton du formulaire réel est de nouveau disponible ; aucune candidature n’a été relancée par l’agent.
 
 ## Instance Docker locale vérifiée le 8 octobre 2026
 

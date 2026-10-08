@@ -4,6 +4,7 @@ import { CV_BUCKET, SEND_SCOPE, GmailError, cors, authenticatedUser, rpc, gmailC
 export async function handleCampaign(request: Request, service: any, env: (key: string) => string | undefined, fetcher = fetch) {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (request.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405, headers: cors });
+  let dispatchStarted = false;
   try {
     const user = await authenticatedUser(service, request);
     if (request.headers.get('content-type')?.includes('application/json')) {
@@ -56,6 +57,7 @@ export async function handleCampaign(request: Request, service: any, env: (key: 
       throw error;
     }
     // No Gmail credential, CV or letter is transmitted to n8n.
+    dispatchStarted = true;
     try {
       const result = await fetcher(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-marrakech-career-secret': secret },
         body: JSON.stringify({ jobId, dispatchToken }), signal: AbortSignal.timeout(10000), redirect: 'error' });
@@ -64,6 +66,12 @@ export async function handleCampaign(request: Request, service: any, env: (key: 
       return Response.json({ jobId, status: 'queued', warning: 'Confirmation n8n en attente. Ne renvoyez pas cette candidature.' }, { status: 202, headers: cors });
     }
     return Response.json({ jobId, status: 'queued' }, { status: 202, headers: cors });
-  } catch (error) { return failureResponse(error); }
+  } catch (error) {
+    const response = failureResponse(error);
+    const body = await response.json();
+    // Only this handler can prove a preparation failure occurred before dispatch.
+    // A gateway error or lost response has no such proof and must remain uncertain.
+    return Response.json({ ...body, ...(!dispatchStarted ? { submissionAccepted: false } : {}) }, { status: response.status, headers: response.headers });
+  }
 }
 if (typeof Deno !== 'undefined') Deno.serve(request => handleCampaign(request, createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!), key => Deno.env.get(key)));

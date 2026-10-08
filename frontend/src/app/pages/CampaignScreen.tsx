@@ -100,7 +100,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
       body: isForm ? body : JSON.stringify(body),
     });
     const result = await response.json().catch(() => null);
-    if (!response.ok) throw Object.assign(new Error(result?.error || 'Le suivi de l’envoi est indisponible.'), { status: response.status });
+    if (!response.ok) throw Object.assign(new Error(result?.error || 'Le suivi de l’envoi est indisponible.'), { status: response.status, submissionAccepted: result?.submissionAccepted });
     return result;
   };
 
@@ -169,7 +169,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
         const result = await campaignRequest(payload);
         setPendingJob(result.jobId); setNotice('Candidature enregistrée. Attente de la confirmation d’envoi depuis votre Gmail…');
       } catch (e) {
-        if (e instanceof Error && 'status' in e && isDefinitiveSubmissionRejection(e.status)) { sessionStorage.removeItem('mc-gmail-pending-job'); throw e; }
+        if (e instanceof Error && 'status' in e && isDefinitiveSubmissionRejection(e.status, 'submissionAccepted' in e ? e.submissionAccepted : undefined)) { sessionStorage.removeItem('mc-gmail-pending-job'); throw e; }
         // Connection loss can happen after acceptance. Keep the same job; never submit it twice.
         setPendingJob(requestId); setNotice('Connexion interrompue. Vérification de cet envoi avant toute nouvelle candidature.');
       }

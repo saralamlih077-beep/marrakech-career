@@ -6,6 +6,8 @@ Six informations sont obligatoires pour publier une **nouvelle** entreprise : no
 
 La découverte est limitée à 500 sites dans la zone de Marrakech et à six vérifications par jour, avec deux pages de contact maximum par site. Les fiches incomplètes peuvent être revérifiées après sept jours ; celles jamais vérifiées sont prioritaires. Ce n'est pas un annuaire exhaustif ni une garantie d'ajout chaque jour. Une entreprise trouvée aujourd'hui peut exister depuis longtemps.
 
+État du déploiement au 8 octobre 2026 : fonction déployée dans `rometmtcpaoggerucisc`, tâche `sync-new-companies-daily` active à 05:00 UTC, rafraîchissement du catalogue vérifié sur le site public. Les 443 anciennes fiches sont conservées (436 actives). La source Overpass peut être temporairement indisponible ; une seule nouvelle tentative est faite pour les erreurs HTTP 500, 502, 503 ou 504. Le bilan applicatif permet de distinguer une source indisponible d'une absence de nouveaux candidats.
+
 ## Installation
 
 1. Appliquer `202610080003_new_company_discovery.sql`.

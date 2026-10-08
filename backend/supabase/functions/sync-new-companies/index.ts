@@ -4,8 +4,15 @@ const OVERPASS = 'https://overpass.private.coffee/api/interpreter';
 const QUERY = `[out:json][timeout:25];(nwr[office][name][~"^(contact:)?website$"~"."](31.50,-8.16,31.76,-7.82);nwr[shop][name][~"^(contact:)?website$"~"."](31.50,-8.16,31.76,-7.82);nwr[craft][name][~"^(contact:)?website$"~"."](31.50,-8.16,31.76,-7.82);nwr[tourism~"^(hotel|guest_house)$"][name][~"^(contact:)?website$"~"."](31.50,-8.16,31.76,-7.82););out tags 500;`;
 
 async function discover() {
-  const response = await fetch(OVERPASS, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded','User-Agent':AGENT}, body:new URLSearchParams({data:QUERY}), signal:AbortSignal.timeout(30000), redirect:'error' });
-  if (!response.ok || !response.body) throw new Error('discovery_unavailable');
+  const options = () => ({ method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded','User-Agent':AGENT}, body:new URLSearchParams({data:QUERY}), signal:AbortSignal.timeout(30000), redirect:'error' as RequestRedirect });
+  let response = await fetch(OVERPASS, options());
+  // One bounded retry for a temporary source-side failure; never loop on rate
+  // limits or bypass a source's refusal. The overall collection deadline stays.
+  if([500,502,503,504].includes(response.status)) {
+    await response.body?.cancel();await new Promise(resolve=>setTimeout(resolve,1000));
+    response=await fetch(OVERPASS,options());
+  }
+  if (!response.ok || !response.body) throw new Error(`discovery_http_${response.status}`);
   const reader = response.body.getReader(); const chunks:Uint8Array[]=[]; let size=0;
   while (true) { const item=await reader.read(); if(item.done) break; size+=item.value.length; if(size>3_000_000) { await reader.cancel(); throw new Error('discovery_too_large'); } chunks.push(item.value); }
   const bytes=new Uint8Array(size); let offset=0; for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
@@ -51,7 +58,11 @@ Deno.serve(async request=>{
   let status='succeeded';
   try {
     try { const candidates=await discover();results.discovered=candidates.length;results.queued=await rpc('enqueue_company_candidates',{p_candidates:candidates}); }
-    catch {status='partial';results.discovery='unavailable';}
+    catch(error) {
+      status='partial';results.discovery='unavailable';
+      const message=error instanceof Error ? error.message : 'unknown_error';
+      console.warn('company_discovery',message.replace(/https?:\/\/\S+/g,'[source]').slice(0,120));
+    }
     const candidates=await rpc('pending_company_candidates');
     for(const candidate of candidates) {
       if(Date.now()>deadline-16000) {status='partial';results.deferred=candidates.length-results.checked;break;}

@@ -59,7 +59,11 @@ export function parseHttpResponse(bytes, maxBytes) {
       const sizeText=body.subarray(offset,end).toString('ascii').split(';')[0];
       if(!/^[0-9a-f]+$/i.test(sizeText)) throw new Error('invalid_chunk');
       const size=parseInt(sizeText,16);offset=end+2;
-      if(size===0){done=true;break;}
+      if(size===0){
+        // The final chunk also needs its terminating trailer section.
+        if(!(body[offset]===13 && body[offset+1]===10) && body.indexOf(Buffer.from('\r\n\r\n'),offset)<0) throw new Error('invalid_chunk');
+        done=true;break;
+      }
       total+=size;if(total>maxBytes) throw new Error('too_large');
       if(offset+size+2>body.length || body[offset+size]!==13 || body[offset+size+1]!==10) throw new Error('invalid_chunk');
       chunks.push(body.subarray(offset,offset+size));offset+=size+2;
@@ -84,7 +88,20 @@ export async function readPinnedDeno(url, ip, timeout, maxBytes, runtime = Deno)
     const requestBytes=new TextEncoder().encode(`GET ${url.pathname}${url.search} HTTP/1.1\r\nHost: ${url.hostname}\r\nUser-Agent: ${AGENT}\r\nAccept: text/html, text/plain\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n`);
     let sent=0;while(sent<requestBytes.length) sent+=await connection.write(requestBytes.subarray(sent));
     const chunks=[];let total=0;const block=new Uint8Array(16384);
-    while(true){const n=await connection.read(block);if(n===null) break;total+=n;if(total>maxBytes+32768) throw new Error('too_large');chunks.push(Buffer.from(block.subarray(0,n)));}
+    while(true){
+      const n=await connection.read(block);if(n===null) break;
+      total+=n;if(total>maxBytes+32768) throw new Error('too_large');chunks.push(Buffer.from(block.subarray(0,n)));
+      // A complete, framed HTTP body does not require another TLS read. Some
+      // public servers close without close_notify after sending the full body.
+      // Unframed or truncated bodies still require clean EOF and fail closed.
+      const bytes=Buffer.concat(chunks);const end=bytes.indexOf(Buffer.from('\r\n\r\n'));
+      if(end>=0){
+        const headers=bytes.subarray(0,end).toString('latin1');
+        if(/^HTTP\/1\.[01] 3[0-9]{2}/.test(headers) || /\r\n(?:content-length|transfer-encoding):/i.test(headers)){
+          try{return parseHttpResponse(bytes,maxBytes);}catch(error){if(!['truncated_body','invalid_chunk'].includes(error.message)) throw error;}
+        }
+      }
+    }
     return parseHttpResponse(Buffer.concat(chunks),maxBytes);
   })();
   try {return await Promise.race([work,new Promise((_,reject)=>{timer=setTimeout(()=>{expired=true;try{connection?.close();}catch{}reject(new Error('timeout'));},timeout);})]);}

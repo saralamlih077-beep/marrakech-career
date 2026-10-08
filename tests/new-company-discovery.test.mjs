@@ -66,4 +66,15 @@ test('HTTP decoder rejects truncated/oversized bodies and validates chunked tran
   assert.throws(()=>parseHttpResponse(Buffer.from('HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nhello'),100),/truncated/);
   assert.throws(()=>parseHttpResponse(Buffer.from('HTTP/1.1 200 OK\r\n\r\nhello'),3),/too_large/);
   assert.throws(()=>parseHttpResponse(Buffer.from('HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n9\r\nhello'),100),/invalid_chunk/);
+  assert.throws(()=>parseHttpResponse(Buffer.from('HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n'),100),/invalid_chunk/);
+});
+
+test('complete framed HTTP responses do not depend on TLS shutdown; truncated responses still fail',async()=>{
+  for(const response of ['HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello','HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\r\n']){
+    let reads=0;const connection={write:async b=>b.length,close:()=>{},read:async b=>{if(reads++)throw new Error('TLS close_notify missing');b.set(Buffer.from(response));return Buffer.byteLength(response);}};
+    const runtime={connect:async()=>connection,startTls:async()=>connection};
+    assert.equal((await readPinnedDeno(new URL('https://site.ma/'),'1.1.1.1',1000,1000,runtime)).text,'hello');assert.equal(reads,1);
+  }
+  let reads=0;const connection={write:async b=>b.length,close:()=>{},read:async b=>{if(reads++)throw new Error('TLS close_notify missing');const response=Buffer.from('HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nhello');b.set(response);return response.length;}};
+  await assert.rejects(readPinnedDeno(new URL('https://site.ma/'),'1.1.1.1',1000,1000,{connect:async()=>connection,startTls:async()=>connection}),/TLS close_notify missing/);
 });

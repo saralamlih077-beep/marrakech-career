@@ -4,6 +4,7 @@
   "nodes": [
     {
       "id": "gmail-webhook",
+      "webhookId": "b991643b-6472-4782-a3f1-9e6b934bac24",
       "name": "Candidature autorisée",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -36,7 +37,7 @@
       "retryOnFail": false,
       "parameters": {
         "method": "POST",
-        "url": "https://YOUR_PROJECT.supabase.co/functions/v1/deliver-gmail-application",
+        "url": "https://rometmtcpaoggerucisc.supabase.co/functions/v1/deliver-gmail-application",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ jobId: $json.body.jobId, dispatchToken: $json.body.dispatchToken }) }}",
@@ -67,5 +68,7 @@
     "executionTimeout": 90
   },
   "pinData": {},
-  "tags": []
+  "tags": [],
+  "id": "mcGmailApply2026",
+  "versionId": "b828b597-223c-4820-9d3b-868a4d9c9b25"
 }

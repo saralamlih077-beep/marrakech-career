@@ -28,6 +28,14 @@ const env = key => settings[key];
 const request = body => new Request('https://project.supabase.co/functions/v1/gmail-connection', { method: 'POST', headers: { Authorization: 'Bearer session', 'Content-Type': 'application/json', Origin: 'https://marrakech-career.vercel.app' }, body: JSON.stringify(body) });
 const id = '12345678-1234-1234-1234-123456789abc';
 
+test('the imported n8n webhook has the identifier required to register its short production path', async () => {
+  const workflow = JSON.parse(await readFile(new URL('../backend/n8n/personal-gmail-applications.json', import.meta.url), 'utf8'));
+  const webhook = workflow.nodes.find(node => node.type === 'n8n-nodes-base.webhook');
+  assert.match(webhook.webhookId, /^[a-f0-9-]{36}$/i);
+  assert.equal(webhook.parameters.path, 'marrakech-career-personal-gmail');
+  assert.equal(webhook.parameters.authentication, 'headerAuth');
+});
+
 test('OAuth asks for sending only, suggests registration email, never changes the app session', async () => {
   const calls = [];
   const service = { auth: { getUser: async () => ({ data: { user: { id: 'user-a', email: 'registration@gmail.com' } } }) }, rpc: async (name, params) => { calls.push({name, params}); return {}; } };

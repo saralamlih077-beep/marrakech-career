@@ -95,7 +95,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw new Error('Votre session a expiré. Reconnectez-vous.');
     const isForm = body instanceof FormData;
-    const response = await fetch(`${supabaseUrl}/functions/v1/send-gmail-campaign`, {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-personal-gmail-campaign`, {
       method: 'POST', headers: { Authorization: `Bearer ${data.session.access_token}`, ...(isForm ? {} : { 'Content-Type': 'application/json' }) },
       body: isForm ? body : JSON.stringify(body),
     });

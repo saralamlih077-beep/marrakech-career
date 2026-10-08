@@ -9,6 +9,7 @@ import type { Company } from '../types';
 import type { JobOffer } from '../../hooks/useJobOffers';
 import { askGeminiCareerAssistant } from '../../lib/gemini';
 import { offerEmployerName } from '../offerSources';
+import { isDefinitiveSubmissionRejection } from '../applicationDelivery';
 
 const acceptedCvTypes = [
   'application/pdf',
@@ -132,7 +133,18 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
           setPendingJob(null); setSending(false); setSelected([]); setCv(null);
           return;
         }
-      } catch (e) { if (active && attempts > 3) setNotice(e instanceof Error ? e.message : 'Suivi indisponible.'); }
+      } catch (e) {
+        if (active && e instanceof Error && 'status' in e && e.status === 404) {
+          const cached = sessionStorage.getItem('mc-gmail-pending-job');
+          let startedAt = NaN;
+          try { startedAt = cached ? Number(JSON.parse(cached).startedAt) : NaN; } catch { /* Keep uncertain submissions blocked. */ }
+          if (Number.isFinite(startedAt) && Date.now() - startedAt > 15 * 60 * 1000) {
+            sessionStorage.removeItem('mc-gmail-pending-job'); setPendingJob(null); setSending(false);
+            setNotice('Suivi introuvable. Vérifiez vos Messages envoyés avant de relancer cette candidature.'); return;
+          }
+        }
+        if (active && attempts > 3) setNotice(e instanceof Error ? e.message : 'Suivi indisponible.');
+      }
       if (!active) return;
       if (++attempts >= 60) { setSending(false); setNotice('Confirmation encore en attente. Actualisez le suivi avant de renvoyer cette candidature.'); return; }
       timer = window.setTimeout(() => void check(), 2000);
@@ -148,7 +160,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
     try {
       const { data } = await supabase.auth.getSession();
       if (!data.session) throw new Error('Votre session a expiré.');
-      sessionStorage.setItem('mc-gmail-pending-job', JSON.stringify({ userId: data.session.user.id, jobId: requestId }));
+      sessionStorage.setItem('mc-gmail-pending-job', JSON.stringify({ userId: data.session.user.id, jobId: requestId, startedAt: Date.now() }));
       const payload = new FormData();
       payload.append('requestId', requestId); payload.append('cv', cv); payload.append('subject', subject);
       payload.append('message', emailBody); payload.append('position', targetTitle);
@@ -157,7 +169,7 @@ export default function CampaignScreen({ companies, favorites, initialCompanyId,
         const result = await campaignRequest(payload);
         setPendingJob(result.jobId); setNotice('Candidature enregistrée. Attente de la confirmation d’envoi depuis votre Gmail…');
       } catch (e) {
-        if (e instanceof Error && 'status' in e) { sessionStorage.removeItem('mc-gmail-pending-job'); throw e; }
+        if (e instanceof Error && 'status' in e && isDefinitiveSubmissionRejection(e.status)) { sessionStorage.removeItem('mc-gmail-pending-job'); throw e; }
         // Connection loss can happen after acceptance. Keep the same job; never submit it twice.
         setPendingJob(requestId); setNotice('Connexion interrompue. Vérification de cet envoi avant toute nouvelle candidature.');
       }

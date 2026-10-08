@@ -4,6 +4,12 @@ import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
 import vm from 'node:vm';
 import * as shared from '../backend/supabase/functions/_shared/personal-gmail.ts';
+import { isDefinitiveSubmissionRejection } from '../frontend/src/app/applicationDelivery.ts';
+
+test('a lost connection or gateway error retains the pending candidature instead of allowing a duplicate submission', () => {
+  for (const status of [undefined, 500, 502, 503, 504]) assert.equal(isDefinitiveSubmissionRejection(status), false);
+  for (const status of [400, 401, 403, 409, 413]) assert.equal(isDefinitiveSubmissionRejection(status), true);
+});
 
 async function load(name, exported) {
   const file = new URL(`../backend/supabase/functions/${name}/index.ts`, import.meta.url);

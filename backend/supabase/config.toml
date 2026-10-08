@@ -4,6 +4,15 @@
 # working directory name when running `supabase init`.
 project_id = "Marrakech_Career"
 
+# Callback checks one-use state; other operations validate the user's JWT themselves.
+[functions.gmail-connection]
+verify_jwt = false
+# n8n receives a random, expiring, one-use dispatch capability (never a service key).
+[functions.deliver-gmail-application]
+verify_jwt = false
+[functions.send-gmail-campaign]
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

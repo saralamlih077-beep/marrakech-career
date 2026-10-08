@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link2, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 import { supabase } from '../../lib/supabaseClient';
+import { usePersonalGmail } from '../../hooks/usePersonalGmail';
+import GmailConnectionPanel from '../components/GmailConnectionPanel';
 import { PageHeader } from '../components/shared';
 import { LanguageSelect } from '../i18n';
 
@@ -9,8 +11,7 @@ export default function SettingsScreen() {
   const [notifs, setNotifs] = useState(true);
   const [aiSuggestions, setAiSuggestions] = useState(true);
   const { profile, email, loading, error } = useProfile();
-  const [gmailStatus, setGmailStatus] = useState<'checking' | 'disconnected' | 'connected' | 'error'>('checking');
-  const [gmailMessage, setGmailMessage] = useState('');
+  const gmail = usePersonalGmail();
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -26,93 +27,6 @@ export default function SettingsScreen() {
       setPasswordChangedAt(typeof value === 'string' ? value : null);
     });
   }, []);
-
-  useEffect(() => {
-    let active = true;
-    const refreshGmailStatus = async () => {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (!active) return;
-      if (userError) {
-        setGmailStatus('error');
-        setGmailMessage(userError.message);
-        return;
-      }
-      const gmailSender = user?.user_metadata?.gmail_sender_email;
-      const isGmailReady = typeof user?.user_metadata?.gmail_connected_at === 'string' && typeof gmailSender === 'string';
-      setGmailStatus(isGmailReady ? 'connected' : 'disconnected');
-      setGmailMessage(isGmailReady
-        ? `Connecté : les candidatures partiront de ${gmailSender}.`
-        : 'Gmail doit être connecté avec l’autorisation d’envoi avant de pouvoir envoyer une candidature.');
-    };
-    void refreshGmailStatus();
-    return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('gmail') !== 'connected') return;
-    let active = true;
-    const saveGooglePermission = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session as (typeof data.session & { provider_token?: string; provider_refresh_token?: string }) | null;
-      const googleIdentity = session?.user.identities?.find((identity) => identity.provider === 'google');
-      const googleEmail = typeof googleIdentity?.identity_data?.email === 'string' ? googleIdentity.identity_data.email : session?.user.email;
-      if (!session?.provider_refresh_token || !googleEmail) {
-        if (active) {
-          setGmailStatus('error');
-          setGmailMessage('Google n’a pas fourni l’autorisation permanente. Cliquez de nouveau sur Connecter Gmail et acceptez toutes les autorisations.');
-        }
-        return;
-      }
-      const { error: saveError } = await supabase.functions.invoke('save-gmail-connection', {
-        body: {
-          email: googleEmail,
-          refreshToken: session.provider_refresh_token,
-          scopes: ['https://www.googleapis.com/auth/gmail.send'],
-        },
-      });
-      if (!active) return;
-      if (saveError) {
-        let serverMessage = saveError.message;
-        if ('context' in saveError && saveError.context instanceof Response) {
-          const payload = await saveError.context.clone().json().catch(() => null) as { error?: unknown } | null;
-          if (typeof payload?.error === 'string') serverMessage = payload.error;
-        }
-        setGmailStatus('error');
-        setGmailMessage(`Connexion Google effectuée, mais le serveur Gmail n’est pas prêt : ${serverMessage}`);
-      } else {
-        setGmailStatus('connected');
-        setGmailMessage(`Connecté : les candidatures partiront de ${googleEmail}.`);
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    };
-    void saveGooglePermission();
-    return () => { active = false; };
-  }, []);
-
-  const connectGmail = async () => {
-    setGmailStatus('checking');
-    setGmailMessage('Redirection vers Google…');
-    // Start a fresh OAuth sign-in. This avoids Supabase reusing a previous
-    // link-identity flow and returning "identity_already_exists".
-    const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
-    if (signOutError) {
-      setGmailStatus('error');
-      setGmailMessage(signOutError.message);
-      return;
-    }
-    const { error: connectError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-          redirectTo: `${window.location.origin}/gmail-callback.html`,
-        scopes: 'openid email profile https://www.googleapis.com/auth/gmail.send',
-        queryParams: { access_type: 'offline', prompt: 'consent' },
-      },
-    });
-    if (connectError) {
-      setGmailStatus('error');
-      setGmailMessage(connectError.message);
-    }
-  };
 
   const changePassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -205,10 +119,7 @@ export default function SettingsScreen() {
           <Row label="Email account" sub={email || 'Email non renseigné'}>
             <span className="text-xs font-semibold text-[#667436] bg-[#667436]/10 px-2 py-1 rounded-lg">Supabase ✓</span>
           </Row>
-          <Row label="Gmail officiel Marrakech Career" sub="Seul l’administrateur connecte une fois marrakechcareer@gmail.com. Les candidats n’ont rien à connecter.">
-            <button onClick={() => void connectGmail()} disabled={gmailStatus === 'checking'} className="flex items-center gap-1.5 rounded-lg bg-[#621E3E] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"><Link2 size={13} />{gmailStatus === 'checking' ? 'Vérification…' : 'Connecter Gmail officiel'}</button>
-          </Row>
-          {gmailStatus === 'error' && <p className="text-xs text-red-700">{gmailMessage}</p>}
+          <GmailConnectionPanel gmail={gmail} registrationEmail={email} />
         </Section>
 
         <Section title="Security">

@@ -35,8 +35,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionEmail, setSessionEmail] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
-  // Google returns here after the administrator grants Gmail permission.
-  // Open Settings directly so the callback can store the one-time token.
   const [page, setPage] = useState<NavPage>(() => (
     new URLSearchParams(window.location.search).get('gmail') === 'connected'
       ? 'settings'
@@ -84,38 +82,17 @@ export default function App() {
       setAuthLoading(false);
       return;
     }
-    const saveOfficialGmail = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
-      if (new URLSearchParams(window.location.search).get('gmail') !== 'connected') return;
-      const gmailSession = session as (typeof session & { provider_refresh_token?: string }) | null;
-      const refreshToken = gmailSession?.provider_refresh_token;
-      const googleIdentity = gmailSession?.user.identities?.find((identity) => identity.provider === 'google');
-      const googleEmail = typeof googleIdentity?.identity_data?.email === 'string'
-        ? googleIdentity.identity_data.email
-        : gmailSession?.user.email;
-      if (!refreshToken || !googleEmail) return;
-      // Google only exposes this refresh token during the OAuth callback.
-      window.setTimeout(() => {
-        void supabase.functions.invoke('save-gmail-connection', {
-          body: { email: googleEmail, refreshToken, scopes: ['https://www.googleapis.com/auth/gmail.send'] },
-        }).then(({ error: saveError }) => {
-          if (!saveError) window.history.replaceState({}, '', window.location.pathname);
-        });
-      }, 0);
-    };
-
     void supabase.auth.getSession().then(({ data }) => {
       setIsLoggedIn(Boolean(data.session));
       setSessionEmail(data.session?.user.email || '');
       setAdminLoading(Boolean(data.session));
       setAuthLoading(false);
-      saveOfficialGmail(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(Boolean(session));
       setSessionEmail(session?.user.email || '');
       setAuthLoading(false);
-      saveOfficialGmail(session);
     });
 
     return () => listener.subscription.unsubscribe();

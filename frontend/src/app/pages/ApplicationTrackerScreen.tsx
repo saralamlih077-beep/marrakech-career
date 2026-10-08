@@ -76,7 +76,7 @@ export default function ApplicationTrackerScreen({ companies, favs, onCampaign }
         </div>
         <div className="flex gap-2">
           <button onClick={onCampaign} className="flex items-center gap-2 px-4 py-2 bg-[#667436] text-white rounded-xl text-sm font-semibold hover:bg-[#52592b] transition-colors">
-            <Send size={13} /> Campaign
+            <Send size={13} /> Envoyer une candidature
           </button>
         </div>
       </div>

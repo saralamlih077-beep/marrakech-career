@@ -1,0 +1,71 @@
+{
+  "name": "Marrakech Career — candidatures depuis le Gmail personnel",
+  "active": false,
+  "nodes": [
+    {
+      "id": "gmail-webhook",
+      "name": "Candidature autorisée",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "marrakech-career-personal-gmail",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Marrakech Career webhook"
+        }
+      }
+    },
+    {
+      "id": "gmail-delivery",
+      "name": "Envoyer depuis le Gmail du candidat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "retryOnFail": false,
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_PROJECT.supabase.co/functions/v1/deliver-gmail-application",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jobId: $json.body.jobId, dispatchToken: $json.body.dispatchToken }) }}",
+        "options": {
+          "timeout": 90000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Candidature autorisée": {
+      "main": [
+        [
+          {
+            "node": "Envoyer depuis le Gmail du candidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 90
+  },
+  "pinData": {},
+  "tags": []
+}

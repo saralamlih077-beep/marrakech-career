@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="128" viewBox="0 0 440 128" fill="none">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M53.28 14C48.12 21.74 15.44 25.18 15.44 53.56C15.44 73.34 30.92 89.68 53.28 110.32C75.64 89.68 91.12 73.34 91.12 53.56C91.12 25.18 58.44 21.74 53.28 14Z" fill="#621E3E" stroke="black" stroke-width="0.86" />
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M42.96 45.82V40.66C42.96 36.36 45.54 33.78 49.84 33.78H56.72C61.02 33.78 63.6 36.36 63.6 40.66V45.82H59.3V40.66C59.3 38.94 58.44 38.08 56.72 38.08H49.84C48.12 38.08 47.26 38.94 47.26 40.66V45.82H42.96Z" fill="#C6C954" stroke="black" stroke-width="0.86" />
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M34.36 44.1H72.2C75.038 44.1 77.36 46.422 77.36 49.26V69.04C77.36 71.878 75.038 74.2 72.2 74.2H34.36C31.522 74.2 29.2 71.878 29.2 69.04V49.26C29.2 46.422 31.522 44.1 34.36 44.1Z" fill="#C6C954" stroke="black" stroke-width="0.86" />
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M29.2 54.42H77.36V57.86H29.2V54.42Z" fill="#621E3E" stroke="black" stroke-width="0.86" />
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M50.7 52.7H55.86V61.3H50.7V52.7Z" fill="white" stroke="black" stroke-width="0.86" />
+  <text x="119" y="71" fill="white" font-family="Georgia, 'Times New Roman', serif" font-size="41" font-weight="700">Marrakech</text>
+  <text x="121" y="101" fill="#C6C954" font-family="Georgia, 'Times New Roman', serif" font-size="16" font-weight="700" letter-spacing="6">CAREER</text>
+</svg>

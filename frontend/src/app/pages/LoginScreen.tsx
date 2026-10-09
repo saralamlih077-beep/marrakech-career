@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Chrome } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, UserRound } from 'lucide-react';
+import { AuthBrandPanel } from './auth-components/AuthBrandPanel';
+import { GoogleLogo } from './auth-components/GoogleLogo';
+import './login.css';
 import { supabase } from '../../lib/supabaseClient';
 import { useLanguage } from '../i18n';
 
@@ -9,6 +12,7 @@ export default function LoginScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -142,122 +146,90 @@ export default function LoginScreen() {
     setLoading(false);
   };
 
+  const switchTab = (mode: 'login' | 'register') => {
+    setTab(mode);
+    setError(null);
+    setMessage(null);
+    setResetStep('idle');
+    setResetCode('');
+    setPasswordVisible(false);
+  };
+
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#621E3E] md:flex-row md:bg-transparent">
-      {/* Mobile brand background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden md:hidden">
-        <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-[#D9828D]/20" />
-        <div className="absolute -right-20 top-24 h-44 w-44 rounded-full bg-[#C6C954]/15" />
-        <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(30deg,transparent_48%,white_49%,transparent_51%),linear-gradient(-30deg,transparent_48%,white_49%,transparent_51%)] [background-size:48px_84px]" />
-      </div>
-      <div className="absolute left-7 top-6 z-10 flex items-center gap-3 md:hidden">
-        <img src="/brand/marrakech-career.svg" alt="Marrakech Career" width={440} height={128} className="h-auto w-[220px]" />
-      </div>
-      {/* Left brand panel */}
-      <div className="relative hidden w-2/5 flex-col overflow-hidden bg-[#621E3E] md:flex">
-        {/* Geometric Moroccan decoration */}
-        <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="geo" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-              <polygon points="40,0 80,20 80,60 40,80 0,60 0,20" fill="none" stroke="white" strokeWidth="1"/>
-              <circle cx="40" cy="40" r="12" fill="none" stroke="white" strokeWidth="0.8"/>
-              <line x1="40" y1="0" x2="40" y2="80" stroke="white" strokeWidth="0.4"/>
-              <line x1="0" y1="40" x2="80" y2="40" stroke="white" strokeWidth="0.4"/>
-            </pattern>
-          </defs>
-          <rect width="400" height="900" fill="url(#geo)"/>
-        </svg>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#D9828D]/20 rounded-full translate-x-32 translate-y-32" />
-        <div className="absolute top-0 left-0 w-48 h-48 bg-[#C6C954]/10 rounded-full -translate-x-24 -translate-y-24" />
-
-        <div className="relative flex flex-col justify-center h-full px-12">
-          {/* Logo */}
-          <img src="/brand/marrakech-career.svg" alt="Marrakech Career" width={440} height={128} className="mb-10 h-auto w-[300px] max-w-full" />
-
-          <h2 className="text-white text-3xl font-extrabold leading-tight mb-4">
-            Discover.<br />Match.<br />Apply.
-          </h2>
-          <p className="text-white/70 text-base leading-relaxed mb-10">
-            Find the right companies. Build your profile. Apply smarter in Marrakech.
-          </p>
-
-        </div>
-      </div>
-
-      {/* Right form panel */}
-      <div className="login-form-panel relative z-10 mt-24 flex min-h-0 w-full flex-1 flex-col items-center justify-start overflow-y-auto overscroll-contain rounded-t-[48px] bg-[#FBF9F7] px-7 py-5 md:mt-0 md:flex-1 md:rounded-none md:p-12">
-        <div className="my-auto w-full max-w-md shrink-0">
-          <div className="login-tabs mb-5 flex w-fit gap-1 rounded-xl bg-[#EAE5E0] p-1 md:mb-8">
+    <main className="auth-page">
+      <AuthBrandPanel />
+      <section className="auth-form-panel" aria-labelledby="auth-form-title">
+        <div className="auth-form-content">
+          <div className="auth-tabs" role="group" aria-label="Connexion ou inscription">
             {(['login', 'register'] as const).map(mode => (
-              <button key={mode} onClick={() => setTab(mode)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition-all md:px-5 md:py-2 ${tab === mode ? 'bg-white text-[#1C1917] shadow-sm' : 'text-[#78716C] hover:text-[#1C1917]'}`}>
+              <button key={mode} type="button" disabled={loading} onClick={() => switchTab(mode)} aria-pressed={tab === mode} className={tab === mode ? 'is-active' : ''}>
                 {mode === 'login' ? t('signIn') : t('register')}
               </button>
             ))}
           </div>
-
-          <h2 className="mb-1 text-[22px] font-bold text-[#1C1917] md:text-2xl">
-            {tab === 'login' ? t('welcomeBack') : t('createAccount')}
-          </h2>
-          <p className="login-intro mb-5 text-sm text-[#78716C] md:mb-8">
-            {tab === 'login' ? t('existingAccount') : t('newAccount')}
-          </p>
-
-          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="login-google mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D6D3D1] bg-white py-2.5 text-sm font-bold text-[#1C1917] transition-colors hover:bg-[#FBF9F7] disabled:opacity-60 md:mb-5 md:py-3">
-            <Chrome size={18} className="text-[#4285F4]" /> {t('continueGoogle')}
+          <div className="auth-intro">
+            <h2 id="auth-form-title" className="auth-form-title">{tab === 'login' ? t('welcomeBack') : t('createAccount')}</h2>
+            <p>{tab === 'login' ? t('existingAccount') : t('newAccount')}</p>
+          </div>
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={loading} className="auth-google">
+            <GoogleLogo />{t('continueGoogle')}
           </button>
-          <div className="login-email-divider mb-4 flex items-center gap-3 text-xs text-[#A8A29E] md:mb-5"><span className="h-px flex-1 bg-[#EAE5E0]" />{t('emailSeparator')}<span className="h-px flex-1 bg-[#EAE5E0]" /></div>
-
-          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-3 md:space-y-4">
+          <div className="auth-divider">{t('emailSeparator')}</div>
+          <form onSubmit={handleSubmit} autoComplete="off" className="auth-form">
             {tab === 'register' && (
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('fullName')}</label>
-                <input required value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre nom complet" />
+              <div className="auth-field">
+                <label htmlFor="auth-full-name">{t('fullName')}</label>
+                <div className="auth-input-wrap">
+                  <UserRound aria-hidden="true" />
+                  <input id="auth-full-name" name="full-name" required value={name} onChange={event => setName(event.target.value)} placeholder="Votre nom complet" />
+                </div>
               </div>
             )}
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">Email</label>
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="vous@exemple.com" />
+            <div className="auth-field">
+              <label htmlFor="auth-email">Email</label>
+              <div className="auth-input-wrap">
+                <Mail aria-hidden="true" />
+                <input id="auth-email" name="email" required type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="vous@exemple.com" />
+              </div>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-[#57534E] md:mb-1.5">{t('password')}</label>
-              <input required minLength={6} type="password" name="marrakech-career-password" autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full rounded-xl border border-[#EAE5E0] bg-white px-4 py-2.5 text-sm text-[#1C1917] focus:border-[#621E3E] focus:outline-none md:py-3" placeholder="Votre mot de passe" />
+            <div className="auth-field">
+              <label htmlFor="auth-password">{t('password')}</label>
+              <div className="auth-input-wrap">
+                <LockKeyhole aria-hidden="true" />
+                <input id="auth-password" required minLength={6} type={passwordVisible ? 'text' : 'password'} name="marrakech-career-password" autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" value={pwd} onChange={event => setPwd(event.target.value)} placeholder="Votre mot de passe" />
+                <button type="button" className="auth-password-toggle" aria-label={passwordVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} aria-pressed={passwordVisible} aria-controls="auth-password" onClick={() => setPasswordVisible(!passwordVisible)}>
+                  {passwordVisible ? <Eye size={21} /> : <EyeOff size={21} />}
+                </button>
+              </div>
             </div>
             {tab === 'login' && (
-              <div className="flex justify-end gap-3 text-xs md:gap-4">
-                <button type="button" onClick={() => void sendPasswordReset()} disabled={loading} className="text-[#621E3E] font-semibold hover:underline disabled:opacity-60">{t('forgotPassword')}</button>
+              <div className="auth-forgot">
+                <button type="button" onClick={() => void sendPasswordReset()} disabled={loading} className="auth-text-button">{t('forgotPassword')}</button>
               </div>
             )}
-            {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
-            {message && <p className="text-sm text-[#667436]" role="status">{message}</p>}
-            {needsConfirmation && (
-              <button type="button" onClick={() => void resendConfirmation()} disabled={loading} className="w-full text-center text-xs font-semibold text-[#621E3E] hover:underline disabled:opacity-60">
-                Renvoyer l’e-mail de confirmation
-              </button>
-            )}
-            <button type="submit" disabled={loading} className="mt-1.5 w-full rounded-xl bg-[#621E3E] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#4e1830] disabled:opacity-60 md:mt-2 md:py-3">
-              {loading ? t('wait') : tab === 'login' ? t('signIn') : t('create')}
+            {error && <p className="auth-feedback is-error" role="alert">{error}</p>}
+            {message && <p className="auth-feedback is-success" role="status">{message}</p>}
+            {needsConfirmation && <button type="button" onClick={() => void resendConfirmation()} disabled={loading} className="auth-text-button">Renvoyer l’e-mail de confirmation</button>}
+            <button type="submit" disabled={loading} className="auth-submit">
+              {loading ? t('wait') : tab === 'login' ? t('signIn') : t('create')}<ArrowRight size={21} aria-hidden="true" />
             </button>
           </form>
-
-          <nav aria-label="Informations sur Marrakech Career" className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-[#621E3E]">
-            <a href="/about" className="hover:underline">Le service</a>
-            <a href="/privacy" className="hover:underline">Confidentialité</a>
-            <a href="/terms" className="hover:underline">Conditions</a>
-          </nav>
-
           {resetStep === 'code' && (
-            <form onSubmit={verifyResetCode} className="mt-6 space-y-3 rounded-2xl border border-[#C6C954]/50 bg-[#C6C954]/10 p-4">
-              <div>
-                <p className="text-sm font-bold text-[#1C1917]">Vérifier votre e-mail</p>
-                <p className="mt-1 text-xs text-[#57534E]">Saisissez le code reçu sur {email.trim()}.</p>
+            <form onSubmit={verifyResetCode} className="auth-reset" aria-labelledby="auth-reset-title">
+              <div><h3 id="auth-reset-title">Vérifier votre e-mail</h3><p>Saisissez le code reçu sur {email.trim()}.</p></div>
+              <div className="auth-input-wrap">
+                <input aria-label="Code de vérification à 8 chiffres" autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="auth-reset-code" placeholder="00000000" />
               </div>
-              <input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, ''))} className="w-full rounded-xl border border-[#D6D3D1] bg-white px-4 py-3 text-center text-lg font-bold tracking-[0.35em] text-[#1C1917] outline-none focus:border-[#621E3E]" placeholder="00000000" />
-              <button disabled={loading} type="submit" className="w-full rounded-xl bg-[#621E3E] py-3 text-sm font-bold text-white hover:bg-[#4e1830] disabled:opacity-60">{loading ? t('wait') : 'Vérifier le code'}</button>
+              <button disabled={loading} type="submit" className="auth-submit">{loading ? t('wait') : 'Vérifier le code'}</button>
             </form>
           )}
-
+          <p className="auth-switch">
+            {tab === 'login' ? 'Vous n’avez pas de compte ?' : 'Vous avez déjà un compte ?'}
+            <button type="button" className="auth-text-button" disabled={loading} onClick={() => switchTab(tab === 'login' ? 'register' : 'login')}>{tab === 'login' ? t('register') : t('signIn')}</button>
+          </p>
+          <nav className="auth-legal-links" aria-label="Informations légales"><a href="/privacy">Confidentialité</a><a href="/terms">Conditions d’utilisation</a></nav>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

@@ -1,0 +1,11 @@
+Marrakech Career — photo de connexion HD
+
+Outil : imagegen intégré, mode édition.
+Source : photo panoramique fournie par l’utilisateur.
+Résolution produite : 1829 × 860 pixels.
+Asset : frontend/public/brand/marrakech-workspace-hd.webp, WebP qualité 96, sans redimensionnement.
+
+Prompt :
+Use case: precise-object-edit. Edit target: supplied existing panoramic Marrakech Career photo. Enhance this exact photo to sharp HD, ideally 3072 × 1440, preserving the original panoramic aspect ratio and all composition, camera viewpoint, window, desk, laptop, notebook, pen, cup, phone, plant, lamp, skyline, minaret and lighting. Improve fine architectural, palm and building detail, reduce softness, and keep a natural crisp photographic appearance. Do not redesign, move, flip, add, recolor or change the lighting. No text, logo, UI, gradient or watermark.
+
+Le fond est fixé au viewport ; le texte et le formulaire défilent. Sur mobile, la hauteur du fond utilise 100lvh pour stabiliser le cadrage.
